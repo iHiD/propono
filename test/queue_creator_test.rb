@@ -21,7 +21,8 @@ module Propono
       creator = QueueCreator.new("foobar")
       creator.stubs(sqs: sqs)
 
-      assert_equal url, creator.find_or_create
+      queue = creator.find_or_create
+      assert_equal url, queue.url
     end
 
     def test_should_raise_exception_if_no_queue_returned

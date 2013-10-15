@@ -10,8 +10,10 @@ module Propono
       Subscriber.subscribe_by_queue("topic")
     end
 
-    def test_subscribe_by_post_calls_post_subscriber
-      PostSubscriber.any_instance.expects(:subscribe).with("topic", "endpoint")
+    def test_subscribe_by_post_calls_post_subscribe
+      subscriber = PostSubscriber.new("topic", 'endpoint')
+      PostSubscriber.expects(:new).with("topic", 'endpoint').returns(subscriber)
+      PostSubscriber.any_instance.expects(:subscribe)
       Subscriber.subscribe_by_post("topic", "endpoint")
     end
 

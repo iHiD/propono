@@ -30,13 +30,18 @@ class Fog::AWS::SNS::Mock
     foo
   end
 
-  def subscribe(arn, url, type)
-
+  def subscribe(topic_arn, arn_or_url, type)
   end
 end
 
+require 'fog'
 class Fog::AWS::SQS::Mock
   def create_queue(*args)
-
   end
 end
+
+Fog::AWS::SQS::Mock::QueueUrl = 'https://meducation.net/foobar'
+Fog::AWS::SQS::Mock::QueueArn = 'FoobarArn'
+data = {'Attributes' => {"QueueArn" => Fog::AWS::SQS::Mock::QueueArn}}
+queues = Fog::AWS::SQS::Mock.data["us-east-1"]["test-access-key"][:queues]
+queues[Fog::AWS::SQS::Mock::QueueUrl] = data

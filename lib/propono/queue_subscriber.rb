@@ -2,6 +2,9 @@ module Propono
   class QueueSubscriber
 
     include Sns
+    include Sqs
+
+    attr_reader :topic_arn, :queue
 
     def self.subscribe(topic_id)
       new(topic_id).subscribe
@@ -12,10 +15,9 @@ module Propono
     end
 
     def subscribe
-      topic_arn = TopicCreator.find_or_create(@topic_id)
-      queue_url = QueueCreator.find_or_create(queue_name)
-      sns.subscribe(topic_arn, queue_url, 'sqs')
-      queue_url
+      @topic_arn = TopicCreator.find_or_create(@topic_id)
+      @queue = QueueCreator.find_or_create(queue_name)
+      sns.subscribe(@topic_arn, @queue.arn, 'sqs')
     end
 
     private

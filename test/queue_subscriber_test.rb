@@ -15,7 +15,7 @@ module Propono
       TopicCreator.stubs(find_or_create: "1123")
 
       sqs = mock()
-      sqs.expects(:create_queue).with(subscriber.send(:queue_name)).returns(mock(body: {'QueueUrl' => "foobar"}))
+      sqs.expects(:create_queue).with(subscriber.send(:queue_name)).returns(mock(body: {'QueueUrl' => Fog::AWS::SQS::Mock::QueueUrl}))
       QueueCreator.any_instance.stubs(sqs: sqs)
 
       subscriber.subscribe
@@ -27,23 +27,25 @@ module Propono
 
     def test_subscribe_calls_subscribe
       arn = "arn123"
-      queue_url = "http://meducation.net/some_queue_name"
+      queue_url = 
 
       TopicCreator.stubs(find_or_create: arn)
-      QueueCreator.stubs(find_or_create: queue_url)
+      QueueCreator.stubs(find_or_create: Queue.new(Fog::AWS::SQS::Mock::QueueUrl))
 
       sns = mock()
-      sns.expects(:subscribe).with(arn, queue_url, 'sqs')
+      sns.expects(:subscribe).with(arn, Fog::AWS::SQS::Mock::QueueArn, 'sqs')
       subscriber = QueueSubscriber.new("Some topic")
       subscriber.stubs(sns: sns)
       subscriber.subscribe
     end
 
-    def test_subscribe_returns_queue_name
-      queue_name = 'foobar'
-      QueueCreator.expects(:find_or_create).returns(queue_name)
-      return_value = QueueSubscriber.subscribe("Some Topic")
-      assert_equal queue_name, return_value
+    def test_subscribe_saves_queue
+      queue = Queue.new(Fog::AWS::SQS::Mock::QueueUrl)
+
+      QueueCreator.expects(:find_or_create).returns(queue)
+      subscriber = QueueSubscriber.new("Some Topic")
+      subscriber.subscribe
+      assert_equal queue, subscriber.queue
     end
   end
 end
