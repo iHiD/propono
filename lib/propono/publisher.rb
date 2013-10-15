@@ -3,6 +3,7 @@ module Propono
   end
 
   class Publisher
+    include Sns
 
     def self.publish(topic, message)
       new.publish(topic, message)
@@ -16,16 +17,6 @@ module Propono
       raise PublisherError.new("Message is nil") if message.nil?
 
       topic_arn = TopicCreator.find_or_create(topic_id)
-    end
-
-    private
-
-    def sns
-      @sns ||= Fog::AWS::SNS.new(
-        :aws_access_key_id => config.access_key,
-        :aws_secret_access_key => config.secret_key,
-        :region => config.queue_region
-      )
     end
   end
 end
