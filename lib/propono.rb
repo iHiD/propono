@@ -1,5 +1,5 @@
 require "propono/version"
+require "propono/push_notifier"
 
 module Propono
-  # Your code goes here...
 end
