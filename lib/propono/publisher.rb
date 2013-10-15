@@ -17,6 +17,7 @@ module Propono
       raise PublisherError.new("Message is nil") if message.nil?
 
       topic_arn = TopicCreator.find_or_create(topic_id)
+      sns.publish(topic_arn, message)
     end
   end
 end

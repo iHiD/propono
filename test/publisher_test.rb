@@ -15,16 +15,32 @@ module Propono
       Publisher.new.publish(topic, message)
     end
 
-    def test_publish_should_call_sns_on_correct_topic
-    end
+    def test_publish_should_call_sns_on_correct_topic_and_message
+      topic = "topic123"
+      message = "message123"
+      topic_arn = "arn123"
 
-    def test_publish_should_call_sns_with_message
+      TopicCreator.stubs(find_or_create: topic_arn)
+
+      sns = mock()
+      sns.expects(:publish).with(topic_arn, message)
+      publisher = Publisher.new
+      publisher.stubs(sns: sns)
+
+      publisher.publish(topic, message)
     end
 
     def test_publish_creates_a_topic
       topic = "Malcs_topic"
+
       TopicCreator.expects(:find_or_create).with(topic)
-      Publisher.new.publish(topic, "Foobar")
+
+      sns = mock()
+      sns.stubs(:publish)
+      publisher = Publisher.new
+      publisher.stubs(sns: sns)
+
+      publisher.publish(topic, "Foobar")
     end
 
     def test_publish_should_raise_exception_if_topic_is_nil
