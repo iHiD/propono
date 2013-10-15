@@ -8,12 +8,6 @@ module Propono
       PostSubscriber.subscribe(topic, "foobar")
     end
 
-    def test_everything
-      skip "I don't know how to do this"
-      topic = "Foobar"
-      PostSubscriber.subscribe(topic)
-    end
-
     def test_subscribe_calls_subscribe
       arn = "arn123"
       endpoint = "http://meducation.net/some_queue_name"

@@ -8,12 +8,6 @@ module Propono
       QueueSubscriber.subscribe(topic)
     end
 
-    def test_everything
-      skip "I don't know how to do this"
-      topic = "Foobar"
-      QueueSubscriber.subscribe(topic)
-    end
-
     def test_sqs_create_is_called
       topic = "Foobar"
       subscriber = QueueSubscriber.new(topic)
