@@ -15,8 +15,8 @@ module Propono
 
     def test_returns_arn
       arn = "malcs_happy_arn"
-      create_topic_result = mock(body: { "TopicArn" => arn})
-      sns = mock(create_topic: create_topic_result)
+      result = mock(body: { "TopicArn" => arn})
+      sns = mock(create_topic: result)
 
       creator = TopicCreator.new("foobar")
       creator.stubs(sns: sns)
@@ -25,8 +25,8 @@ module Propono
     end
 
     def test_should_raise_exception_if_no_arn_returned
-      create_topic_result = mock(body: {})
-      sns = mock(create_topic: create_topic_result)
+      result = mock(body: {})
+      sns = mock(create_topic: result)
 
       creator = TopicCreator.new("foobar")
       creator.stubs(sns: sns)

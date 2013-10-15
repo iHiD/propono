@@ -4,7 +4,9 @@ module Propono
   class SubscriberTest < Minitest::Test
 
     def test_subscribe_by_queue_calls_queue_subscriber
-      QueueSubscriber.any_instance.expects(:subscribe).with("topic")
+      subscriber = QueueSubscriber.new("topic")
+      QueueSubscriber.expects(:new).with("topic").returns(subscriber)
+      QueueSubscriber.any_instance.expects(:subscribe)
       Subscriber.subscribe_by_queue("topic")
     end
 
