@@ -20,6 +20,34 @@ And then execute:
 
     $ bundle
 
+This script demonstrates usage:
+
+```ruby
+require 'propono'
+
+class Toy
+  def play
+    configure
+    make_fun_stuff_happen
+  end
+
+  private
+  def make_fun_stuff_happen
+    Propono.publish("jez-test-topic", "A test message")
+    Propono.subscribe_by_queue("jez-test-topic")
+    Propono.subscribe_by_post("jez-test-topic", 'http://example.com/endpoint')
+  end
+
+  def configure
+    Propono.config.access_key = '...'
+    Propono.config.secret_key = '...'
+    Propono.config.queue_region = 'eu-west-1'
+  end
+end
+
+Toy.new.play
+```
+
 ## Contributing
 
 Firstly, thank you!! :heart::sparkling_heart::heart:
