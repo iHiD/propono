@@ -3,8 +3,6 @@
 [![Build Status](https://travis-ci.org/meducation/propono.png)](https://travis-ci.org/meducation/propono)
 [![Dependencies](https://gemnasium.com/meducation/propono.png?travis)](https://gemnasium.com/meducation/propono)
 [![Code Climate](https://codeclimate.com/github/meducation/propono.png)](https://codeclimate.com/github/meducation/propono)
-[![Coverage Status](https://coveralls.io/repos/meducation/propono/badge.png)](https://coveralls.io/r/meducation/propono)
-
 
 ## Installation
 
