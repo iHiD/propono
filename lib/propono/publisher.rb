@@ -9,9 +9,6 @@ module Propono
       new.publish(topic, message)
     end
 
-    def initialize
-    end
-
     def publish(topic_id, message)
       raise PublisherError.new("Topic is nil") if topic_id.nil?
       raise PublisherError.new("Message is nil") if message.nil?

@@ -30,6 +30,18 @@ module Propono
       publisher.publish(topic, message)
     end
 
+    def test_publish_should_propogate_exception_on_topic_creation_error
+      topic = "topic123"
+      message = "message123"
+      topic_arn = nil
+
+      TopicCreator.stubs(:find_or_create).raises(TopicCreatorError)
+
+      assert_raises(TopicCreatorError) {
+        Publisher.publish(topic, message)
+      }
+    end
+
     def test_publish_creates_a_topic
       topic = "Malcs_topic"
 
