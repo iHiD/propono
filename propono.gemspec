@@ -6,12 +6,12 @@ require 'propono/version'
 Gem::Specification.new do |spec|
   spec.name          = "propono"
   spec.version       = Propono::VERSION
-  spec.authors       = ["MalcyL"]
-  spec.email         = ["malcolm@landonsonline.me.uk"]
-  spec.description   = %q{TODO: Write a gem description}
-  spec.summary       = %q{TODO: Write a gem summary}
+  spec.authors       = ["MalcyL", "iHiD"]
+  spec.email         = ["malcolm@landonsonline.me.uk", "jeremy@meducation.net"]
+  spec.description   = %q{Pub / Sub Library using Amazon Web Services}
+  spec.summary       = %q{General purpose pub/sub library built on top of AWS SNS and SQS}
   spec.homepage      = ""
-  spec.license       = "MIT"
+  spec.license       = "AGPL3"
 
   spec.files         = `git ls-files`.split($/)
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
@@ -23,4 +23,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "bundler", "~> 1.3"
   spec.add_development_dependency "rake"
   spec.add_development_dependency "mocha"
+  spec.add_development_dependency "minitest", "~> 5.0.8"
 end
