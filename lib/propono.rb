@@ -1,5 +1,6 @@
 require "propono/version"
-require "propono/push_notifier"
+require "propono/publisher"
+require "propono/topic_creator"
 
 module Propono
 end
