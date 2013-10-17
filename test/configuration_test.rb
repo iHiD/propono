@@ -34,12 +34,6 @@ module Propono
       assert_equal queue_region, config.queue_region
     end
 
-    def test_queue_url
-      queue_url = "test-queue-url"
-      config.queue_url = queue_url
-      assert_equal queue_url, config.queue_url
-    end
-
     def test_missing_access_key_throws_exception
       assert_raises(ConfigurationError) do
         config.access_key
@@ -55,12 +49,6 @@ module Propono
     def test_missing_queue_region_throws_exception
       assert_raises(ConfigurationError) do
         config.queue_region
-      end
-    end
-
-    def test_missing_queue_url_throws_exception
-      assert_raises(ConfigurationError) do
-        config.queue_url
       end
     end
   end

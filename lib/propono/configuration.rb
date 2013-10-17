@@ -8,7 +8,7 @@ module Propono
   class Configuration
     include Singleton
 
-    SETTINGS = [:access_key, :secret_key, :queue_region, :queue_url]
+    SETTINGS = [:access_key, :secret_key, :queue_region]
     attr_writer *SETTINGS
 
     def initialize
