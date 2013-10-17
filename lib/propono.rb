@@ -1,15 +1,16 @@
 require "propono/version"
 require 'propono/configuration'
-require 'propono/sns'
-require 'propono/sqs'
-require "propono/post_subscriber"
-require "propono/publisher"
-require "propono/queue"
-require "propono/queue_creator"
-require "propono/queue_subscriber"
-require "propono/subscriber"
-require "propono/topic"
-require "propono/topic_creator"
+require 'propono/components/sns'
+require 'propono/components/sqs'
+require "propono/components/queue"
+require "propono/components/topic"
+
+require "propono/services/post_subscriber"
+require "propono/services/publisher"
+require "propono/services/queue_creator"
+require "propono/services/queue_subscriber"
+require "propono/services/subscriber"
+require "propono/services/topic_creator"
 
 module Propono
   def self.config
