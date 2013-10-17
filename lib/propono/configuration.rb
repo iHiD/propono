@@ -8,10 +8,17 @@ module Propono
   class Configuration
     include Singleton
 
-    SETTINGS = [:access_key, :secret_key, :queue_region, :application_name]
+    SETTINGS = [
+      :access_key,
+      :secret_key,
+      :queue_region,
+      :application_name,
+      :logger
+    ]
     attr_writer *SETTINGS
 
     def initialize
+      self.logger = $stderr
     end
 
     SETTINGS.each do |setting|
