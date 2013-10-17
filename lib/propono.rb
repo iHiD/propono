@@ -30,4 +30,8 @@ module Propono
     Subscriber.subscribe_by_post(*args)
   end
 
+  def self.listen_to_queue(*args, &block)
+    QueueListener.listen(*args, &block)
+  end
+
 end
