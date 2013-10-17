@@ -23,7 +23,11 @@ module Propono
     private
 
     def queue_name
-      @topic_id
+      "#{config.application_name.gsub(" ", "_")}::#{@topic_id}"
+    end
+
+    def config
+      Configuration.instance
     end
   end
 end
