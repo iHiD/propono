@@ -19,6 +19,11 @@ class Minitest::Test
     Propono::Configuration.instance.access_key = "test-access-key"
     Propono::Configuration.instance.secret_key = "test-secret-key"
     Propono::Configuration.instance.queue_region = "us-east-1"
+    Propono::Configuration.instance.application_name = "MyApp"
+  end
+
+  def config
+    Propono::Configuration.instance
   end
 end
 

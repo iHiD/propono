@@ -34,6 +34,12 @@ module Propono
       assert_equal queue_region, config.queue_region
     end
 
+    def test_application_name
+      application_name = "test-application-name"
+      config.application_name = application_name
+      assert_equal application_name, config.application_name
+    end
+
     def test_missing_access_key_throws_exception
       assert_raises(ConfigurationError) do
         config.access_key
@@ -49,6 +55,12 @@ module Propono
     def test_missing_queue_region_throws_exception
       assert_raises(ConfigurationError) do
         config.queue_region
+      end
+    end
+
+    def test_missing_application_name_throws_exception
+      assert_raises(ConfigurationError) do
+        config.application_name
       end
     end
   end

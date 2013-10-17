@@ -23,7 +23,21 @@ module Propono
     end
 
     def test_subscriber_queue_name
-      skip
+      config.application_name = "MyApp"
+
+      topic_id = "Foobar"
+      subscriber = QueueSubscriber.new(topic_id)
+
+      assert_equal subscriber.send(:queue_name), "MyApp::Foobar"
+    end
+
+    def test_subscriber_queue_name_with_spaces
+      config.application_name = "My App"
+
+      topic_id = "Foobar"
+      subscriber = QueueSubscriber.new(topic_id)
+
+      assert_equal subscriber.send(:queue_name), "My_App::Foobar"
     end
 
     def test_subscribe_calls_subscribe
