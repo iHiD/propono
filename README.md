@@ -40,6 +40,7 @@ class Toy
     Propono.config.access_key = '...'
     Propono.config.secret_key = '...'
     Propono.config.queue_region = 'eu-west-1'
+    Propono.config.application_name = '...'
   end
 end
 
