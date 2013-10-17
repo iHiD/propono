@@ -3,16 +3,17 @@ require File.expand_path('../test_helper', __FILE__)
 module Propono
   class QueueSubscriberTest < Minitest::Test
     def test_create_topic
-      topic = 'foobar'
-      TopicCreator.expects(:find_or_create).with(topic)
-      QueueSubscriber.subscribe(topic)
+      topic_id = 'foobar'
+      topic = Topic.new(topic_id)
+      TopicCreator.expects(:find_or_create).with(topic_id).returns(topic)
+      QueueSubscriber.subscribe(topic_id)
     end
 
     def test_sqs_create_is_called
-      topic = "Foobar"
-      subscriber = QueueSubscriber.new(topic)
+      topic_id = "Foobar"
+      subscriber = QueueSubscriber.new(topic_id)
 
-      TopicCreator.stubs(find_or_create: "1123")
+      TopicCreator.stubs(find_or_create: Topic.new("1123"))
 
       sqs = mock()
       sqs.expects(:create_queue).with(subscriber.send(:queue_name)).returns(mock(body: {'QueueUrl' => Fog::AWS::SQS::Mock::QueueUrl}))
@@ -27,9 +28,8 @@ module Propono
 
     def test_subscribe_calls_subscribe
       arn = "arn123"
-      queue_url = 
 
-      TopicCreator.stubs(find_or_create: arn)
+      TopicCreator.stubs(find_or_create: Topic.new(arn))
       QueueCreator.stubs(find_or_create: Queue.new(Fog::AWS::SQS::Mock::QueueUrl))
 
       sns = mock()

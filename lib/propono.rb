@@ -8,6 +8,7 @@ require "propono/queue"
 require "propono/queue_creator"
 require "propono/queue_subscriber"
 require "propono/subscriber"
+require "propono/topic"
 require "propono/topic_creator"
 
 module Propono

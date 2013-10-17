@@ -21,7 +21,8 @@ module Propono
       creator = TopicCreator.new("foobar")
       creator.stubs(sns: sns)
 
-      assert_equal arn, creator.find_or_create
+      topic = creator.find_or_create
+      assert_equal arn, topic.arn
     end
 
     def test_should_raise_exception_if_no_arn_returned

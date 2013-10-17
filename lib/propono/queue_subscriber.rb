@@ -15,9 +15,9 @@ module Propono
     end
 
     def subscribe
-      @topic_arn = TopicCreator.find_or_create(@topic_id)
+      @topic = TopicCreator.find_or_create(@topic_id)
       @queue = QueueCreator.find_or_create(queue_name)
-      sns.subscribe(@topic_arn, @queue.arn, 'sqs')
+      sns.subscribe(@topic.arn, @queue.arn, 'sqs')
     end
 
     private

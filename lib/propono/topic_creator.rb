@@ -16,7 +16,8 @@ module Propono
     def find_or_create
       result = sns.create_topic(@topic_id)
       body = result.body
-      body.fetch('TopicArn') { raise TopicCreatorError.new("No TopicArn returned from SNS") }
+      arn = body.fetch('TopicArn') { raise TopicCreatorError.new("No TopicArn returned from SNS") }
+      Topic.new(arn)
     end
   end
 end
