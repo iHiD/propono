@@ -2,11 +2,11 @@ module Propono
 
   module Subscriber
     def self.subscribe_by_queue(topic)
-      QueueSubscriber.subscribe(topic)
+      QueueSubscription.create(topic)
     end
 
     def self.subscribe_by_post(topic, endpoint)
-      PostSubscriber.subscribe(topic, endpoint)
+      PostSubscription.create(topic, endpoint)
     end
   end
 end
