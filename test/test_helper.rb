@@ -12,10 +12,9 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
 require "propono"
 
-Fog.mock!
-
 class Minitest::Test
   def setup
+    Fog.mock!
     Propono::Configuration.instance.access_key = "test-access-key"
     Propono::Configuration.instance.secret_key = "test-secret-key"
     Propono::Configuration.instance.queue_region = "us-east-1"
