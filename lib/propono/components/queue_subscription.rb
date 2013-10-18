@@ -23,7 +23,7 @@ module Propono
     end
 
     def queue_name
-      @queue_name ||= "#{config.application_name.gsub(" ", "_")}::#{@topic_id}"
+      @queue_name ||= "#{config.application_name.gsub(" ", "_")}-#{@topic_id}"
     end
 
     private

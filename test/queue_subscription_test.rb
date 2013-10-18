@@ -28,7 +28,7 @@ module Propono
       topic_id = "Foobar"
       subscription = QueueSubscription.new(topic_id)
 
-      assert_equal subscription.send(:queue_name), "MyApp::Foobar"
+      assert_equal subscription.send(:queue_name), "MyApp-Foobar"
     end
 
     def test_subscription_queue_name_with_spaces
@@ -37,7 +37,7 @@ module Propono
       topic_id = "Foobar"
       subscription = QueueSubscription.new(topic_id)
 
-      assert_equal subscription.send(:queue_name), "My_App::Foobar"
+      assert_equal subscription.send(:queue_name), "My_App-Foobar"
     end
 
     def test_create_calls_create
