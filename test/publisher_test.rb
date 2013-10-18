@@ -11,8 +11,8 @@ module Propono
     def test_self_publish_calls_publish
       topic = "topic123"
       message = "message123"
-      Publisher.any_instance.expects(:publish).with(topic, message)
-      Publisher.new.publish(topic, message)
+      Publisher.any_instance.expects(:new).with(topic, message)
+      Publisher.new(topic, message).publish
     end
 
     def test_publish_should_call_sns_on_correct_topic_and_message
@@ -25,10 +25,9 @@ module Propono
 
       sns = mock()
       sns.expects(:publish).with(topic_arn, message)
-      publisher = Publisher.new
+      publisher = Publisher.new(topic, message)
       publisher.stubs(sns: sns)
-
-      publisher.publish(topic, message)
+      publisher.publish
     end
 
     def test_publish_should_propogate_exception_on_topic_creation_error
@@ -48,10 +47,10 @@ module Propono
 
       sns = mock()
       sns.stubs(:publish)
-      publisher = Publisher.new
+      publisher = Publisher.new(topic_id, "Foobar")
       publisher.stubs(sns: sns)
 
-      publisher.publish(topic_id, "Foobar")
+      publisher.publish
     end
 
     def test_publish_should_raise_exception_if_topic_is_nil
