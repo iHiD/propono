@@ -35,4 +35,7 @@ module Propono
     QueueListener.listen(*args, &block)
   end
 
+  def self.listen_to_sqs(*args, &block)
+    SqsListener.listen(*args, &block)
+  end
 end
