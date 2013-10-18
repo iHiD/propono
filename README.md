@@ -9,7 +9,9 @@ Propono is a [pub/sub](http://en.wikipedia.org/wiki/Publish-subscribe_pattern) g
 Usage is as simple as adding your config keys then running commands such as:
 
 ```ruby
-Propono.listen_to_queue('some-topic')
+Propono.listen_to_queue('some-topic') do |message|
+  ...
+end
 Propono.publish('some-topic', "This message will get from A to B")
 ```
 
@@ -25,25 +27,27 @@ And then execute:
 
 ## Usage
 
-The first thing to do is setup your configuration.
+The first thing to do is setup some configuration keys for Propono.
+
 ```ruby
-Propono.config.access_key       = "access-key"
-Propono.config.secret_key       = "secret-key"
-Propono.config.queue_region     = "queue-region"
-Propono.config.application_name = "application-name"
+Propono.config.access_key       = "access-key"       # From AWS
+Propono.config.secret_key       = "secret-key"       # From AWS
+Propono.config.queue_region     = "queue-region"     # From AWS
 ```
 
-You can then start publishing messages easily:
+You can then start publishing messages easily from anywhere in your codebase.
 
 ```ruby
 Propono.publish('some-topic', "{some: ['payload', 'or', 'message']}")
 ```
 
-To listen for the messages, simply use the `listen` loop. This automatically subscribes the application to the relevant topic.
+Listening for messages is easy too. When you ask Propono to listen, it automatically sets up a SQS queue and links it into SNS.
 
 ```ruby
+Propono.config.application_name = "application-name" # Something unique to this app.
 Propono.listen_to_queue('some-topic') do |sqs_message|
   original_message = JSON.parse(sqs_message["Body"])["Message"]
+  # ... Do something interesting with the message
 end
 ```
 
@@ -57,21 +61,21 @@ To send messages, you need to set up a little extra config:
 Propono.config.udp_host = "localhost"
 Propono.config.udp_port = 12543
 ```
-You then simply pass the `:udp` protocol into `publish`:
+You then simply pass the `:udp` protocol into `publish`
 
 ```ruby
 Propono.publish('some-topic', message, protocol: :udp)
 ```
 
-Setting up another service running Propono to listen to the UDP feed, is easy. You can use it proxy the message to SNS. For example, with the same config:
+Setting up another service running Propono to listen to the UDP feed is easy. For example, with the same config:
 
 ```ruby
 Propono.listen_to_udp do |message|
-  Propono.publish('some-topic', message)
+  Propono.publish('some-topic', message) # Proxy the message to SNS
 end
 ```
 
-In fact, this is used so often, that there's a simple shortcut: 
+This proxy pattern is used so often that there's a simple shortcut:
 
 ```ruby
 Propono.proxy_udp('some-topic')
@@ -85,7 +89,7 @@ Propono.proxy_udp('some-topic')
 
 Firstly, thank you!! :heart::sparkling_heart::heart:
 
-Please read our [contributing guide](https://github.com/meducation/propono/tree/master/CONTRIBUTING.md) for information on how to get stuck in.
+We'd love to have you involved. Please read our [contributing guide](https://github.com/meducation/propono/tree/master/CONTRIBUTING.md) for information on how to get stuck in.
 
 ### Contributors
 
