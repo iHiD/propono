@@ -25,8 +25,28 @@ class Minitest::Test
   def config
     Propono::Configuration.instance
   end
+
+  # capture_io reasigns stderr. Assign the config.logger
+  # to where capture_io has redirected it to for this test.
+  def capture_io(&block)
+    require 'stringio'
+
+    orig_stdout, orig_stderr         = $stdout, $stderr
+    captured_stdout, captured_stderr = StringIO.new, StringIO.new
+    $stdout, $stderr                 = captured_stdout, captured_stderr
+
+    config.logger = $stderr
+    yield
+
+    return captured_stdout.string, captured_stderr.string
+  ensure
+    $stdout = orig_stdout
+    $stderr = orig_stderr
+    config.logger = $stderr
+  end
 end
 
+require 'fog'
 class Fog::AWS::SNS::Mock
   def create_topic(*args)
     foo = Object.new
@@ -42,9 +62,10 @@ class Fog::AWS::SNS::Mock
   end
 end
 
-require 'fog'
 class Fog::AWS::SQS::Mock
   def create_queue(*args)
+  end
+  def set_queue_attributes(*args)
   end
 end
 

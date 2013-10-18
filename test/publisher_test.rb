@@ -4,18 +4,40 @@ module Propono
   class PublisherTest < Minitest::Test
 
     def test_initialization
-      notifier = Publisher.new
-      refute notifier.nil?
+      publisher = Publisher.new('topic', 'message')
+      refute publisher.nil?
+    end
+
+    def test_self_publish_calls_new
+      topic = "topic123"
+      message = "message123"
+      Publisher.expects(:new).with(topic, message, {}).returns(mock(publish: nil))
+      Publisher.publish(topic, message)
     end
 
     def test_self_publish_calls_publish
-      topic = "topic123"
-      message = "message123"
-      Publisher.any_instance.expects(:new).with(topic, message)
-      Publisher.new(topic, message).publish
+      Publisher.any_instance.expects(:publish)
+      Publisher.publish("topic", "message")
     end
 
-    def test_publish_should_call_sns_on_correct_topic_and_message
+    def test_protocol_should_be_sns_by_default
+      publisher = Publisher.new('topic', 'message')
+      assert_equal :sns, publisher.protocol
+    end
+
+    def test_publish_proxies_to_sns
+      publisher = Publisher.new('topic', 'message')
+      publisher.expects(:publish_via_sns)
+      publisher.publish
+    end
+
+    def test_publish_proxies_to_udp
+      publisher = Publisher.new('topic', 'message', protocol: :udp)
+      publisher.expects(:publish_via_udp)
+      publisher.publish
+    end
+
+    def test_publish_via_sns_should_call_sns_on_correct_topic_and_message
       topic = "topic123"
       message = "message123"
       topic_arn = "arn123"
@@ -27,18 +49,19 @@ module Propono
       sns.expects(:publish).with(topic_arn, message)
       publisher = Publisher.new(topic, message)
       publisher.stubs(sns: sns)
-      publisher.publish
+      publisher.send(:publish_via_sns)
     end
 
-    def test_publish_should_propogate_exception_on_topic_creation_error
+    def test_publish_via_sns_should_propogate_exception_on_topic_creation_error
       TopicCreator.stubs(:find_or_create).raises(TopicCreatorError)
 
       assert_raises(TopicCreatorError) do
-        Publisher.publish("topic", "message")
+        publisher = Publisher.new("topic", "message")
+        publisher.send(:publish_via_sns)
       end
     end
 
-    def test_publish_creates_a_topic
+    def test_publish_via_sns_creates_a_topic
       topic_id = "Malcs_topic_id"
       topic_arn = "Malcs_topic_arn"
       topic = Topic.new(topic_arn)
@@ -50,7 +73,34 @@ module Propono
       publisher = Publisher.new(topic_id, "Foobar")
       publisher.stubs(sns: sns)
 
-      publisher.publish
+      publisher.send(:publish_via_sns)
+    end
+
+    def test_udp_uses_correct_message_host_and_port
+      host = "http://meducation.net"
+      port = 1234
+      config.udp_host = host
+      config.udp_port = port
+      topic_id = "my-fav-topic"
+      message = "foobar"
+      payload = {topic: topic_id, message: message}.to_json
+      UDPSocket.any_instance.expects(:send).with(payload, 0, host, port)
+
+      publisher = Publisher.new(topic_id, message)
+      publisher.send(:publish_via_udp)
+    end
+
+    def test_client_with_bad_host_logs_error
+      host = "http://meducation.net"
+      port = 1234
+      config.udp_host = host
+      config.udp_port = port
+
+      client = Publisher.new("topic_id", "message")
+      _, err = capture_io do
+        client.send(:publish_via_udp)
+      end
+      assert_match("Udp2sqs failed to send : getaddrinfo:", err)
     end
 
     def test_publish_should_raise_exception_if_topic_is_nil
