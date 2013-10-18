@@ -43,7 +43,7 @@ To listen for the messages, simply use the `listen` loop. This automatically sub
 
 ```ruby
 Propono.listen_to_queue('some-topic') do |sqs_message|
-  original_message = JSON.parse(message["Body"])["Message"]
+  original_message = JSON.parse(sqs_message["Body"])["Message"]
 end
 ```
 
