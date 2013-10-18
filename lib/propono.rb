@@ -12,6 +12,7 @@ require "propono/services/queue_creator"
 require "propono/services/queue_listener"
 require "propono/services/subscriber"
 require "propono/services/topic_creator"
+require "propono/services/udp_listener"
 
 module Propono
   def self.config
