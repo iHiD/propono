@@ -64,7 +64,7 @@ module Propono
       sqs.expects(:set_queue_attributes).with(Fog::AWS::SQS::Mock::QueueUrl, "Policy", policy)
       subscription = QueueSubscription.new("Some topic")
       subscription.stubs(sqs: sqs)
-      subscription.stubs(policy: policy)
+      subscription.stubs(generate_policy: policy)
       subscription.create
     end
 
@@ -75,6 +75,10 @@ module Propono
       subscription = QueueSubscription.new("Some Topic")
       subscription.create
       assert_equal queue, subscription.queue
+    end
+
+    def test_generate_policy
+      skip"TODO - Implement this test."
     end
   end
 end

@@ -32,12 +32,13 @@ module Propono
       end
     rescue
       config.logger.puts "Unexpected error reading from queue #{queue_url}"
+      config.logger.puts $!
     end
 
     def process_messages(messages)
       messages.each do |message|
         @message_processor.call(message)
-        sqs.delete_message(message['ReceiptHandle'])
+        sqs.delete_message(queue_url, message['ReceiptHandle'])
       end
       true
     end

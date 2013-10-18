@@ -35,11 +35,14 @@ module Propono
       sqs = mock()
       sqs.stubs(receive_message: message_response)
 
-      sqs.expects(:delete_message).with(@receipt_handle1)
-      sqs.expects(:delete_message).with(@receipt_handle2)
+      queue_url = "test-queue-url"
+
+      sqs.expects(:delete_message).with(queue_url,@receipt_handle1)
+      sqs.expects(:delete_message).with(queue_url,@receipt_handle2)
 
       queue_listener = QueueListener.new(@topic_id) { }
       queue_listener.stubs(sqs: sqs)
+      queue_listener.stubs(queue_url: queue_url)
 
       queue_listener.send(:read_messages)
     end
@@ -88,7 +91,7 @@ module Propono
       out, err = capture_io do
         queue_listener.send(:read_messages)
       end
-      assert_equal "Unexpected error reading from queue http://example.com\n", err
+      assert_equal "Unexpected error reading from queue http://example.com\nStandardError\n", err
     end
 
     def test_exception_from_sqs_returns_false
