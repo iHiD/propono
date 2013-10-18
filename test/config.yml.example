@@ -1,0 +1,4 @@
+access_key: test-aws-access-key
+secret_key: test-aws-secret-key
+queue_region: test-aws-region
+application_name: tests-yourinitials
