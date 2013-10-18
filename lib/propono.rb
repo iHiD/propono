@@ -4,12 +4,12 @@ require 'propono/components/sns'
 require 'propono/components/sqs'
 require "propono/components/queue"
 require "propono/components/topic"
+require "propono/components/post_subscription"
+require "propono/components/queue_subscription"
 
-require "propono/services/post_subscriber"
 require "propono/services/publisher"
 require "propono/services/queue_creator"
 require "propono/services/queue_listener"
-require "propono/services/queue_subscriber"
 require "propono/services/subscriber"
 require "propono/services/topic_creator"
 

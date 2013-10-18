@@ -1,46 +1,46 @@
 require File.expand_path('../test_helper', __FILE__)
 
 module Propono
-  class QueueSubscriberTest < Minitest::Test
+  class QueueSubscriptionTest < Minitest::Test
     def test_create_topic
       topic_id = 'foobar'
       topic = Topic.new(topic_id)
       TopicCreator.expects(:find_or_create).with(topic_id).returns(topic)
-      QueueSubscriber.subscribe(topic_id)
+      QueueSubscription.create(topic_id)
     end
 
     def test_sqs_create_is_called
       topic_id = "Foobar"
-      subscriber = QueueSubscriber.new(topic_id)
+      subscription = QueueSubscription.new(topic_id)
 
       TopicCreator.stubs(find_or_create: Topic.new("1123"))
 
       sqs = mock()
-      sqs.expects(:create_queue).with(subscriber.send(:queue_name)).returns(mock(body: {'QueueUrl' => Fog::AWS::SQS::Mock::QueueUrl}))
+      sqs.expects(:create_queue).with(subscription.send(:queue_name)).returns(mock(body: {'QueueUrl' => Fog::AWS::SQS::Mock::QueueUrl}))
       QueueCreator.any_instance.stubs(sqs: sqs)
 
-      subscriber.subscribe
+      subscription.create
     end
 
-    def test_subscriber_queue_name
+    def test_subscription_queue_name
       config.application_name = "MyApp"
 
       topic_id = "Foobar"
-      subscriber = QueueSubscriber.new(topic_id)
+      subscription = QueueSubscription.new(topic_id)
 
-      assert_equal subscriber.send(:queue_name), "MyApp::Foobar"
+      assert_equal subscription.send(:queue_name), "MyApp::Foobar"
     end
 
-    def test_subscriber_queue_name_with_spaces
+    def test_subscription_queue_name_with_spaces
       config.application_name = "My App"
 
       topic_id = "Foobar"
-      subscriber = QueueSubscriber.new(topic_id)
+      subscription = QueueSubscription.new(topic_id)
 
-      assert_equal subscriber.send(:queue_name), "My_App::Foobar"
+      assert_equal subscription.send(:queue_name), "My_App::Foobar"
     end
 
-    def test_subscribe_calls_subscribe
+    def test_create_calls_create
       arn = "arn123"
 
       TopicCreator.stubs(find_or_create: Topic.new(arn))
@@ -48,18 +48,18 @@ module Propono
 
       sns = mock()
       sns.expects(:subscribe).with(arn, Fog::AWS::SQS::Mock::QueueArn, 'sqs')
-      subscriber = QueueSubscriber.new("Some topic")
-      subscriber.stubs(sns: sns)
-      subscriber.subscribe
+      subscription = QueueSubscription.new("Some topic")
+      subscription.stubs(sns: sns)
+      subscription.create
     end
 
-    def test_subscribe_saves_queue
+    def test_create_saves_queue
       queue = Queue.new(Fog::AWS::SQS::Mock::QueueUrl)
 
       QueueCreator.expects(:find_or_create).returns(queue)
-      subscriber = QueueSubscriber.new("Some Topic")
-      subscriber.subscribe
-      assert_equal queue, subscriber.queue
+      subscription = QueueSubscription.new("Some Topic")
+      subscription.create
+      assert_equal queue, subscription.queue
     end
   end
 end

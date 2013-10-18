@@ -1,9 +1,9 @@
 module Propono
-  class PostSubscriber
+  class PostSubscription
     include Sns
 
-    def self.subscribe(topic, endpoint)
-      new(topic, endpoint).subscribe
+    def self.create(topic, endpoint)
+      new(topic, endpoint).create
     end
 
     def initialize(topic_id, endpoint)
@@ -11,7 +11,7 @@ module Propono
       @endpoint = endpoint
     end
 
-    def subscribe
+    def create
       topic_arn = TopicCreator.find_or_create(@topic_id)
       sns.subscribe(topic_arn, @endpoint, 'http')
     end

@@ -1,14 +1,14 @@
 require File.expand_path('../test_helper', __FILE__)
 
 module Propono
-  class PostSubscriberTest < Minitest::Test
+  class PostSubscriptionTest < Minitest::Test
     def test_create_topic
       topic = 'foobar'
       TopicCreator.expects(:find_or_create).with(topic)
-      PostSubscriber.subscribe(topic, "foobar")
+      PostSubscription.create(topic, "foobar")
     end
 
-    def test_subscribe_calls_subscribe
+    def test_create_calls_create
       arn = "arn123"
       endpoint = "http://meducation.net/some_queue_name"
 
@@ -16,9 +16,9 @@ module Propono
 
       sns = mock()
       sns.expects(:subscribe).with(arn, endpoint, 'http')
-      subscriber = PostSubscriber.new("Some topic", endpoint)
-      subscriber.stubs(sns: sns)
-      subscriber.subscribe
+      subscription = PostSubscription.new("Some topic", endpoint)
+      subscription.stubs(sns: sns)
+      subscription.create
     end
 
     def test_it_correctly_uses_http_and_https

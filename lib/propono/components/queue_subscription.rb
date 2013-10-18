@@ -1,30 +1,32 @@
 module Propono
-  class QueueSubscriber
+  class QueueSubscription
 
     include Sns
     include Sqs
 
     attr_reader :topic_arn, :queue
 
-    def self.subscribe(topic_id)
-      new(topic_id).subscribe
+    def self.create(topic_id)
+      new(topic_id).tap do |subscription|
+        subscription.create
+      end
     end
 
     def initialize(topic_id)
       @topic_id = topic_id
     end
 
-    def subscribe
+    def create
       @topic = TopicCreator.find_or_create(@topic_id)
       @queue = QueueCreator.find_or_create(queue_name)
       sns.subscribe(@topic.arn, @queue.arn, 'sqs')
     end
 
-    private
-
     def queue_name
-      "#{config.application_name.gsub(" ", "_")}::#{@topic_id}"
+      @queue_name ||= "#{config.application_name.gsub(" ", "_")}::#{@topic_id}"
     end
+
+    private
 
     def config
       Configuration.instance
