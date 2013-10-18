@@ -4,12 +4,14 @@ module Propono
 
   class UdpListener
 
-    def self.listen(&processor)
-      new(&processor).listen
+    def self.listen(host, port, &processor)
+      new(host, port, &processor).listen
     end
 
-    def initialize(&processor)
+    def initialize(host, port, &processor)
       raise UdpListenerError.new("Please provide a block to call for each message") unless block_given?
+      @host = host
+      @port = port
       @processor = processor
     end
 
