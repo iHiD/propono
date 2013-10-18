@@ -19,8 +19,9 @@ module Propono
       topic = "topic123"
       message = "message123"
       topic_arn = "arn123"
+      topic = Topic.new(topic_arn)
 
-      TopicCreator.stubs(find_or_create: topic_arn)
+      TopicCreator.stubs(find_or_create: topic)
 
       sns = mock()
       sns.expects(:publish).with(topic_arn, message)
@@ -39,16 +40,18 @@ module Propono
     end
 
     def test_publish_creates_a_topic
-      topic = "Malcs_topic"
+      topic_id = "Malcs_topic_id"
+      topic_arn = "Malcs_topic_arn"
+      topic = Topic.new(topic_arn)
 
-      TopicCreator.expects(:find_or_create).with(topic)
+      TopicCreator.expects(:find_or_create).with(topic_id).returns(topic)
 
       sns = mock()
       sns.stubs(:publish)
       publisher = Publisher.new
       publisher.stubs(sns: sns)
 
-      publisher.publish(topic, "Foobar")
+      publisher.publish(topic_id, "Foobar")
     end
 
     def test_publish_should_raise_exception_if_topic_is_nil
