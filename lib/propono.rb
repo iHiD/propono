@@ -38,4 +38,10 @@ module Propono
   def self.listen_to_udp(*args, &block)
     UdpListener.listen(*args, &block)
   end
+
+  def self.proxy_udp
+    Propono.listen_to_udp do |message|
+      Propono.publish(topic, message)
+    end
+  end
 end
