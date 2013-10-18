@@ -85,14 +85,9 @@ module Propono
       queue_listener.stubs(sqs: sqs)
       queue_listener.stubs(queue_url: "http://example.com")
 
-      # capture_io reasigns stderr. Assign the config.logger
-      # to where capture_io has redirected it to for this test.
       out, err = capture_io do
-        config.logger = $stderr
         queue_listener.send(:read_messages)
       end
-      # Reassign config.logger to the correct stderr
-      config.logger = $stderr
       assert_equal "Unexpected error reading from queue http://example.com\n", err
     end
 

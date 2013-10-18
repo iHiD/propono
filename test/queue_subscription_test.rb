@@ -40,7 +40,7 @@ module Propono
       assert_equal subscription.send(:queue_name), "My_App-Foobar"
     end
 
-    def test_create_calls_create
+    def test_create_calls_subscribe
       arn = "arn123"
 
       TopicCreator.stubs(find_or_create: Topic.new(arn))
@@ -50,6 +50,21 @@ module Propono
       sns.expects(:subscribe).with(arn, Fog::AWS::SQS::Mock::QueueArn, 'sqs')
       subscription = QueueSubscription.new("Some topic")
       subscription.stubs(sns: sns)
+      subscription.create
+    end
+
+    def test_create_calls_set_queue_attributes
+      arn = "arn123"
+      policy = "{foobar: 123}"
+
+      TopicCreator.stubs(find_or_create: Topic.new(arn))
+      QueueCreator.stubs(find_or_create: Queue.new(Fog::AWS::SQS::Mock::QueueUrl))
+
+      sqs = mock()
+      sqs.expects(:set_queue_attributes).with(Fog::AWS::SQS::Mock::QueueUrl, "Policy", policy)
+      subscription = QueueSubscription.new("Some topic")
+      subscription.stubs(sqs: sqs)
+      subscription.stubs(policy: policy)
       subscription.create
     end
 

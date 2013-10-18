@@ -9,10 +9,9 @@ module Propono
     include Singleton
 
     SETTINGS = [
-      :access_key,
-      :secret_key,
-      :queue_region,
+      :access_key, :secret_key, :queue_region,
       :application_name,
+      :udp_host, :udp_port,
       :logger
     ]
     attr_writer *SETTINGS
