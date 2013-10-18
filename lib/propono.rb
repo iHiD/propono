@@ -36,6 +36,6 @@ module Propono
   end
 
   def self.listen_to_sqs(*args, &block)
-    SqsListener.listen(*args, &block)
+    UdpListener.listen(*args, &block)
   end
 end
