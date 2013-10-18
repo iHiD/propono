@@ -35,7 +35,7 @@ module Propono
     QueueListener.listen(*args, &block)
   end
 
-  def self.listen_to_sqs(*args, &block)
+  def self.listen_to_udp(*args, &block)
     UdpListener.listen(*args, &block)
   end
 end
