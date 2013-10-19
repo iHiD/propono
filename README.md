@@ -45,8 +45,7 @@ Listening for messages is easy too. When you ask Propono to listen, it automatic
 
 ```ruby
 Propono.config.application_name = "application-name" # Something unique to this app.
-Propono.listen_to_queue('some-topic') do |sqs_message|
-  original_message = JSON.parse(sqs_message["Body"])["Message"]
+Propono.listen_to_queue('some-topic') do |message|
   # ... Do something interesting with the message
 end
 ```

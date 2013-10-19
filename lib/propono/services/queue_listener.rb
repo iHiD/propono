@@ -23,24 +23,23 @@ module Propono
     private
 
     def read_messages
-      response = sqs.receive_message( queue_url, options = { 'MaxNumberOfMessages' => 10 } )
+      #response = sqs.receive_message( queue_url, options = { 'MaxNumberOfMessages' => 10 } )
+      response = sqs.receive_message( queue_url, {'MaxNumberOfMessages' => 10} )
       messages = response.body['Message']
       if messages.empty?
         false
       else
-        process_messages(messages)
+        messages.each { |msg| process_sqs_message(msg) }
       end
     rescue
       config.logger.puts "Unexpected error reading from queue #{queue_url}"
       config.logger.puts $!
     end
 
-    def process_messages(messages)
-      messages.each do |message|
-        @message_processor.call(message)
-        sqs.delete_message(queue_url, message['ReceiptHandle'])
-      end
-      true
+    def process_sqs_message(sqs_message)
+      message = JSON.parse(sqs_message["Body"])["Message"]
+      @message_processor.call(message)
+      sqs.delete_message(queue_url, sqs_message['ReceiptHandle'])
     end
 
     def queue_url

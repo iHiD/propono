@@ -14,8 +14,7 @@ module Propono
       end
 
       sqs_thread = Thread.new do
-        Propono.listen_to_queue(topic) do |sqs_response|
-          sqs_message = JSON.parse(sqs_response["Body"])["Message"]
+        Propono.listen_to_queue(topic) do |sqs_message|
           assert_equal message, sqs_message
           sqs_thread.terminate
         end

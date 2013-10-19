@@ -8,8 +8,7 @@ module Propono
 
       thread = Thread.new do
         Propono.listen_to_queue(topic) do |message|
-          output = JSON.parse(message["Body"])["Message"]
-          assert_equal text, output
+          assert_equal text, message
           break
         end
       end
