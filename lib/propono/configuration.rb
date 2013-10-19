@@ -2,7 +2,7 @@ require 'singleton'
 
 module Propono
 
-  class ConfigurationError < Exception
+  class ConfigurationError < ProponoError
   end
 
   class Configuration

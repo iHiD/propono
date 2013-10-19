@@ -1,5 +1,5 @@
 module Propono
-  class UdpListenerError < StandardError
+  class UdpListenerError < ProponoError
   end
 
   class UdpListener

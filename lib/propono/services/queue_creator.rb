@@ -1,5 +1,5 @@
 module Propono
-  class QueueCreatorError < Exception
+  class QueueCreatorError < ProponoError
   end
 
   class QueueCreator

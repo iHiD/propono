@@ -1,5 +1,5 @@
 module Propono
-  class TopicCreatorError < Exception
+  class TopicCreatorError < ProponoError
   end
 
   class TopicCreator

@@ -1,5 +1,5 @@
 module Propono
-  class PublisherError < Exception
+  class PublisherError < ProponoError
   end
 
   class Publisher
