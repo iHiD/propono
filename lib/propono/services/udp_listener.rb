@@ -20,8 +20,13 @@ module Propono
     private
 
     def receive_and_process
-      text = socket.recvfrom(1024)[0]
-      Thread.new { @processor.call(text) }
+      udp_data = socket.recvfrom(1024)[0]
+      Thread.new { process_udp_data(udp_data) }
+    end
+
+    def process_udp_data(udp_data)
+      json = JSON.parse(udp_data)
+      @processor.call(json['topic'], json['message'])
     end
 
     def socket

@@ -29,14 +29,25 @@ module Propono
     end
 
     def test_message_is_processed
-      text = "Foobar123"
+      udp_msg = "Foobar"
       processor = Proc.new {}
       server = UdpListener.new(&processor)
-      socket = mock(recvfrom: [text])
+      socket = mock(recvfrom: [udp_msg])
       server.stubs(socket: socket)
-      processor.expects(:call).with(text)
+      server.expects(:process_udp_data).with(udp_msg)
       thread = server.send(:receive_and_process)
       thread.join
+    end
+
+    def test_processor_is_called_correctly
+      topic = "my-topic"
+      message = "my-message"
+      processor = Proc.new {}
+      udp_data = {topic: topic, message: message}.to_json
+      processor.expects(:call).with(topic, message)
+
+      server = UdpListener.new(&processor)
+      server.send(:process_udp_data, udp_data)
     end
 
     def test_listen_should_loop

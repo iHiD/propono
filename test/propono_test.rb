@@ -34,15 +34,15 @@ module Propono
 
     def test_proxy_udp_calls_listen
       UdpListener.expects(:listen).with()
-      Propono.proxy_udp("foobar")
+      Propono.proxy_udp()
     end
 
     def test_proxy_udp_calls_publish_in_the_block
       topic = "foobar"
       message = "message"
-      Propono.stubs(:listen_to_udp).yields(message)
+      Propono.stubs(:listen_to_udp).yields(topic, message)
       Publisher.expects(:publish).with(topic, message, {})
-      Propono.proxy_udp(topic)
+      Propono.proxy_udp
     end
   end
 end

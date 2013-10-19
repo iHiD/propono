@@ -19,8 +19,8 @@ require "propono/services/subscriber"
 require "propono/services/topic_creator"
 require "propono/services/udp_listener"
 
-# Propono is a pub/sub gem built on top of Amazon Web Services (AWS). 
-# It uses Simple Notification Service (SNS) and Simple Queue Service (SQS) 
+# Propono is a pub/sub gem built on top of Amazon Web Services (AWS).
+# It uses Simple Notification Service (SNS) and Simple Queue Service (SQS)
 # to seamlessly pass messages throughout your infrastructure.
 module Propono
 
@@ -63,7 +63,7 @@ module Propono
 
   # Creates a new SNS-SQS subscription on the specified topic.
   #
-  # This is implicitly called with by {#listen_to_queue}.
+  # This is implicitly called by {#listen_to_queue}.
   #
   # @param [String] topic The name of the topic to subscribe to.
   def self.subscribe_by_queue(topic)
@@ -85,8 +85,8 @@ module Propono
   # Calling this will enter a queue-listening loop that
   # yields the message_processor for each messages.
   #
-  # This method will automatically create a subscription if 
-  # one does not exist, so there is no need to call 
+  # This method will automatically create a subscription if
+  # one does not exist, so there is no need to call
   # <tt>subscribe_by_queue</tt> in addition.
   #
   # @param [String] topic The topic to subscribe to.
@@ -101,6 +101,7 @@ module Propono
   # yields the message_processor for each UDP message received.
   #
   # @param &message_processor The block to yield for each message.
+  #   Is called with <tt>|topic, message|</tt>.
   def self.listen_to_udp(&message_processor)
     UdpListener.listen(&message_processor)
   end
@@ -108,11 +109,9 @@ module Propono
   # Listens for UDP messages and passes them onto the queue.
   #
   # This method uses #listen_to_udp and #publish to proxy
-  # messages from UDP onto the queue. 
-  #
-  # @param [String] topic The topic to publish to.
-  def self.proxy_udp(topic)
-    Propono.listen_to_udp do |message|
+  # messages from UDP onto the queue.
+  def self.proxy_udp
+    Propono.listen_to_udp do |topic, message|
       Propono.publish(topic, message)
     end
   end

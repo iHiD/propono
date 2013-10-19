@@ -70,15 +70,15 @@ Propono.publish('some-topic', message, protocol: :udp)
 Setting up another service running Propono to listen to the UDP feed is easy. For example, with the same config:
 
 ```ruby
-Propono.listen_to_udp do |message|
-  Propono.publish('some-topic', message) # Proxy the message to SNS
+Propono.listen_to_udp do |topic, message|
+  Propono.publish(topic, message) # Proxy the message to SNS
 end
 ```
 
 This proxy pattern is used so often that there's a simple shortcut:
 
 ```ruby
-Propono.proxy_udp('some-topic')
+Propono.proxy_udp()
 ```
 
 ### Is it any good?
