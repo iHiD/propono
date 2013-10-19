@@ -6,13 +6,19 @@
 
 Propono is a [pub/sub](http://en.wikipedia.org/wiki/Publish-subscribe_pattern) gem built on top of Amazon Web Services (AWS). It uses Simple Notification Service (SNS) and Simple Queue Service (SQS) to seamlessly pass messages throughout your infrastructure.
 
-Usage is as simple as adding your config keys then running commands such as:
+It's beautifully simple to use.
 
 ```ruby
+# On Machine A
 Propono.listen_to_queue('some-topic') do |message|
-  ...
+  puts "I just received: #{message}"
 end
-Propono.publish('some-topic', "This message will get from A to B")
+
+# On Machine B
+Propono.publish('some-topic', "The Best Message Ever")
+
+# Output on Machine A a second later.
+# - "I just recieved The Best Message Ever"
 ```
 
 ## Installation
@@ -27,7 +33,7 @@ And then execute:
 
 ## Usage
 
-The first thing to do is setup some configuration keys for Propono.
+The first thing to do is setup some configuration keys for Propono. It's best to do this in an initializer, or at the start of your application.
 
 ```ruby
 Propono.config.access_key       = "access-key"       # From AWS
@@ -38,10 +44,11 @@ Propono.config.queue_region     = "queue-region"     # From AWS
 You can then start publishing messages easily from anywhere in your codebase.
 
 ```ruby
-Propono.publish('some-topic', "{some: ['payload', 'or', 'message']}")
+Propono.publish('some-topic', "Some string")
+Propono.publish('some-topic', {some: ['hash', 'or', 'array']})
 ```
 
-Listening for messages is easy too. When you ask Propono to listen, it automatically sets up a SQS queue and links it into SNS.
+Listening for messages is easy too. Just tell Propono what your application is called and start listening. You'll get a block yieleded for each message.
 
 ```ruby
 Propono.config.application_name = "application-name" # Something unique to this app.
@@ -49,24 +56,26 @@ Propono.listen_to_queue('some-topic') do |message|
   # ... Do something interesting with the message
 end
 ```
+In the background, Propono is automatically setting up a queue using SQS, a notification system using SNS, and glueing them all together for you. But you don't have to worry about any of that.
 
 ### Using UDP for messages
 
-If you want almost-zero performance impact, and don't care about whether the message gets lost, you can use UDP. We use this for things like our live dashboard.
+If you want almost-zero performance impact, and don't mind the occasional message getting lost, you can use UDP. We use this for things like our live dashboard where we don't mind losing a piece of activity here and there, but any perforamnce impact on our Meducation itself is bad news.
 
-To send messages, you need to set up a little extra config:
+To send messages this way, you need to set up a little extra config:
 
 ```ruby
-Propono.config.udp_host = "localhost"
+Propono.config.udp_host = "some.host.running.a.propono.listener"
 Propono.config.udp_port = 12543
 ```
+
 You then simply pass the `:udp` protocol into `publish`
 
 ```ruby
 Propono.publish('some-topic', message, protocol: :udp)
 ```
 
-Setting up another service running Propono to listen to the UDP feed is easy. For example, with the same config:
+You'll now need another application running Propono to listen to the UDP feed. You can use the same machine or a different one, just make sure the port config is the same in both applications, and you're good to go.
 
 ```ruby
 Propono.listen_to_udp do |topic, message|
@@ -74,7 +83,7 @@ Propono.listen_to_udp do |topic, message|
 end
 ```
 
-This proxy pattern is used so often that there's a simple shortcut:
+This proxying of UDP to SQS is used so often that there's a simple shortcut. Just run this on the machine receiving the UDP packets.
 
 ```ruby
 Propono.proxy_udp()
@@ -92,7 +101,9 @@ We'd love to have you involved. Please read our [contributing guide](https://git
 
 ### Contributors
 
-This project is managed by the [Meducation team](http://company.meducation.net/about#team). These specific individuals have written lots of the code that made this possible:
+This project is managed by the [Meducation team](http://company.meducation.net/about#team). 
+
+These individuals have come up with the ideas and written the code that made this possible:
 
 - [Jeremy Walker](http://github.com/iHID)
 - [Malcom Landon](http://github.com/malcyL)

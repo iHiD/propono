@@ -52,6 +52,21 @@ module Propono
       publisher.send(:publish_via_sns)
     end
 
+    def test_publish_via_sns_should_accept_a_hash_for_message
+      topic = "topic123"
+      message = {something: ['some', 123, true]}
+      topic_arn = "arn123"
+      topic = Topic.new(topic_arn)
+
+      TopicCreator.stubs(find_or_create: topic)
+
+      sns = mock()
+      sns.expects(:publish).with(topic_arn, message.to_json)
+      publisher = Publisher.new(topic, message)
+      publisher.stubs(sns: sns)
+      publisher.send(:publish_via_sns)
+    end
+
     def test_publish_via_sns_should_propogate_exception_on_topic_creation_error
       TopicCreator.stubs(:find_or_create).raises(TopicCreatorError)
 

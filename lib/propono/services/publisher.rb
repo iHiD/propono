@@ -28,7 +28,8 @@ module Propono
 
     def publish_via_sns
       topic = TopicCreator.find_or_create(topic_id)
-      sns.publish(topic.arn, message)
+      msg = message.is_a?(String) ? message : message.to_json
+      sns.publish(topic.arn, msg)
     end
 
     def publish_via_udp
