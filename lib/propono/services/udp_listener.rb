@@ -1,17 +1,15 @@
 module Propono
-  class UdpListenerError < StandardError
+  class UdpListenerError < ProponoError
   end
 
   class UdpListener
 
-    def self.listen(host, port, &processor)
-      new(host, port, &processor).listen
+    def self.listen(&processor)
+      new(&processor).listen
     end
 
-    def initialize(host, port, &processor)
+    def initialize(&processor)
       raise UdpListenerError.new("Please provide a block to call for each message") unless block_given?
-      @host = host
-      @port = port
       @processor = processor
     end
 
@@ -22,22 +20,22 @@ module Propono
     private
 
     def receive_and_process
-      text = socket.recvfrom(1024)[0]
-      Thread.new { @processor.call(text) }
+      udp_data = socket.recvfrom(1024)[0]
+      Thread.new { process_udp_data(udp_data) }
+    end
+
+    def process_udp_data(udp_data)
+      json = JSON.parse(udp_data)
+      @processor.call(json['topic'], json['message'])
     end
 
     def socket
       @socket ||= begin
         socket = UDPSocket.new
-        socket.bind(@host, @port)
+        socket.bind(Propono.config.udp_host, Propono.config.udp_port)
         socket
       end
     end
-
-    def config
-      Configuration.instance
-    end
-
   end
 end
 

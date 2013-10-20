@@ -4,54 +4,128 @@
 [![Dependencies](https://gemnasium.com/meducation/propono.png?travis)](https://gemnasium.com/meducation/propono)
 [![Code Climate](https://codeclimate.com/github/meducation/propono.png)](https://codeclimate.com/github/meducation/propono)
 
+Propono is a [pub/sub](http://en.wikipedia.org/wiki/Publish-subscribe_pattern) gem built on top of Amazon Web Services (AWS). It uses Simple Notification Service (SNS) and Simple Queue Service (SQS) to seamlessly pass messages throughout your infrastructure.
+
+It's beautifully simple to use.
+
+```ruby
+# On Machine A
+Propono.listen_to_queue('some-topic') do |message|
+  puts "I just received: #{message}"
+end
+
+# On Machine B
+Propono.publish('some-topic', "The Best Message Ever")
+
+# Output on Machine A a second later.
+# - "I just recieved The Best Message Ever"
+```
+
 ## Installation
 
 Add this line to your application's Gemfile:
 
     gem 'propono'
 
-If you want to use the latest version from Github, you can do:
-
-    gem 'propono', github: "meducation/propono"
-
 And then execute:
 
-    $ bundle
+    $ bundle install
 
-This script demonstrates usage:
+## Usage
+
+The first thing to do is setup some configuration keys for Propono. It's best to do this in an initializer, or at the start of your application.
 
 ```ruby
-require 'propono'
-
-class Toy
-  def play
-    configure
-    make_fun_stuff_happen
-  end
-
-  private
-  def make_fun_stuff_happen
-    Propono.publish("jez-test-topic", "A test message")
-    Propono.subscribe_by_queue("jez-test-topic")
-    Propono.subscribe_by_post("jez-test-topic", 'http://example.com/endpoint')
-  end
-
-  def configure
-    Propono.config.access_key = '...'
-    Propono.config.secret_key = '...'
-    Propono.config.queue_region = 'eu-west-1'
-    Propono.config.application_name = '...'
-  end
-end
-
-Toy.new.play
+Propono.config.access_key       = "access-key"       # From AWS
+Propono.config.secret_key       = "secret-key"       # From AWS
+Propono.config.queue_region     = "queue-region"     # From AWS
 ```
+
+You can then start publishing messages easily from anywhere in your codebase.
+
+```ruby
+Propono.publish('some-topic', "Some string")
+Propono.publish('some-topic', {some: ['hash', 'or', 'array']})
+```
+
+Listening for messages is easy too. Just tell Propono what your application is called and start listening. You'll get a block yieleded for each message.
+
+```ruby
+Propono.config.application_name = "application-name" # Something unique to this app.
+Propono.listen_to_queue('some-topic') do |message|
+  # ... Do something interesting with the message
+end
+```
+In the background, Propono is automatically setting up a queue using SQS, a notification system using SNS, and glueing them all together for you. But you don't have to worry about any of that.
+
+### Using UDP for messages
+
+If you want almost-zero performance impact, and don't mind the occasional message getting lost, you can use UDP. We use this for things like our live dashboard where we don't mind losing a piece of activity here and there, but any perforamnce impact on our Meducation itself is bad news.
+
+To send messages this way, you need to set up a little extra config:
+
+```ruby
+Propono.config.udp_host = "some.host.running.a.propono.listener"
+Propono.config.udp_port = 12543
+```
+
+You then simply pass the `:udp` protocol into `publish`
+
+```ruby
+Propono.publish('some-topic', message, protocol: :udp)
+```
+
+You'll now need another application running Propono to listen to the UDP feed. You can use the same machine or a different one, just make sure the port config is the same in both applications, and you're good to go.
+
+```ruby
+Propono.listen_to_udp do |topic, message|
+  Propono.publish(topic, message) # Proxy the message to SNS
+end
+```
+
+This proxying of UDP to SQS is used so often that there's a simple shortcut. Just run this on the machine receiving the UDP packets.
+
+```ruby
+Propono.proxy_udp()
+```
+
+### Configuration
+
+The following configuration settings are available:
+
+```
+Propono.config do |config|
+  config.access_key = "An AWS access key"
+  config.secret_key = "A AWS secret key"
+  config.queue_region = "An AWS queue region"
+  config.application_name = "A name unique in your network"
+  config.udp_host = "The host of a machine used for UDP proxying"
+  config.udp_port = "The host of a machine used for UDP proxying"
+  config.logger = "A logger such as Log4r or Rails.logger"
+end
+```
+
+The can all also be setting using the `Propono.config.access_key = "..."` syntax.
+
+### Is it any good?
+
+[Yes.](http://news.ycombinator.com/item?id=3067434)
 
 ## Contributing
 
 Firstly, thank you!! :heart::sparkling_heart::heart:
 
-Please read our [contributing guide](https://github.com/meducation/propono/tree/master/CONTRIBUTING.md) for information on how to get stuck in.
+We'd love to have you involved. Please read our [contributing guide](https://github.com/meducation/propono/tree/master/CONTRIBUTING.md) for information on how to get stuck in.
+
+### Contributors
+
+This project is managed by the [Meducation team](http://company.meducation.net/about#team). 
+
+These individuals have come up with the ideas and written the code that made this possible:
+
+- [Jeremy Walker](http://github.com/iHID)
+- [Malcom Landon](http://github.com/malcyL)
+- [Rob Styles](http://github.com/mmmmmrob)
 
 ## Licence
 

@@ -14,5 +14,6 @@ rdoc
 spec/reports
 test/tmp
 test/version_tmp
+test/config.yml
 tmp
 *.swp

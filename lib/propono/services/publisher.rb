@@ -1,5 +1,5 @@
 module Propono
-  class PublisherError < Exception
+  class PublisherError < ProponoError
   end
 
   class Publisher
@@ -28,18 +28,15 @@ module Propono
 
     def publish_via_sns
       topic = TopicCreator.find_or_create(topic_id)
-      sns.publish(topic.arn, message)
+      msg = message.is_a?(String) ? message : message.to_json
+      sns.publish(topic.arn, msg)
     end
 
     def publish_via_udp
       payload = {topic: topic_id, message: message}.to_json
-      UDPSocket.new.send(payload, 0, config.udp_host, config.udp_port)
+      UDPSocket.new.send(payload, 0, Propono.config.udp_host, Propono.config.udp_port)
     rescue SocketError => e
-      config.logger.puts "Udp2sqs failed to send : #{e}"
-    end
-
-    def config
-      Configuration.instance
+      Propono.config.logger.error "Propono failed to send : #{e}"
     end
   end
 end

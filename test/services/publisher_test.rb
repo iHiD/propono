@@ -1,4 +1,4 @@
-require File.expand_path('../test_helper', __FILE__)
+require File.expand_path('../../test_helper', __FILE__)
 
 module Propono
   class PublisherTest < Minitest::Test
@@ -52,6 +52,21 @@ module Propono
       publisher.send(:publish_via_sns)
     end
 
+    def test_publish_via_sns_should_accept_a_hash_for_message
+      topic = "topic123"
+      message = {something: ['some', 123, true]}
+      topic_arn = "arn123"
+      topic = Topic.new(topic_arn)
+
+      TopicCreator.stubs(find_or_create: topic)
+
+      sns = mock()
+      sns.expects(:publish).with(topic_arn, message.to_json)
+      publisher = Publisher.new(topic, message)
+      publisher.stubs(sns: sns)
+      publisher.send(:publish_via_sns)
+    end
+
     def test_publish_via_sns_should_propogate_exception_on_topic_creation_error
       TopicCreator.stubs(:find_or_create).raises(TopicCreatorError)
 
@@ -79,8 +94,8 @@ module Propono
     def test_udp_uses_correct_message_host_and_port
       host = "http://meducation.net"
       port = 1234
-      config.udp_host = host
-      config.udp_port = port
+      Propono.config.udp_host = host
+      Propono.config.udp_port = port
       topic_id = "my-fav-topic"
       message = "foobar"
       payload = {topic: topic_id, message: message}.to_json
@@ -93,14 +108,12 @@ module Propono
     def test_client_with_bad_host_logs_error
       host = "http://meducation.net"
       port = 1234
-      config.udp_host = host
-      config.udp_port = port
+      Propono.config.udp_host = host
+      Propono.config.udp_port = port
 
       client = Publisher.new("topic_id", "message")
-      _, err = capture_io do
-        client.send(:publish_via_udp)
-      end
-      assert_match("Udp2sqs failed to send : getaddrinfo:", err)
+      Propono.config.logger.expects(:error).with() {|x| x =~ /^Propono failed to send : getaddrinfo:.*/}
+      client.send(:publish_via_udp)
     end
 
     def test_publish_should_raise_exception_if_topic_is_nil

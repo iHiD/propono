@@ -24,14 +24,10 @@ module Propono
     end
 
     def queue_name
-      @queue_name ||= "#{config.application_name.gsub(" ", "_")}-#{@topic_id}"
+      @queue_name ||= "#{Propono.config.application_name.gsub(" ", "_")}-#{@topic_id}"
     end
 
     private
-
-    def config
-      Configuration.instance
-    end
 
     def generate_policy
       <<-EOS

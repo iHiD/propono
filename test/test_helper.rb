@@ -12,37 +12,18 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
 require "propono"
 
-Fog.mock!
-
 class Minitest::Test
   def setup
-    Propono::Configuration.instance.access_key = "test-access-key"
-    Propono::Configuration.instance.secret_key = "test-secret-key"
-    Propono::Configuration.instance.queue_region = "us-east-1"
-    Propono::Configuration.instance.application_name = "MyApp"
-  end
+    Fog.mock!
+    Propono.config do |config|
+      config.access_key = "test-access-key"
+      config.secret_key = "test-secret-key"
+      config.queue_region = "us-east-1"
+      config.application_name = "MyApp"
 
-  def config
-    Propono::Configuration.instance
-  end
-
-  # capture_io reasigns stderr. Assign the config.logger
-  # to where capture_io has redirected it to for this test.
-  def capture_io(&block)
-    require 'stringio'
-
-    orig_stdout, orig_stderr         = $stdout, $stderr
-    captured_stdout, captured_stderr = StringIO.new, StringIO.new
-    $stdout, $stderr                 = captured_stdout, captured_stderr
-
-    config.logger = $stderr
-    yield
-
-    return captured_stdout.string, captured_stderr.string
-  ensure
-    $stdout = orig_stdout
-    $stderr = orig_stderr
-    config.logger = $stderr
+      config.logger.stubs(:debug)
+      config.logger.stubs(:error)
+    end
   end
 end
 
