@@ -5,6 +5,9 @@ module Propono
     def test_the_message_gets_there
       topic = "test-topic"
       message = "This is my message"
+      Propono.config.udp_port = 20001
+
+      Propono.subscribe_by_queue(topic)
 
       udp_thread = Thread.new do
         Propono.proxy_udp
@@ -18,7 +21,7 @@ module Propono
       end
 
       Propono.publish(topic, message, protocol: :udp)
-      flunk unless wait_for_thread(sqs_thread)
+      flunk("Test timeout") unless wait_for_thread(sqs_thread)
     ensure
       udp_thread.terminate
       sqs_thread.terminate

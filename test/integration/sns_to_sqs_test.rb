@@ -6,6 +6,8 @@ module Propono
       topic = "test-topic"
       text = "This is my message"
 
+      Propono.subscribe_by_queue(topic)
+
       thread = Thread.new do
         Propono.listen_to_queue(topic) do |message|
           assert_equal text, message
@@ -13,7 +15,7 @@ module Propono
         end
       end
       Propono.publish(topic, text)
-      flunk unless wait_for_thread(thread)
+      flunk("Test Timeout") unless wait_for_thread(thread)
     ensure
       thread.terminate
     end
