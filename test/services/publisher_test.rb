@@ -105,7 +105,7 @@ module Propono
       publisher.send(:publish_via_udp)
     end
 
-    def test_client_with_bad_host_logs_error
+    def test_exception_from_udpsocket_caught_and_logged
       host = "http://meducation.net"
       port = 1234
       Propono.config.udp_host = host

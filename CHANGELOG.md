@@ -1,4 +1,8 @@
-# 0.6.2 / Unreleased
+# 0.6.3 / 2013-10-20
+
+* [FEATURE] Catch all StandardError exceptions for UDP publishes.
+
+# 0.6.2 / 2013-10-20
 
 * [BUGFIX] Fixed integration tests that sometimes failed due to shared UDP ports or slow SQS subscriptions.
 
