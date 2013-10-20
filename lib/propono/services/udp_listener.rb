@@ -32,15 +32,10 @@ module Propono
     def socket
       @socket ||= begin
         socket = UDPSocket.new
-        socket.bind(config.udp_host, config.udp_port)
+        socket.bind(Propono.config.udp_host, Propono.config.udp_port)
         socket
       end
     end
-
-    def config
-      Configuration.instance
-    end
-
   end
 end
 

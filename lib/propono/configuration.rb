@@ -1,12 +1,9 @@
-require 'singleton'
-
 module Propono
 
-  class ConfigurationError < ProponoError
+  class ProponoConfigurationError < ProponoError
   end
 
   class Configuration
-    include Singleton
 
     SETTINGS = [
       :access_key, :secret_key, :queue_region,
@@ -17,7 +14,7 @@ module Propono
     attr_writer *SETTINGS
 
     def initialize
-      self.logger = $stderr
+      self.logger = Propono::Logger.new
     end
 
     SETTINGS.each do |setting|
@@ -30,7 +27,7 @@ module Propono
 
     def get_or_raise(setting)
       instance_variable_get("@#{setting.to_s}") || 
-        raise(ConfigurationError.new("Configuration for #{setting} is not set"))
+        raise(ProponoConfigurationError.new("Configuration for #{setting} is not set"))
     end
   end
 end

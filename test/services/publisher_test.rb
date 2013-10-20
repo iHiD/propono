@@ -94,8 +94,8 @@ module Propono
     def test_udp_uses_correct_message_host_and_port
       host = "http://meducation.net"
       port = 1234
-      config.udp_host = host
-      config.udp_port = port
+      Propono.config.udp_host = host
+      Propono.config.udp_port = port
       topic_id = "my-fav-topic"
       message = "foobar"
       payload = {topic: topic_id, message: message}.to_json
@@ -108,14 +108,12 @@ module Propono
     def test_client_with_bad_host_logs_error
       host = "http://meducation.net"
       port = 1234
-      config.udp_host = host
-      config.udp_port = port
+      Propono.config.udp_host = host
+      Propono.config.udp_port = port
 
       client = Publisher.new("topic_id", "message")
-      _, err = capture_io do
-        client.send(:publish_via_udp)
-      end
-      assert_match("Udp2sqs failed to send : getaddrinfo:", err)
+      Propono.config.logger.expects(:error).with() {|x| x =~ /^Propono failed to send : getaddrinfo:.*/}
+      client.send(:publish_via_udp)
     end
 
     def test_publish_should_raise_exception_if_topic_is_nil

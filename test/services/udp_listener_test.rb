@@ -13,8 +13,8 @@ module Propono
       host = "my-host"
       port = 1234
 
-      config.udp_host = host
-      config.udp_port = port
+      Propono.config.udp_host = host
+      Propono.config.udp_port = port
 
       UDPSocket.any_instance.expects(:bind).with(host, port)
 

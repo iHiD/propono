@@ -4,7 +4,9 @@
 
 require "propono/version"
 require 'propono/propono_error'
+require 'propono/logger'
 require 'propono/configuration'
+
 require 'propono/components/sns'
 require 'propono/components/sqs'
 require "propono/components/queue"
@@ -43,7 +45,12 @@ module Propono
   # * <tt>:udp_port</tt> - If using UDP, the port to send to.
   # * <tt>:logger</tt> - A logger object that responds to puts.
   def self.config
-    Configuration.instance
+    @config ||= Configuration.new
+    if block_given?
+      yield @config
+    else
+      @config
+    end
   end
 
   # Publishes a new message into the Propono pub/sub network.

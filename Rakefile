@@ -10,8 +10,8 @@ Rake::TestTask.new do |t|
 end
 
 namespace :test do
-  Rake::TestTask.new(:travis) do |t|
-    t.pattern = "test/{components,services}/*_test.rb"
+  Rake::TestTask.new(:local) do |t|
+    t.pattern = "test/{components/,services/,}*_test.rb"
   end
 end
 

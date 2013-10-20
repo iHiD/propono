@@ -89,6 +89,24 @@ This proxying of UDP to SQS is used so often that there's a simple shortcut. Jus
 Propono.proxy_udp()
 ```
 
+### Configuration
+
+The following configuration settings are available:
+
+```
+Propono.config do |config|
+  config.access_key = "An AWS access key"
+  config.secret_key = "A AWS secret key"
+  config.queue_region = "An AWS queue region"
+  config.application_name = "A name unique in your network"
+  config.udp_host = "The host of a machine used for UDP proxying"
+  config.udp_port = "The host of a machine used for UDP proxying"
+  config.logger = "A logger such as Log4r or Rails.logger"
+end
+```
+
+The can all also be setting using the `Propono.config.access_key = "..."` syntax.
+
 ### Is it any good?
 
 [Yes.](http://news.ycombinator.com/item?id=3067434)

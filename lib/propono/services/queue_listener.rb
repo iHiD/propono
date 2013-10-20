@@ -32,8 +32,8 @@ module Propono
         messages.each { |msg| process_sqs_message(msg) }
       end
     rescue
-      config.logger.puts "Unexpected error reading from queue #{queue_url}"
-      config.logger.puts $!
+      Propono.config.logger.error "Unexpected error reading from queue #{queue_url}"
+      Propono.config.logger.error $!
     end
 
     def process_sqs_message(sqs_message)

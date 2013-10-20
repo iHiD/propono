@@ -55,10 +55,9 @@ module Propono
     def test_exception_from_sqs_is_logged
       @listener.stubs(queue_url: "http://example.com")
       @sqs.stubs(:receive_message).raises(StandardError)
-      out, err = capture_io do
-        @listener.send(:read_messages)
-      end
-      assert_equal "Unexpected error reading from queue http://example.com\nStandardError\n", err
+      Propono.config.logger.expects(:error).with("Unexpected error reading from queue http://example.com")
+      Propono.config.logger.expects(:error).with() {|x| x.is_a?(StandardError)}
+      @listener.send(:read_messages)
     end
 
     def test_exception_from_sqs_returns_false

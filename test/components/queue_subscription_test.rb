@@ -23,7 +23,7 @@ module Propono
     end
 
     def test_subscription_queue_name
-      config.application_name = "MyApp"
+      Propono.config.application_name = "MyApp"
 
       topic_id = "Foobar"
       subscription = QueueSubscription.new(topic_id)
@@ -32,7 +32,7 @@ module Propono
     end
 
     def test_subscription_queue_name_with_spaces
-      config.application_name = "My App"
+      Propono.config.application_name = "My App"
 
       topic_id = "Foobar"
       subscription = QueueSubscription.new(topic_id)

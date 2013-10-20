@@ -34,13 +34,9 @@ module Propono
 
     def publish_via_udp
       payload = {topic: topic_id, message: message}.to_json
-      UDPSocket.new.send(payload, 0, config.udp_host, config.udp_port)
+      UDPSocket.new.send(payload, 0, Propono.config.udp_host, Propono.config.udp_port)
     rescue SocketError => e
-      config.logger.puts "Udp2sqs failed to send : #{e}"
-    end
-
-    def config
-      Configuration.instance
+      Propono.config.logger.error "Propono failed to send : #{e}"
     end
   end
 end

@@ -7,9 +7,9 @@ module Propono
     end
 
     def setup
-      config.access_key = "test-access-key"
-      config.secret_key = "test-secret-key"
-      config.queue_region = "us-east-1"
+      Propono.config.access_key = "test-access-key"
+      Propono.config.secret_key = "test-secret-key"
+      Propono.config.queue_region = "us-east-1"
     end
 
     def test_sqs
@@ -19,12 +19,6 @@ module Propono
               :region                => 'us-east-1')
 
       SqsTestClass.new.send :sqs
-    end
-
-    private
-
-    def config
-      Configuration.instance
     end
   end
 end
