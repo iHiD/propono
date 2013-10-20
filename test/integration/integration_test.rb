@@ -13,7 +13,6 @@ module Propono
         config.queue_region = config_file['queue_region']
         config.application_name = config_file['application_name']
         config.udp_host = "localhost"
-        config.udp_port = 12543
       end
     end
 
