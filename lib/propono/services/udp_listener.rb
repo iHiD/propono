@@ -1,3 +1,5 @@
+require 'json'
+
 module Propono
   class UdpListenerError < ProponoError
   end
