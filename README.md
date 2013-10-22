@@ -58,34 +58,60 @@ end
 ```
 In the background, Propono is automatically setting up a queue using SQS, a notification system using SNS, and glueing them all together for you. But you don't have to worry about any of that.
 
+### Using TCP for messages
+
+Publishing directly to SNS takes about 15x longer than publishing over a simple TCP connection. It is therefore some times favourable to publish to a seperate machine listening for TCP messages, which will then proxy them on.
+
+To send messages this way, you need to set up a little extra config:
+
+```ruby
+Propono.config.tcp_host = "some.host.running.a.propono.listener"
+Propono.config.tcp_port = 12543
+```
+
+You then simply pass the `:tcp` protocol into `publish`
+
+```ruby
+Propono.publish('some-topic', message, protocol: :tcp)
+```
+
+You'll now need another application running Propono to listen to the TCP feed. You can use the same machine or a different one, just make sure the port config is the same in both applications, and you're good to go.
+
+```ruby
+Propono.listen_to_tcp do |topic, message|
+  Propono.publish(topic, message) # Proxy the message to SNS
+end
+```
+
+This proxying of TCP to SQS is used so often that there's a simple shortcut. Just run this on the machine receiving the TCP packets.
+
+```ruby
+Propono.proxy_tcp()
+```
+
 ### Using UDP for messages
 
 If you want almost-zero performance impact, and don't mind the occasional message getting lost, you can use UDP. We use this for things like our live dashboard where we don't mind losing a piece of activity here and there, but any perforamnce impact on our Meducation itself is bad news.
 
-To send messages this way, you need to set up a little extra config:
+Sending messages in this way is very similar to using TCP. First add some config:
 
 ```ruby
 Propono.config.udp_host = "some.host.running.a.propono.listener"
 Propono.config.udp_port = 12543
 ```
 
-You then simply pass the `:udp` protocol into `publish`
+You then simply pass the `:udp` protocol into `publish`:
 
 ```ruby
 Propono.publish('some-topic', message, protocol: :udp)
-```
 
-You'll now need another application running Propono to listen to the UDP feed. You can use the same machine or a different one, just make sure the port config is the same in both applications, and you're good to go.
+As per the `listen_to_tcp` method explained above, you now listen to udp or use the proxy method:
 
 ```ruby
 Propono.listen_to_udp do |topic, message|
   Propono.publish(topic, message) # Proxy the message to SNS
 end
-```
 
-This proxying of UDP to SQS is used so often that there's a simple shortcut. Just run this on the machine receiving the UDP packets.
-
-```ruby
 Propono.proxy_udp()
 ```
 
@@ -100,7 +126,9 @@ Propono.config do |config|
   config.queue_region = "An AWS queue region"
   config.application_name = "A name unique in your network"
   config.udp_host = "The host of a machine used for UDP proxying"
-  config.udp_port = "The host of a machine used for UDP proxying"
+  config.udp_port = "The port of a machine used for UDP proxying"
+  config.tcp_host = "The host of a machine used for TCP proxying"
+  config.tcp_port = "The port of a machine used for TCP proxying"
   config.logger = "A logger such as Log4r or Rails.logger"
 end
 ```

@@ -1,3 +1,7 @@
+# 0.7.0 / Unreleased
+
+* [FEATURE] Add TCP publish and listen methods.
+
 # 0.6.3 / 2013-10-20
 
 * [FEATURE] Catch all StandardError exceptions for UDP publishes.

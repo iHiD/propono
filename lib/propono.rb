@@ -20,6 +20,7 @@ require "propono/services/queue_listener"
 require "propono/services/subscriber"
 require "propono/services/topic_creator"
 require "propono/services/udp_listener"
+require "propono/services/tcp_listener"
 
 # Propono is a pub/sub gem built on top of Amazon Web Services (AWS).
 # It uses Simple Notification Service (SNS) and Simple Queue Service (SQS)
@@ -113,12 +114,33 @@ module Propono
     UdpListener.listen(&message_processor)
   end
 
+  # Listens for TCP messages and yields for each.
+  #
+  # Calling this will enter a queue-listening loop that
+  # yields the message_processor for each UDP message received.
+  #
+  # @param &message_processor The block to yield for each message.
+  #   Is called with <tt>|topic, message|</tt>.
+  def self.listen_to_tcp(&message_processor)
+    TcpListener.listen(&message_processor)
+  end
+
   # Listens for UDP messages and passes them onto the queue.
   #
   # This method uses #listen_to_udp and #publish to proxy
   # messages from UDP onto the queue.
   def self.proxy_udp
     Propono.listen_to_udp do |topic, message|
+      Propono.publish(topic, message)
+    end
+  end
+
+  # Listens for TCP messages and passes them onto the queue.
+  #
+  # This method uses #listen_to_tcp and #publish to proxy
+  # messages from TCP onto the queue.
+  def self.proxy_tcp
+    Propono.listen_to_tcp do |topic, message|
       Propono.publish(topic, message)
     end
   end
