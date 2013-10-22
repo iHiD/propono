@@ -10,13 +10,6 @@ module Propono
 
       Propono.subscribe_by_queue(topic)
 
-      tcp_thread = Thread.new do
-        Propono.listen_to_tcp do |tcp_topic, tcp_message|
-          Propono.publish(tcp_topic, tcp_message)
-          tcp_thread.terminate
-        end
-      end
-
       sqs_thread = Thread.new do
         Propono.listen_to_queue(topic) do |sqs_message|
           assert_equal message, sqs_message
@@ -24,9 +17,16 @@ module Propono
         end
       end
 
+      tcp_thread = Thread.new do
+        Propono.listen_to_tcp do |tcp_topic, tcp_message|
+          Propono.publish(tcp_topic, tcp_message)
+          tcp_thread.terminate
+        end
+      end
+      sleep(2) # Make sure the listener has started
+
       Propono.publish(topic, message, protocol: :tcp)
       flunk("Test Timeout") unless wait_for_thread(tcp_thread) && wait_for_thread(sqs_thread)
-
     ensure
       tcp_thread.terminate
       sqs_thread.terminate

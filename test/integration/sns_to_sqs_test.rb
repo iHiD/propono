@@ -14,6 +14,9 @@ module Propono
           break
         end
       end
+
+      sleep(2) # Make sure the listener has started
+
       Propono.publish(topic, text)
       flunk("Test Timeout") unless wait_for_thread(thread)
     ensure
