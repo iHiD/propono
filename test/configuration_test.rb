@@ -43,6 +43,30 @@ module Propono
       assert_equal application_name, Propono.config.application_name
     end
 
+    def test_udp_host
+      val = "test-application-name"
+      Propono.config.udp_host = val
+      assert_equal val, Propono.config.udp_host
+    end
+
+    def test_udp_port
+      val = 10000
+      Propono.config.udp_port = val
+      assert_equal val, Propono.config.udp_port
+    end
+
+    def test_tcp_host
+      val = "test-application-name"
+      Propono.config.tcp_host = val
+      assert_equal val, Propono.config.tcp_host
+    end
+
+    def test_tcp_port
+      val = 9382
+      Propono.config.tcp_port = val
+      assert_equal val, Propono.config.tcp_port
+    end
+
     def test_missing_access_key_throws_exception
       assert_raises(ProponoConfigurationError) do
         Propono.config.access_key

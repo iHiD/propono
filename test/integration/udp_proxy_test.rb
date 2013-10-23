@@ -9,16 +9,18 @@ module Propono
 
       Propono.subscribe_by_queue(topic)
 
-      udp_thread = Thread.new do
-        Propono.proxy_udp
-      end
-
       sqs_thread = Thread.new do
         Propono.listen_to_queue(topic) do |sqs_message|
           assert_equal message, sqs_message
           sqs_thread.terminate
         end
       end
+
+      udp_thread = Thread.new do
+        Propono.proxy_udp
+      end
+
+      sleep(2) # Make sure the proxy has started
 
       Propono.publish(topic, message, protocol: :udp)
       flunk("Test timeout") unless wait_for_thread(sqs_thread)

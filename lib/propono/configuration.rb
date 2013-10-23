@@ -9,6 +9,7 @@ module Propono
       :access_key, :secret_key, :queue_region,
       :application_name,
       :udp_host, :udp_port,
+      :tcp_host, :tcp_port,
       :logger
     ]
     attr_writer *SETTINGS

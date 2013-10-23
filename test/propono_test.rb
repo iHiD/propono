@@ -32,6 +32,11 @@ module Propono
       Propono.listen_to_udp()
     end
 
+    def test_listen_to_tcp_calls_tcp_listener
+      TcpListener.expects(:listen).with()
+      Propono.listen_to_tcp()
+    end
+
     def test_proxy_udp_calls_listen
       UdpListener.expects(:listen).with()
       Propono.proxy_udp()
@@ -43,6 +48,19 @@ module Propono
       Propono.stubs(:listen_to_udp).yields(topic, message)
       Publisher.expects(:publish).with(topic, message, {})
       Propono.proxy_udp
+    end
+
+    def test_proxy_tcp_calls_listen
+      TcpListener.expects(:listen).with()
+      Propono.proxy_tcp()
+    end
+
+    def test_proxy_tcp_calls_publish_in_the_block
+      topic = "foobar"
+      message = "message"
+      Propono.stubs(:listen_to_tcp).yields(topic, message)
+      Publisher.expects(:publish).with(topic, message, {})
+      Propono.proxy_tcp
     end
   end
 end

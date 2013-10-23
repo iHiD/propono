@@ -5,7 +5,8 @@ module Propono
     def test_the_message_gets_there
       topic = "test-topic"
       message = "This is my message"
-      Propono.config.udp_port = 20002
+      Propono.config.tcp_host = "localhost"
+      Propono.config.tcp_port = 20009
 
       Propono.subscribe_by_queue(topic)
 
@@ -16,19 +17,18 @@ module Propono
         end
       end
 
-      udp_thread = Thread.new do
-        Propono.listen_to_udp do |udp_topic, udp_message|
-          Propono.publish(udp_topic, udp_message)
-          udp_thread.terminate
+      tcp_thread = Thread.new do
+        Propono.listen_to_tcp do |tcp_topic, tcp_message|
+          Propono.publish(tcp_topic, tcp_message)
+          tcp_thread.terminate
         end
       end
-
       sleep(2) # Make sure the listener has started
 
-      Propono.publish(topic, message, protocol: :udp)
-      flunk("Test Timeout") unless wait_for_thread(udp_thread) && wait_for_thread(sqs_thread)
+      Propono.publish(topic, message, protocol: :tcp)
+      flunk("Test Timeout") unless wait_for_thread(tcp_thread) && wait_for_thread(sqs_thread)
     ensure
-      udp_thread.terminate
+      tcp_thread.terminate
       sqs_thread.terminate
     end
   end
