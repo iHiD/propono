@@ -8,3 +8,6 @@ script:
 addons:
     code_climate:
         repo_token: 88dd239bc2e0010742a42a4e0234b4decd19b46d0e9d3408d8b1fe0f96dd8fc1
+matrix:
+  allow_failures:
+    - rvm: rbx-2.1.1
