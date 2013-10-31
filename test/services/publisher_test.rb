@@ -49,7 +49,7 @@ module Propono
       sns.expects(:publish).with(topic_arn, message)
       publisher = Publisher.new(topic, message)
       publisher.stubs(sns: sns)
-      publisher.send(:publish_via_sns)
+      ~publisher.send(:publish_via_sns)
     end
 
     def test_publish_via_sns_should_accept_a_hash_for_message
@@ -64,7 +64,22 @@ module Propono
       sns.expects(:publish).with(topic_arn, message.to_json)
       publisher = Publisher.new(topic, message)
       publisher.stubs(sns: sns)
-      publisher.send(:publish_via_sns)
+      ~publisher.send(:publish_via_sns)
+    end
+    
+    def test_publish_via_sns_should_return_future_of_the_sns_response
+      topic = "topic123"
+      message = "message123"
+      topic_arn = "arn123"
+      topic = Topic.new(topic_arn)
+
+      TopicCreator.stubs(find_or_create: topic)
+
+      sns = mock()
+      sns.expects(:publish).with(topic_arn, message).returns(:response)
+      publisher = Publisher.new(topic, message)
+      publisher.stubs(sns: sns)
+      assert_same :response, publisher.send(:publish_via_sns).value
     end
 
     def test_publish_via_sns_should_propogate_exception_on_topic_creation_error
