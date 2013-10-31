@@ -23,7 +23,6 @@ module Propono
     private
 
     def read_messages
-      #response = sqs.receive_message( queue_url, options = { 'MaxNumberOfMessages' => 10 } )
       response = sqs.receive_message( queue_url, {'MaxNumberOfMessages' => 10} )
       messages = response.body['Message']
       if messages.empty?

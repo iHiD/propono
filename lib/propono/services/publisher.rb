@@ -1,4 +1,5 @@
 require 'socket'
+require 'thread/future'
 
 module Propono
   class PublisherError < ProponoError
@@ -31,7 +32,9 @@ module Propono
     def publish_via_sns
       topic = TopicCreator.find_or_create(topic_id)
       msg = message.is_a?(String) ? message : message.to_json
-      sns.publish(topic.arn, msg)
+      Thread.future(WORKER_POOL) do
+        sns.publish(topic.arn, msg)
+      end
     end
 
     def publish_via_udp

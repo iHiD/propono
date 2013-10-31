@@ -2,6 +2,8 @@
 #
 # Propono is a pub/sub gem built on top of Amazon Web Services (AWS). It uses Simple Notification Service (SNS) and Simple Queue Service (SQS) to seamlessly pass messages throughout your infrastructure.
 
+require "thread/pool"
+
 require "propono/version"
 require 'propono/propono_error'
 require 'propono/logger'
@@ -26,6 +28,8 @@ require "propono/services/tcp_listener"
 # It uses Simple Notification Service (SNS) and Simple Queue Service (SQS)
 # to seamlessly pass messages throughout your infrastructure.
 module Propono
+  
+  WORKER_POOL = Thread.pool(4)
 
   # Propono configuration settings.
   #
