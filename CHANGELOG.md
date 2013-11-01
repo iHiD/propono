@@ -1,8 +1,8 @@
-# 0.8.0 / Unreleased
+# 0.8.0 / 2013-11-01
 
 * [FEATURE] SNS publish now delegates to a thread pool. The SNS response can be accessed via a future.
 
-# 0.7.0 / Unreleased
+# 0.7.0 / 2013-10-23
 
 * [FEATURE] Add TCP publish and listen methods.
 
