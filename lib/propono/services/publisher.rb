@@ -24,6 +24,7 @@ module Propono
     end
 
     def publish
+      Propono.config.logger.info "Propono: Publishing #{message} to #{topic_id} via #{protocol}"
       send("publish_via_#{protocol}")
     end
 

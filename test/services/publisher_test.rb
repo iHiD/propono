@@ -25,6 +25,12 @@ module Propono
       assert_equal :sns, publisher.protocol
     end
 
+    def test_publish_logs
+      client = Publisher.new("foo", "bar")
+      Propono.config.logger.expects(:info).with() {|x| x =~ /^Propono: Publishing bar to foo via sns.*/}
+      client.send(:publish)
+    end
+
     def test_publish_proxies_to_sns
       publisher = Publisher.new('topic', 'message')
       publisher.expects(:publish_via_sns)
@@ -66,7 +72,7 @@ module Propono
       publisher.stubs(sns: sns)
       ~publisher.send(:publish_via_sns)
     end
-    
+
     def test_publish_via_sns_should_return_future_of_the_sns_response
       topic = "topic123"
       message = "message123"
