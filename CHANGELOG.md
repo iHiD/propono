@@ -1,4 +1,4 @@
-# 0.7.0 / Unreleased
+# 0.8.0 / Unreleased
 
 * [FEATURE] SNS publish now delegates to a thread pool. The SNS response can be accessed via a future.
 
