@@ -1,3 +1,7 @@
+# 0.8.2 / 2013-11-01
+
+* [BUGFIX] Replace thread library with standard ruby threads to fix Unicorn problems.
+
 # 0.8.1 / 2013-11-01
 
 * [FEATURE] Log all messages published from Propono.
