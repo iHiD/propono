@@ -55,7 +55,8 @@ module Propono
       sns.expects(:publish).with(topic_arn, message)
       publisher = Publisher.new(topic, message)
       publisher.stubs(sns: sns)
-      ~publisher.send(:publish_via_sns)
+      thread = publisher.send(:publish_via_sns)
+      thread.join
     end
 
     def test_publish_via_sns_should_accept_a_hash_for_message
@@ -70,7 +71,8 @@ module Propono
       sns.expects(:publish).with(topic_arn, message.to_json)
       publisher = Publisher.new(topic, message)
       publisher.stubs(sns: sns)
-      ~publisher.send(:publish_via_sns)
+      thread = publisher.send(:publish_via_sns)
+      thread.join
     end
 
     def test_publish_via_sns_should_return_future_of_the_sns_response
