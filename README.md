@@ -104,6 +104,7 @@ You then simply pass the `:udp` protocol into `publish`:
 
 ```ruby
 Propono.publish('some-topic', message, protocol: :udp)
+```
 
 As per the `listen_to_tcp` method explained above, you now listen to udp or use the proxy method:
 
