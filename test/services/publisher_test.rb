@@ -15,6 +15,17 @@ module Propono
       Publisher.publish(topic, message)
     end
 
+    def test_initializer_generates_an_id
+      publisher = Publisher.new('x','y')
+      assert publisher.instance_variable_get(:@id)
+    end
+
+    def test_initializer_concats_an_id
+      id = "q1w2e3"
+      publisher = Publisher.new('x','y', id: id)
+      assert publisher.id =~ Regexp.new("^#{id}-[a-z0-9]{6}$")
+    end
+
     def test_self_publish_calls_publish
       Publisher.any_instance.expects(:publish)
       Publisher.publish("topic", "message")
@@ -26,9 +37,10 @@ module Propono
     end
 
     def test_publish_logs
-      client = Publisher.new("foo", "bar")
-      Propono.config.logger.expects(:info).with() {|x| x =~ /^Propono: Publishing bar to foo via sns.*/}
-      client.send(:publish)
+      publisher = Publisher.new("foo", "bar")
+      publisher.instance_variable_set(:@id, 'abc')
+      Propono.config.logger.expects(:info).with() {|x| x =~ /^Propono \[abc\]: Publishing bar to foo via sns.*/}
+      publisher.send(:publish)
     end
 
     def test_publish_proxies_to_sns
@@ -45,6 +57,7 @@ module Propono
 
     def test_publish_via_sns_should_call_sns_on_correct_topic_and_message
       topic = "topic123"
+      id = "f123"
       message = "message123"
       topic_arn = "arn123"
       topic = Topic.new(topic_arn)
@@ -52,41 +65,45 @@ module Propono
       TopicCreator.stubs(find_or_create: topic)
 
       sns = mock()
-      sns.expects(:publish).with(topic_arn, message)
+      sns.expects(:publish).with(topic_arn, {id: id, message: message}.to_json)
       publisher = Publisher.new(topic, message)
-      publisher.stubs(sns: sns)
+      publisher.stubs(id: id, sns: sns)
       thread = publisher.send(:publish_via_sns)
       thread.join
     end
 
     def test_publish_via_sns_should_accept_a_hash_for_message
       topic = "topic123"
+      id = "foobar123"
       message = {something: ['some', 123, true]}
+      body = {id: id, message: message}
+
       topic_arn = "arn123"
       topic = Topic.new(topic_arn)
-
       TopicCreator.stubs(find_or_create: topic)
 
       sns = mock()
-      sns.expects(:publish).with(topic_arn, message.to_json)
+      sns.expects(:publish).with(topic_arn, body.to_json)
       publisher = Publisher.new(topic, message)
-      publisher.stubs(sns: sns)
+      publisher.stubs(id: id, sns: sns)
       thread = publisher.send(:publish_via_sns)
       thread.join
     end
 
     def test_publish_via_sns_should_return_future_of_the_sns_response
       topic = "topic123"
+      id = "foobar123"
       message = "message123"
+      body = {id: id, message: message}
+
       topic_arn = "arn123"
       topic = Topic.new(topic_arn)
-
       TopicCreator.stubs(find_or_create: topic)
 
       sns = mock()
-      sns.expects(:publish).with(topic_arn, message).returns(:response)
+      sns.expects(:publish).with(topic_arn, body.to_json).returns(:response)
       publisher = Publisher.new(topic, message)
-      publisher.stubs(sns: sns)
+      publisher.stubs(id: id, sns: sns)
       assert_same :response, publisher.send(:publish_via_sns).value
     end
 
@@ -109,7 +126,6 @@ module Propono
       sns = mock()
       sns.stubs(:publish)
       publisher = Publisher.new(topic_id, "Foobar")
-      publisher.stubs(sns: sns)
 
       publisher.send(:publish_via_sns)
     end
@@ -120,11 +136,14 @@ module Propono
       Propono.config.udp_host = host
       Propono.config.udp_port = port
       topic_id = "my-fav-topic"
-      message = "foobar"
-      payload = {topic: topic_id, message: message}.to_json
+
+      id = "foobar123"
+      message = "cat dog mouse"
+      payload = {id: id, message: message, topic: topic_id}.to_json
       UDPSocket.any_instance.expects(:send).with(payload, 0, host, port)
 
       publisher = Publisher.new(topic_id, message)
+      publisher.stubs(id: id)
       publisher.send(:publish_via_udp)
     end
 
@@ -134,9 +153,10 @@ module Propono
       Propono.config.udp_host = host
       Propono.config.udp_port = port
 
-      client = Publisher.new("topic_id", "message")
-      Propono.config.logger.expects(:error).with() {|x| x =~ /^Propono failed to send : getaddrinfo:.*/}
-      client.send(:publish_via_udp)
+      publisher = Publisher.new("topic_id", "message")
+      publisher.stubs(id: '123asd')
+      Propono.config.logger.expects(:error).with() {|x| x =~ /^Propono \[123asd\]: Failed to send : getaddrinfo:.*/}
+      publisher.send(:publish_via_udp)
     end
 
     def test_publish_should_raise_exception_if_topic_is_nil
@@ -149,8 +169,9 @@ module Propono
       Propono.config.tcp_host = "http://meducation.net"
       Propono.config.tcp_port = 1234
       topic_id = "my-fav-topic"
+      id = "qweqw2312"
       message = "foobar"
-      payload = {topic: topic_id, message: message}.to_json
+      payload = {id: id, message: message, topic: topic_id}.to_json
 
       socket = mock()
       socket.expects(:write).with(payload)
@@ -158,6 +179,7 @@ module Propono
       TCPSocket.stubs(new: socket)
 
       publisher = Publisher.new(topic_id, message)
+      publisher.stubs(id: id)
       publisher.send(:publish_via_tcp)
     end
 
@@ -180,9 +202,10 @@ module Propono
       Propono.config.tcp_host = host
       Propono.config.tcp_port = port
 
-      client = Publisher.new("topic_id", "message")
-      Propono.config.logger.expects(:error).with() {|x| x =~ /^Propono failed to send : getaddrinfo:.*/}
-      client.send(:publish_via_tcp)
+      publisher = Publisher.new("topic_id", "message")
+      publisher.stubs(id: '123asd')
+      Propono.config.logger.expects(:error).with() {|x| x =~ /^Propono \[123asd\]: Failed to send : getaddrinfo:.*/}
+      publisher.send(:publish_via_tcp)
     end
 
     def test_publish_should_raise_exception_if_topic_is_nil

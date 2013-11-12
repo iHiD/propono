@@ -45,8 +45,9 @@ module Propono
     def test_proxy_udp_calls_publish_in_the_block
       topic = "foobar"
       message = "message"
-      Propono.stubs(:listen_to_udp).yields(topic, message)
-      Publisher.expects(:publish).with(topic, message, {})
+      options = {id: "catdog"}
+      Propono.stubs(:listen_to_udp).yields(topic, message, options)
+      Publisher.expects(:publish).with(topic, message, options)
       Propono.proxy_udp
     end
 
@@ -58,8 +59,9 @@ module Propono
     def test_proxy_tcp_calls_publish_in_the_block
       topic = "foobar"
       message = "message"
-      Propono.stubs(:listen_to_tcp).yields(topic, message)
-      Publisher.expects(:publish).with(topic, message, {})
+      options = {id: "catdog"}
+      Propono.stubs(:listen_to_tcp).yields(topic, message, options)
+      Publisher.expects(:publish).with(topic, message, options)
       Propono.proxy_tcp
     end
   end

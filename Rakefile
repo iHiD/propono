@@ -11,7 +11,7 @@ end
 
 namespace :test do
   Rake::TestTask.new(:local) do |t|
-    t.pattern = "test/{components/,services/,}*_test.rb"
+    t.pattern = "test/{components/,services/,helpers/,}*_test.rb"
   end
 end
 

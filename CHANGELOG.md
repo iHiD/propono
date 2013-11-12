@@ -1,3 +1,7 @@
+# 0.9.0 / Unreleased
+
+* [FEATURE] Add message ids that track throughout Propono
+
 # 0.8.2 / 2013-11-01
 
 * [BUGFIX] Replace thread library with standard ruby threads to fix Unicorn problems.
