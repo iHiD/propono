@@ -11,8 +11,10 @@ module Propono
       @receipt_handle2 = "test-receipt-handle2"
       @message1 = {cat: "Foobar 123"}
       @message2 = "Barfoo 543"
-      @body1 = {id: 1, message: @message1}
-      @body2 = {id: 2, message: @message2}
+      @message1_id = "abc123"
+      @message1_id = "987whf"
+      @body1 = {id: @message1_id, message: @message1}
+      @body2 = {id: @message2_id, message: @message2}
       @sqs_message1 = { "ReceiptHandle" => @receipt_handle1, "Body" => {"Message" => @body1.to_json}.to_json}
       @sqs_message2 = { "ReceiptHandle" => @receipt_handle2, "Body" => {"Message" => @body2.to_json}.to_json}
       @messages = { "Message" => [ @sqs_message1, @sqs_message2 ] }
@@ -39,6 +41,11 @@ module Propono
       queue_url = @listener.send(:queue_url)
       options = { 'MaxNumberOfMessages' => 10 }
       @sqs.expects(:receive_message).with(queue_url, options).returns(@sqs_response)
+      @listener.send(:read_messages)
+    end
+
+    def test_log_message_from_sqs
+      Propono.config.logger.expects(:info).with() {|x| x == "Propono [#{@message1_id}]: Received from sqs."}
       @listener.send(:read_messages)
     end
 
@@ -85,8 +92,8 @@ module Propono
       @listener.send(:read_messages)
 
       assert_equal contexts.size, 2
-      assert contexts.include?({id: 1})
-      assert contexts.include?({id: 2})
+      assert contexts.include?({id: @message1_id})
+      assert contexts.include?({id: @message2_id})
     end
 
     def test_each_message_is_deleted
@@ -123,7 +130,6 @@ module Propono
 
     def test_old_syntax_has_deprecation_warning
       Propono.config.logger.expects(:info).with("Sending and recieving messags without ids is deprecated")
-      @listener = QueueListener.new(@topic_id) { |m| messages_yielded.push(m) }
       @listener.stubs(sqs: @sqs)
       @listener.send(:read_messages)
     end
