@@ -22,6 +22,7 @@ class Minitest::Test
       config.application_name = "MyApp"
 
       config.logger.stubs(:debug)
+      config.logger.stubs(:info)
       config.logger.stubs(:error)
     end
   end

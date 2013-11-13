@@ -42,9 +42,10 @@ module Propono
     def test_processor_is_called_correctly
       topic = "my-topic"
       message = "my-message"
+      id = "123asd"
       processor = Proc.new {}
-      udp_data = {topic: topic, message: message}.to_json
-      processor.expects(:call).with(topic, message)
+      udp_data = {topic: topic, message: message, id: id}.to_json
+      processor.expects(:call).with(topic, message, {id: id})
 
       server = UdpListener.new(&processor)
       server.send(:process_udp_data, udp_data)
@@ -54,6 +55,19 @@ module Propono
       listener = UdpListener.new {}
       listener.expects(:loop)
       listener.listen
+    end
+  end
+
+  class UdpListenerLegacyTest < Minitest::Test
+    def test_processor_is_called_correctly
+      topic = "my-topic"
+      message = "my-message"
+      processor = Proc.new {}
+      udp_data = {topic: topic, message: message}.to_json
+      processor.expects(:call).with(topic, message)
+
+      server = UdpListener.new(&processor)
+      server.send(:process_udp_data, udp_data)
     end
   end
 end

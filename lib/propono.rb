@@ -1,11 +1,12 @@
 # Propono
 #
 # Propono is a pub/sub gem built on top of Amazon Web Services (AWS). It uses Simple Notification Service (SNS) and Simple Queue Service (SQS) to seamlessly pass messages throughout your infrastructure.
-
 require "propono/version"
 require 'propono/propono_error'
 require 'propono/logger'
 require 'propono/configuration'
+
+require "propono/helpers/hash"
 
 require 'propono/components/sns'
 require 'propono/components/sqs'
@@ -130,8 +131,8 @@ module Propono
   # This method uses #listen_to_udp and #publish to proxy
   # messages from UDP onto the queue.
   def self.proxy_udp
-    Propono.listen_to_udp do |topic, message|
-      Propono.publish(topic, message)
+    Propono.listen_to_udp do |topic, message, options = {}|
+      Propono.publish(topic, message, options)
     end
   end
 
@@ -140,8 +141,8 @@ module Propono
   # This method uses #listen_to_tcp and #publish to proxy
   # messages from TCP onto the queue.
   def self.proxy_tcp
-    Propono.listen_to_tcp do |topic, message|
-      Propono.publish(topic, message)
+    Propono.listen_to_tcp do |topic, message, options = {}|
+      Propono.publish(topic, message, options)
     end
   end
 end

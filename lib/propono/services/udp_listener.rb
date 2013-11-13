@@ -27,8 +27,16 @@ module Propono
     end
 
     def process_udp_data(udp_data)
-      json = JSON.parse(udp_data)
-      @processor.call(json['topic'], json['message'])
+      json = JSON.parse(udp_data).symbolize_keys
+
+      # Legacy syntax is covered in the else statement
+      # This conditional and the else block will be removed in v1.
+      if json[:id]
+        @processor.call(json[:topic], json[:message], id: json[:id])
+      else
+        Propono.config.logger.info("Sending and recieving messags without ids is deprecated")
+        @processor.call(json[:topic], json[:message])
+      end
     end
 
     def socket

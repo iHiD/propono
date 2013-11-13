@@ -36,8 +36,19 @@ module Propono
     end
 
     def process_sqs_message(sqs_message)
-      message = JSON.parse(sqs_message["Body"])["Message"]
-      @message_processor.call(message)
+      body = JSON.parse(sqs_message["Body"])["Message"]
+
+      # Legacy syntax is covered in the rescue statement
+      # This begin/rescue dance and the rescue block will be removed in v1.
+      begin
+        body = JSON.parse(body)
+        context = body.symbolize_keys
+        message = context.delete(:message)
+        @message_processor.call(message, context)
+      rescue
+        Propono.config.logger.info("Sending and recieving messags without ids is deprecated")
+        @message_processor.call(body)
+      end
       sqs.delete_message(queue_url, sqs_message['ReceiptHandle'])
     end
 

@@ -45,9 +45,10 @@ module Propono
     def test_processor_is_called_correctly
       topic = "my-topic"
       message = "my-message"
+      id = "qwe123"
       processor = Proc.new {}
-      tcp_data = {topic: topic, message: message}.to_json
-      processor.expects(:call).with(topic, message)
+      tcp_data = {topic: topic, message: message, id: id}.to_json
+      processor.expects(:call).with(topic, message, {id: id})
 
       listener = TcpListener.new(&processor)
       listener.send(:process_tcp_data, tcp_data)
@@ -59,5 +60,17 @@ module Propono
       listener.listen
     end
   end
-end
 
+  class TcpListenerLegacyTest < Minitest::Test
+    def test_processor_is_called_correctly
+      topic = "my-topic"
+      message = "my-message"
+      processor = Proc.new {}
+      tcp_data = {topic: topic, message: message}.to_json
+      processor.expects(:call).with(topic, message)
+
+      listener = TcpListener.new(&processor)
+      listener.send(:process_tcp_data, tcp_data)
+    end
+  end
+end

@@ -9,10 +9,12 @@ module Propono
 
       @receipt_handle1 = "test-receipt-handle1"
       @receipt_handle2 = "test-receipt-handle2"
-      @message1 = "Foobar 123"
+      @message1 = {cat: "Foobar 123"}
       @message2 = "Barfoo 543"
-      @sqs_message1 = { "ReceiptHandle" => @receipt_handle1, "Body" => {"Message" => @message1}.to_json}
-      @sqs_message2 = { "ReceiptHandle" => @receipt_handle2, "Body" => {"Message" => @message2}.to_json}
+      @body1 = {id: 1, message: @message1}
+      @body2 = {id: 2, message: @message2}
+      @sqs_message1 = { "ReceiptHandle" => @receipt_handle1, "Body" => {"Message" => @body1.to_json}.to_json}
+      @sqs_message2 = { "ReceiptHandle" => @receipt_handle2, "Body" => {"Message" => @body2.to_json}.to_json}
       @messages = { "Message" => [ @sqs_message1, @sqs_message2 ] }
       @sqs_response = mock().tap{|m|m.stubs(body: @messages)}
       @sqs = mock()
@@ -66,15 +68,25 @@ module Propono
     end
 
     def test_each_message_processor_is_yielded
-      messages_yielded = [ ]
-      @listener = QueueListener.new(@topic_id) { |m| messages_yielded.push(m) }
+      messages_yielded = []
+      @listener = QueueListener.new(@topic_id) { |m, _| messages_yielded.push(m) }
       @listener.stubs(sqs: @sqs)
-
       @listener.send(:read_messages)
 
       assert_equal messages_yielded.size, 2
       assert messages_yielded.include?(@message1)
       assert messages_yielded.include?(@message2)
+    end
+
+    def test_each_message_processor_context
+      contexts = []
+      @listener = QueueListener.new(@topic_id) { |_, context| contexts << context }
+      @listener.stubs(sqs: @sqs)
+      @listener.send(:read_messages)
+
+      assert_equal contexts.size, 2
+      assert contexts.include?({id: 1})
+      assert contexts.include?({id: 2})
     end
 
     def test_each_message_is_deleted
@@ -85,6 +97,46 @@ module Propono
 
       @listener.stubs(queue_url: queue_url)
       @listener.send(:read_messages)
+    end
+  end
+  class QueueListenerLegacySyntaxTest < Minitest::Test
+
+    def setup
+      super
+      @topic_id = "some-topic"
+
+      @receipt_handle1 = "test-receipt-handle1"
+      @receipt_handle2 = "test-receipt-handle2"
+      @message1 = {'cat' => "Foobar 123"} 
+      @message2 = "qwertyuiop"
+      @sqs_message1 = { "ReceiptHandle" => @receipt_handle1, "Body" => {"Message" => @message1}.to_json}
+      @sqs_message2 = { "ReceiptHandle" => @receipt_handle2, "Body" => {"Message" => @message2}.to_json}
+      @messages = { "Message" => [ @sqs_message1, @sqs_message2 ] }
+      @sqs_response = mock().tap{|m|m.stubs(body: @messages)}
+      @sqs = mock()
+      @sqs.stubs(receive_message: @sqs_response)
+      @sqs.stubs(:delete_message)
+
+      @listener = QueueListener.new(@topic_id) {}
+      @listener.stubs(sqs: @sqs)
+    end
+
+    def test_old_syntax_has_deprecation_warning
+      Propono.config.logger.expects(:info).with("Sending and recieving messags without ids is deprecated")
+      @listener = QueueListener.new(@topic_id) { |m| messages_yielded.push(m) }
+      @listener.stubs(sqs: @sqs)
+      @listener.send(:read_messages)
+    end
+
+    def test_each_message_processor_is_yielded
+      messages_yielded = []
+      @listener = QueueListener.new(@topic_id) { |m| messages_yielded.push(m) }
+      @listener.stubs(sqs: @sqs)
+      @listener.send(:read_messages)
+
+      assert_equal messages_yielded.size, 2
+      assert messages_yielded.include?(@message1)
+      assert messages_yielded.include?(@message2)
     end
   end
 end
