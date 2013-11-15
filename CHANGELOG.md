@@ -1,3 +1,7 @@
+# 0.9.1 / Unreleased
+
+* [FEATURE] Propono will raise exceptions if the message processing fails
+
 # 0.9.0 / Unreleased
 
 * [FEATURE] Add message ids that track throughout Propono

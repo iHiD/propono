@@ -105,6 +105,13 @@ module Propono
       @listener.stubs(queue_url: queue_url)
       @listener.send(:read_messages)
     end
+
+    def test_messages_are_not_deleted_if_there_is_an_exception
+      @listener = QueueListener.new(@topic_id) { raise StandardError.new("Test Error") }
+      @listener.stubs(sqs: @sqs)
+      @sqs.expects(:delete_message).never
+      @listener.send(:read_messages)
+    end
   end
   class QueueListenerLegacySyntaxTest < Minitest::Test
 
@@ -129,7 +136,7 @@ module Propono
     end
 
     def test_old_syntax_has_deprecation_warning
-      Propono.config.logger.expects(:info).with("Sending and recieving messags without ids is deprecated")
+      Propono.config.logger.expects(:info).with("Sending and recieving messages without ids is deprecated")
       @listener.stubs(sqs: @sqs)
       @listener.send(:read_messages)
     end

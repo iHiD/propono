@@ -46,8 +46,8 @@ module Propono
         message = context.delete(:message)
         Propono.config.logger.info "Propono [#{context[:id]}]: Received from sqs."
         @message_processor.call(message, context)
-      rescue
-        Propono.config.logger.info("Sending and recieving messags without ids is deprecated")
+      rescue JSON::ParserError, TypeError
+        Propono.config.logger.info("Sending and recieving messages without ids is deprecated")
         @message_processor.call(body)
       end
       sqs.delete_message(queue_url, sqs_message['ReceiptHandle'])
