@@ -32,6 +32,13 @@ module Propono
       @listener.listen
     end
 
+    def test_listen_raises_with_nil_topic
+      listener = QueueListener.new(nil) {}
+      assert_raises ProponoError do
+        listener.listen
+      end
+    end
+
     def test_read_messages_should_subscribe
       QueueSubscription.expects(create: mock(queue: mock(url: {})))
       @listener.send(:read_messages)

@@ -13,6 +13,7 @@ module Propono
     end
 
     def listen
+      raise ProponoError.new("topic_id is nil") unless @topic_id
       loop do
         unless read_messages
           sleep 10

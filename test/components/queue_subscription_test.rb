@@ -77,8 +77,15 @@ module Propono
       assert_equal queue, subscription.queue
     end
 
+    def test_create_raises_with_nil_topic
+      subscription = QueueSubscription.new(nil)
+      assert_raises ProponoError do
+        subscription.create
+      end
+    end
+
     def test_generate_policy
-      skip"TODO - Implement this test."
+      skip "TODO - Implement this test."
     end
   end
 end
