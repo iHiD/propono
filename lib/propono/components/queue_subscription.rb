@@ -17,6 +17,7 @@ module Propono
     end
 
     def create
+      raise ProponoError.new("topic_id is nil") unless @topic_id
       @topic = TopicCreator.find_or_create(@topic_id)
       @queue = QueueCreator.find_or_create(queue_name)
       sns.subscribe(@topic.arn, @queue.arn, 'sqs')
