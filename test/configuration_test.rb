@@ -43,6 +43,12 @@ module Propono
       assert_equal application_name, Propono.config.application_name
     end
 
+    def test_queue_suffix
+      queue_suffix = "test-application-name"
+      Propono.config.queue_suffix = queue_suffix
+      assert_equal queue_suffix, Propono.config.queue_suffix
+    end
+
     def test_udp_host
       val = "test-application-name"
       Propono.config.udp_host = val
