@@ -6,7 +6,7 @@ module Propono
   class Configuration
 
     SETTINGS = [
-      :access_key, :secret_key, :queue_region,
+      :access_key, :secret_key, :queue_region, :queue_suffix,
       :application_name,
       :udp_host, :udp_port,
       :tcp_host, :tcp_port,
@@ -16,6 +16,7 @@ module Propono
 
     def initialize
       self.logger = Propono::Logger.new
+      self.queue_suffix = ""
     end
 
     SETTINGS.each do |setting|

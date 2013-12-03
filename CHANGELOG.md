@@ -1,3 +1,7 @@
+# 0.10.0 / 2013-12-03
+
+* [FEATURE] Add queue_suffix config variable
+
 # 0.9.1 / Unreleased
 
 * [FEATURE] Propono will raise exceptions if the message processing fails

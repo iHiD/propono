@@ -67,7 +67,8 @@ module Propono
   # @param [Hash] options
   #   * protocol: :udp
   def self.publish(topic, message, options = {})
-    Publisher.publish(topic, message, options)
+    suffixed_topic = "#{topic}#{Propono.config.queue_suffix}"
+    Publisher.publish(suffixed_topic, message, options)
   end
 
   # Creates a new SNS-SQS subscription on the specified topic.

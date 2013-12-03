@@ -2,10 +2,21 @@ require File.expand_path('../../test_helper', __FILE__)
 
 module Propono
   class QueueSubscriptionTest < Minitest::Test
+    def setup
+      super
+      @suffix = "-suf"
+      Propono.config.queue_suffix = @suffix
+    end
+
+    def teardown
+      super
+      Propono.config.queue_suffix = ""
+    end
+
     def test_create_topic
       topic_id = 'foobar'
       topic = Topic.new(topic_id)
-      TopicCreator.expects(:find_or_create).with(topic_id).returns(topic)
+      TopicCreator.expects(:find_or_create).with("#{topic_id}#{@suffix}").returns(topic)
       QueueSubscription.create(topic_id)
     end
 
@@ -28,7 +39,7 @@ module Propono
       topic_id = "Foobar"
       subscription = QueueSubscription.new(topic_id)
 
-      assert_equal subscription.send(:queue_name), "MyApp-Foobar"
+      assert_equal "MyApp-Foobar#{@suffix}", subscription.send(:queue_name)
     end
 
     def test_subscription_queue_name_with_spaces
@@ -37,7 +48,7 @@ module Propono
       topic_id = "Foobar"
       subscription = QueueSubscription.new(topic_id)
 
-      assert_equal subscription.send(:queue_name), "My_App-Foobar"
+      assert_equal "My_App-Foobar#{@suffix}", subscription.send(:queue_name)
     end
 
     def test_create_calls_subscribe

@@ -9,6 +9,15 @@ module Propono
       Propono.publish(topic, message)
     end
 
+    def test_publish_sets_suffix_publish
+      Propono.config.queue_suffix = "-bar"
+      topic = "foo"
+      Publisher.expects(:publish).with("foo-bar", '', {})
+      Propono.publish(topic, "")
+    ensure
+      Propono.config.queue_suffix = ""
+    end
+
     def test_subscribe_by_queue_calls_subscribe
       topic = 'foobar'
       Subscriber.expects(:subscribe_by_queue).with(topic)
