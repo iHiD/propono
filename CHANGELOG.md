@@ -1,3 +1,7 @@
+# 0.11.0 / 2013-12-03
+
+* [FEATURE] Add support for IAM profiles for AWS auth
+
 # 0.10.0 / 2013-12-03
 
 * [FEATURE] Add queue_suffix config variable

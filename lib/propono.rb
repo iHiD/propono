@@ -8,6 +8,7 @@ require 'propono/configuration'
 
 require "propono/helpers/hash"
 
+require 'propono/components/aws_config'
 require 'propono/components/sns'
 require 'propono/components/sqs'
 require "propono/components/queue"
