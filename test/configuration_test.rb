@@ -19,6 +19,15 @@ module Propono
       assert_equal test_key, Propono.config.access_key
     end
 
+    def test_use_iam_profile_defaults_false
+      assert ! Propono.config.use_iam_profile
+    end
+
+    def test_use_iam_profile
+      Propono.config.use_iam_profile = true
+      assert Propono.config.use_iam_profile
+    end
+
     def test_access_key
       access_key = "test-access-key"
       Propono.config.access_key = access_key
