@@ -1,3 +1,7 @@
+# 0.11.1 / 2013-12-09
+
+* [BUGFIX] Re raise 403 forbidden excetion instead of continuing.
+
 # 0.11.0 / 2013-12-03
 
 * [FEATURE] Add support for IAM profiles for AWS auth

@@ -76,6 +76,16 @@ module Propono
       @listener.send(:read_messages)
     end
 
+    def test_forbidden_error_is_logged_and_re_raised
+      @listener.stubs(queue_url: "http://example.com")
+      @sqs.stubs(:receive_message).raises(Excon::Errors::Forbidden.new(nil, nil, nil))
+      Propono.config.logger.expects(:error).with("Forbidden error caught and re raised. http://example.com")
+      Propono.config.logger.expects(:error).with() {|x| x.is_a?(Excon::Errors::Forbidden)}
+      assert_raises Excon::Errors::Forbidden do
+        @listener.send(:read_messages)
+      end
+    end
+
     def test_exception_from_sqs_returns_false
       @sqs.stubs(:receive_message).raises(StandardError)
       refute @listener.send(:read_messages)
@@ -128,7 +138,7 @@ module Propono
 
       @receipt_handle1 = "test-receipt-handle1"
       @receipt_handle2 = "test-receipt-handle2"
-      @message1 = {'cat' => "Foobar 123"} 
+      @message1 = {'cat' => "Foobar 123"}
       @message2 = "qwertyuiop"
       @sqs_message1 = { "ReceiptHandle" => @receipt_handle1, "Body" => {"Message" => @message1}.to_json}
       @sqs_message2 = { "ReceiptHandle" => @receipt_handle2, "Body" => {"Message" => @message2}.to_json}
