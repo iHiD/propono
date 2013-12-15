@@ -15,6 +15,7 @@ require "propono/components/queue"
 require "propono/components/topic"
 require "propono/components/post_subscription"
 require "propono/components/queue_subscription"
+require "propono/components/sqs_message"
 
 require "propono/services/publisher"
 require "propono/services/queue_creator"

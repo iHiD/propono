@@ -4,17 +4,18 @@ module Propono
     include Sns
     include Sqs
 
-    attr_reader :topic_arn, :queue
+    attr_reader :topic_arn, :queue_name, :queue
 
-    def self.create(topic_id)
-      new(topic_id).tap do |subscription|
+    def self.create(topic_id, options = {})
+      new(topic_id, options).tap do |subscription|
         subscription.create
       end
     end
 
-    def initialize(topic_id)
+    def initialize(topic_id, options = {})
       @topic_id = topic_id
       @suffixed_topic_id = "#{topic_id}#{Propono.config.queue_suffix}"
+      @queue_name = "#{Propono.config.application_name.gsub(" ", "_")}-#{@suffixed_topic_id}#{options[:queue_name_suffix]}"
     end
 
     def create
@@ -23,10 +24,6 @@ module Propono
       @queue = QueueCreator.find_or_create(queue_name)
       sns.subscribe(@topic.arn, @queue.arn, 'sqs')
       sqs.set_queue_attributes(@queue.url, "Policy", generate_policy)
-    end
-
-    def queue_name
-      @queue_name ||= "#{Propono.config.application_name.gsub(" ", "_")}-#{@suffixed_topic_id}"
     end
 
     private

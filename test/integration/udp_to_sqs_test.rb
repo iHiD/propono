@@ -4,8 +4,9 @@ module Propono
   class UdpToSqsTest < IntegrationTest
     def test_the_message_gets_there
       topic = "test-topic"
-      message = "This is my message"
+      message = "This is my message #{DateTime.now} #{rand()}"
       flunks = []
+      message_received = false
 
       Propono.config.udp_port = 20002
 
@@ -16,12 +17,19 @@ module Propono
           Propono.listen_to_queue(topic) do |sqs_message|
             assert_equal message, sqs_message
             sqs_thread.terminate
+            message_received = true
           end
         rescue => e
           flunks << e.message
         ensure
           sqs_thread.terminate
         end
+      end
+
+      Thread.new do
+        sleep(1) while !message_received
+        sleep(5) # Make sure all the message deletion clear up in the thread has happened
+        sqs_thread.terminate
       end
 
       udp_thread = Thread.new do
@@ -31,7 +39,7 @@ module Propono
         end
       end
 
-      sleep(2) # Make sure the listener has started
+      sleep(1) # Make sure the listener has started
 
       Propono.publish(topic, message, protocol: :udp)
       flunks << "Test Timeout" unless wait_for_thread(udp_thread) && wait_for_thread(sqs_thread)

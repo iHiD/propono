@@ -16,9 +16,9 @@ module Propono
       end
     end
 
-    # Wait a max of 30secs before failing the test
+    # Wait a max of 20secs before failing the test
     def wait_for_thread(thread)
-      300.times do |x|
+      200.times do |x|
         return true unless thread.alive?
         sleep(0.1)
       end

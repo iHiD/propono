@@ -5,7 +5,7 @@ module Propono
 
     def test_subscribe_by_queue_calls_queue_subscriber
       subscriber = QueueSubscription.new("topic")
-      QueueSubscription.expects(:new).with("topic").returns(subscriber)
+      QueueSubscription.expects(:new).with("topic", {}).returns(subscriber)
       QueueSubscription.any_instance.expects(:create)
       Subscriber.subscribe_by_queue("topic")
     end

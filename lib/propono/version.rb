@@ -1,3 +1,3 @@
 module Propono
-  VERSION = "0.11.1"
+  VERSION = "1.0.0.rc1"
 end
