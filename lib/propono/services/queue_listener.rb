@@ -1,6 +1,5 @@
 module Propono
   class QueueListener
-
     include Sqs
 
     def self.listen(topic_id, &message_processor)
@@ -29,10 +28,10 @@ module Propono
       if messages.empty?
         false
       else
-        messages.each { |msg| process_sqs_message(msg) }
+        messages.each { |msg| process_raw_message(msg) }
       end
     rescue Excon::Errors::Forbidden
-      Propono.config.logger.error "Forbidden error caught and re raised. #{queue_url}"
+      Propono.config.logger.error "Forbidden error caught and re-raised. #{queue_url}"
       Propono.config.logger.error $!
       raise $!
     rescue
@@ -40,22 +39,44 @@ module Propono
       Propono.config.logger.error $!
     end
 
-    def process_sqs_message(sqs_message)
-      body = JSON.parse(sqs_message["Body"])["Message"]
-
-      # Legacy syntax is covered in the rescue statement
-      # This begin/rescue dance and the rescue block will be removed in v1.
+    # The calls to delete_message are deliberately duplicated so
+    # as to ensure the message is only deleted if the preceeding line
+    # has completed succesfully. We do *not* want to ensure that the
+    # message is deleted regardless of what happens in this method.
+    def process_raw_message(raw_sqs_message)
       begin
-        body = JSON.parse(body)
-        context = body.symbolize_keys
-        message = context.delete(:message)
-        Propono.config.logger.info "Propono [#{context[:id]}]: Received from sqs."
-        @message_processor.call(message, context)
-      rescue JSON::ParserError, TypeError
-        Propono.config.logger.info("Sending and recieving messages without ids is deprecated")
-        @message_processor.call(body)
+        sqs_message = SqsMessage.new(raw_sqs_message)
+        Propono.config.logger.info "Propono [#{sqs_message.context[:id]}]: Received from sqs."
+
+        begin
+          process_message(sqs_message)
+          delete_message(raw_sqs_message)
+        rescue
+          move_to_failed_queue(sqs_message)
+          delete_message(raw_sqs_message)
+        end
+      rescue
+        move_to_corrupt_queue(raw_sqs_message)
+        delete_message(raw_sqs_message)
       end
-      sqs.delete_message(queue_url, sqs_message['ReceiptHandle'])
+    end
+
+    def process_message(sqs_message)
+      @message_processor.call(sqs_message.message, sqs_message.context)
+    end
+
+    def move_to_corrupt_queue(raw_sqs_message)
+      QueueSubscription.create(@topic_id, queue_name_suffix: "-corrupt")
+      Propono.publish("#{@topic_id}-corrupt", raw_sqs_message)
+    end
+
+    def move_to_failed_queue(sqs_message)
+      QueueSubscription.create(@topic_id, queue_name_suffix: "-failed")
+      Propono.publish("#{@topic_id}-failed", sqs_message.message, id: sqs_message.context[:id])
+    end
+
+    def delete_message(raw_sqs_message)
+      sqs.delete_message(queue_url, raw_sqs_message['ReceiptHandle'])
     end
 
     def queue_url

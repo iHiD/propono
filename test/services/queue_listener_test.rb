@@ -57,14 +57,14 @@ module Propono
     end
 
     def test_read_messages_calls_process_message_for_each_msg
-      @listener.expects(:process_sqs_message).with(@sqs_message1)
-      @listener.expects(:process_sqs_message).with(@sqs_message2)
+      @listener.expects(:process_raw_message).with(@sqs_message1)
+      @listener.expects(:process_raw_message).with(@sqs_message2)
       @listener.send(:read_messages)
     end
 
     def test_read_messages_does_not_call_process_messages_if_there_are_none
       @sqs_response.stubs(body: {"Message" => []})
-      @listener.expects(:process_sqs_message).never
+      @listener.expects(:process_message).never
       @listener.send(:read_messages)
     end
 
@@ -79,7 +79,7 @@ module Propono
     def test_forbidden_error_is_logged_and_re_raised
       @listener.stubs(queue_url: "http://example.com")
       @sqs.stubs(:receive_message).raises(Excon::Errors::Forbidden.new(nil, nil, nil))
-      Propono.config.logger.expects(:error).with("Forbidden error caught and re raised. http://example.com")
+      Propono.config.logger.expects(:error).with("Forbidden error caught and re-raised. http://example.com")
       Propono.config.logger.expects(:error).with() {|x| x.is_a?(Excon::Errors::Forbidden)}
       assert_raises Excon::Errors::Forbidden do
         @listener.send(:read_messages)
@@ -123,50 +123,47 @@ module Propono
       @listener.send(:read_messages)
     end
 
-    def test_messages_are_not_deleted_if_there_is_an_exception
+    def test_messages_are_deleted_if_there_is_an_exception_processing
+      queue_url = "test-queue-url"
+
+      @sqs.expects(:delete_message).with(queue_url, @receipt_handle1)
+      @sqs.expects(:delete_message).with(queue_url, @receipt_handle2)
+
       @listener = QueueListener.new(@topic_id) { raise StandardError.new("Test Error") }
-      @listener.stubs(sqs: @sqs)
-      @sqs.expects(:delete_message).never
-      @listener.send(:read_messages)
-    end
-  end
-  class QueueListenerLegacySyntaxTest < Minitest::Test
-
-    def setup
-      super
-      @topic_id = "some-topic"
-
-      @receipt_handle1 = "test-receipt-handle1"
-      @receipt_handle2 = "test-receipt-handle2"
-      @message1 = {'cat' => "Foobar 123"}
-      @message2 = "qwertyuiop"
-      @sqs_message1 = { "ReceiptHandle" => @receipt_handle1, "Body" => {"Message" => @message1}.to_json}
-      @sqs_message2 = { "ReceiptHandle" => @receipt_handle2, "Body" => {"Message" => @message2}.to_json}
-      @messages = { "Message" => [ @sqs_message1, @sqs_message2 ] }
-      @sqs_response = mock().tap{|m|m.stubs(body: @messages)}
-      @sqs = mock()
-      @sqs.stubs(receive_message: @sqs_response)
-      @sqs.stubs(:delete_message)
-
-      @listener = QueueListener.new(@topic_id) {}
-      @listener.stubs(sqs: @sqs)
-    end
-
-    def test_old_syntax_has_deprecation_warning
-      Propono.config.logger.expects(:info).with("Sending and recieving messages without ids is deprecated")
+      @listener.stubs(queue_url: queue_url)
       @listener.stubs(sqs: @sqs)
       @listener.send(:read_messages)
     end
 
-    def test_each_message_processor_is_yielded
-      messages_yielded = []
-      @listener = QueueListener.new(@topic_id) { |m| messages_yielded.push(m) }
+    def test_messages_are_moved_to_failed_queue_if_there_is_an_exception
+      @listener = QueueListener.new(@topic_id) { raise StandardError.new("Test Error") }
+      @listener.expects(:move_to_failed_queue).with(SqsMessage.new(@sqs_message1))
+      @listener.expects(:move_to_failed_queue).with(SqsMessage.new(@sqs_message2))
       @listener.stubs(sqs: @sqs)
       @listener.send(:read_messages)
+    end
 
-      assert_equal messages_yielded.size, 2
-      assert messages_yielded.include?(@message1)
-      assert messages_yielded.include?(@message2)
+    def test_messages_are_moved_to_corrupt_queue_if_there_is_an_parsing_exception
+      sqs_message1 = "foobar"
+      sqs_message2 = "barfoo"
+      @messages["Message"][0] = sqs_message1
+      @messages["Message"][1] = sqs_message2
+
+      @listener.expects(:move_to_corrupt_queue).with(sqs_message1)
+      @listener.expects(:move_to_corrupt_queue).with(sqs_message2)
+      @listener.send(:read_messages)
+    end
+
+    def test_move_to_failed_queue
+      QueueSubscription.expects(:create).with(@topic_id, queue_name_suffix: "-failed")
+      Propono.expects(:publish).with("#{@topic_id}-failed", @message1, id: @message1_id)
+      @listener.send(:move_to_failed_queue, SqsMessage.new(@sqs_message1))
+    end
+
+    def test_move_to_corrupt_queue
+      QueueSubscription.expects(:create).with(@topic_id, queue_name_suffix: "-corrupt")
+      Propono.expects(:publish).with("#{@topic_id}-corrupt", @sqs_message1)
+      @listener.send(:move_to_corrupt_queue, @sqs_message1)
     end
   end
 end

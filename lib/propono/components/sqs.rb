@@ -5,9 +5,7 @@ module Propono
     private
 
     def sqs
-      @sqs ||= Fog::AWS::SQS.new(
-        Propono.aws_options
-      )
+      @sqs ||= Fog::AWS::SQS.new(Propono.aws_options)
     end
   end
 end
