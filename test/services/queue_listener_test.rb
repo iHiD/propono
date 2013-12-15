@@ -79,7 +79,7 @@ module Propono
     def test_forbidden_error_is_logged_and_re_raised
       @listener.stubs(queue_url: "http://example.com")
       @sqs.stubs(:receive_message).raises(Excon::Errors::Forbidden.new(nil, nil, nil))
-      Propono.config.logger.expects(:error).with("Forbidden error caught and re raised. http://example.com")
+      Propono.config.logger.expects(:error).with("Forbidden error caught and re-raised. http://example.com")
       Propono.config.logger.expects(:error).with() {|x| x.is_a?(Excon::Errors::Forbidden)}
       assert_raises Excon::Errors::Forbidden do
         @listener.send(:read_messages)
@@ -128,45 +128,6 @@ module Propono
       @listener.stubs(sqs: @sqs)
       @sqs.expects(:delete_message).never
       @listener.send(:read_messages)
-    end
-  end
-  class QueueListenerLegacySyntaxTest < Minitest::Test
-
-    def setup
-      super
-      @topic_id = "some-topic"
-
-      @receipt_handle1 = "test-receipt-handle1"
-      @receipt_handle2 = "test-receipt-handle2"
-      @message1 = {'cat' => "Foobar 123"}
-      @message2 = "qwertyuiop"
-      @sqs_message1 = { "ReceiptHandle" => @receipt_handle1, "Body" => {"Message" => @message1}.to_json}
-      @sqs_message2 = { "ReceiptHandle" => @receipt_handle2, "Body" => {"Message" => @message2}.to_json}
-      @messages = { "Message" => [ @sqs_message1, @sqs_message2 ] }
-      @sqs_response = mock().tap{|m|m.stubs(body: @messages)}
-      @sqs = mock()
-      @sqs.stubs(receive_message: @sqs_response)
-      @sqs.stubs(:delete_message)
-
-      @listener = QueueListener.new(@topic_id) {}
-      @listener.stubs(sqs: @sqs)
-    end
-
-    def test_old_syntax_has_deprecation_warning
-      Propono.config.logger.expects(:info).with("Sending and recieving messages without ids is deprecated")
-      @listener.stubs(sqs: @sqs)
-      @listener.send(:read_messages)
-    end
-
-    def test_each_message_processor_is_yielded
-      messages_yielded = []
-      @listener = QueueListener.new(@topic_id) { |m| messages_yielded.push(m) }
-      @listener.stubs(sqs: @sqs)
-      @listener.send(:read_messages)
-
-      assert_equal messages_yielded.size, 2
-      assert messages_yielded.include?(@message1)
-      assert messages_yielded.include?(@message2)
     end
   end
 end

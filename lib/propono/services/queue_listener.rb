@@ -32,7 +32,7 @@ module Propono
         messages.each { |msg| process_sqs_message(msg) }
       end
     rescue Excon::Errors::Forbidden
-      Propono.config.logger.error "Forbidden error caught and re raised. #{queue_url}"
+      Propono.config.logger.error "Forbidden error caught and re-raised. #{queue_url}"
       Propono.config.logger.error $!
       raise $!
     rescue
@@ -42,19 +42,12 @@ module Propono
 
     def process_sqs_message(sqs_message)
       body = JSON.parse(sqs_message["Body"])["Message"]
+      body = JSON.parse(body)
 
-      # Legacy syntax is covered in the rescue statement
-      # This begin/rescue dance and the rescue block will be removed in v1.
-      begin
-        body = JSON.parse(body)
-        context = body.symbolize_keys
-        message = context.delete(:message)
-        Propono.config.logger.info "Propono [#{context[:id]}]: Received from sqs."
-        @message_processor.call(message, context)
-      rescue JSON::ParserError, TypeError
-        Propono.config.logger.info("Sending and recieving messages without ids is deprecated")
-        @message_processor.call(body)
-      end
+      context = body.symbolize_keys
+      message = context.delete(:message)
+      Propono.config.logger.info "Propono [#{context[:id]}]: Received from sqs."
+      @message_processor.call(message, context)
       sqs.delete_message(queue_url, sqs_message['ReceiptHandle'])
     end
 
