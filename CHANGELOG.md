@@ -1,3 +1,6 @@
+# 1.0.0.rc2 / 2013-12-15
+* [FEATURE] Make queue_suffix optional
+
 # 1.0.0.rc1 / 2013-12-15
 * [FEATURE] Improve transactional handling of messages.
 * [FEATURE] Add failed/corrupt queues.

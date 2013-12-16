@@ -25,14 +25,14 @@ module Propono
         get_or_raise(setting)
       end
     end
-    
-    attr_reader :use_iam_profile
-      
+
+    attr_reader :use_iam_profile, :queue_suffix
+
     private
 
     def get_or_raise(setting)
-      instance_variable_get("@#{setting.to_s}") || 
-        raise(ProponoConfigurationError.new("Configuration for #{setting} is not set"))
+      val = instance_variable_get("@#{setting.to_s}")
+      val.nil?? raise(ProponoConfigurationError.new("Configuration for #{setting} is not set")) : val
     end
   end
 end
