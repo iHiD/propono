@@ -143,7 +143,6 @@ module Propono
       @listener.send(:read_messages)
     end
     
-    
     def test_failed_on_moving_to_failed_queue_does_not_delete
       @listener = QueueListener.new(@topic_id) { raise StandardError.new("Test Error") }
       @listener.stubs(:move_to_failed_queue).with(SqsMessage.new(@sqs_message1)).raises(StandardError.new("failed to move"))
@@ -153,7 +152,6 @@ module Propono
       @listener.stubs(sqs: @sqs)
       @listener.send(:read_messages)
     end
-
 
     def test_messages_are_moved_to_corrupt_queue_if_there_is_an_parsing_exception
       sqs_message1 = "foobar"

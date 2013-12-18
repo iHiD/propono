@@ -1,4 +1,5 @@
 module Propono
+  
   class QueueListener
     include Sqs
 
@@ -47,7 +48,7 @@ module Propono
       sqs_message = parse(raw_sqs_message)
       unless sqs_message.nil?
         Propono.config.logger.info "Propono [#{sqs_message.context[:id]}]: Received from sqs."
-        handle(sqs_message)
+        handle(sqs_message, raw_sqs_message)
         delete_message(raw_sqs_message)
       end
     end
@@ -59,10 +60,10 @@ module Propono
       delete_message(raw_sqs_message)
     end
 
-    def handle(sqs_message)
+    def handle(sqs_message, raw_sqs_message)
       process_message(sqs_message)
     rescue
-      move_to_failed_queue(sqs_message)
+      move_to_failed_queue(raw_sqs_message)
     end
     
     def process_message(sqs_message)
@@ -70,13 +71,11 @@ module Propono
     end
 
     def move_to_corrupt_queue(raw_sqs_message)
-      QueueSubscription.create(@topic_id, queue_name_suffix: "-corrupt")
-      Propono.publish("#{@topic_id}-corrupt", raw_sqs_message)
+      sqs.send_message(corrupt_queue_url, raw_sqs_message["Body"])
     end
 
     def move_to_failed_queue(sqs_message)
-      QueueSubscription.create(@topic_id, queue_name_suffix: "-failed")
-      Propono.publish("#{@topic_id}-failed", sqs_message.message, id: sqs_message.context[:id])
+      sqs.send_message(failed_queue_url, sqs_message["Body"])
     end
 
     def delete_message(raw_sqs_message)
@@ -85,6 +84,14 @@ module Propono
 
     def queue_url
       @queue_url ||= subscription.queue.url
+    end
+
+    def failed_queue_url
+      @failed_queue_url ||= subscription.failed_queue.url
+    end
+
+    def corrupt_queue_url
+      @corrupt_queue_url ||= subscription.corrupt_queue.url
     end
 
     def subscription
