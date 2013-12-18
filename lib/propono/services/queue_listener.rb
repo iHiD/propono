@@ -44,23 +44,27 @@ module Propono
     # has completed succesfully. We do *not* want to ensure that the
     # message is deleted regardless of what happens in this method.
     def process_raw_message(raw_sqs_message)
-      begin
-        sqs_message = SqsMessage.new(raw_sqs_message)
+      sqs_message = parse(raw_sqs_message)
+      unless sqs_message.nil?
         Propono.config.logger.info "Propono [#{sqs_message.context[:id]}]: Received from sqs."
-
-        begin
-          process_message(sqs_message)
-          delete_message(raw_sqs_message)
-        rescue
-          move_to_failed_queue(sqs_message)
-          delete_message(raw_sqs_message)
-        end
-      rescue
-        move_to_corrupt_queue(raw_sqs_message)
+        handle(sqs_message)
         delete_message(raw_sqs_message)
       end
     end
+    
+    def parse(raw_sqs_message)
+      SqsMessage.new(raw_sqs_message)
+    rescue
+      move_to_corrupt_queue(raw_sqs_message)
+      delete_message(raw_sqs_message)
+    end
 
+    def handle(sqs_message)
+      process_message(sqs_message)
+    rescue
+      move_to_failed_queue(sqs_message)
+    end
+    
     def process_message(sqs_message)
       @message_processor.call(sqs_message.message, sqs_message.context)
     end
@@ -86,5 +90,6 @@ module Propono
     def subscription
       @subscription ||= QueueSubscription.create(@topic_id)
     end
+    
   end
 end
