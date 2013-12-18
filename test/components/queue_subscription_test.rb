@@ -26,8 +26,12 @@ module Propono
 
       TopicCreator.stubs(find_or_create: Topic.new("1123"))
 
+      queue_name = subscription.send(:queue_name)
+      
       sqs = mock()
-      sqs.expects(:create_queue).with(subscription.send(:queue_name)).returns(mock(body: {'QueueUrl' => Fog::AWS::SQS::Mock::QueueUrl}))
+      sqs.expects(:create_queue).with(queue_name).returns(mock(body: {'QueueUrl' => Fog::AWS::SQS::Mock::QueueUrl}))
+      sqs.expects(:create_queue).with(queue_name + '-failed').returns(mock(body: {'QueueUrl' => Fog::AWS::SQS::Mock::QueueUrl}))
+      sqs.expects(:create_queue).with(queue_name + '-corrupt').returns(mock(body: {'QueueUrl' => Fog::AWS::SQS::Mock::QueueUrl}))
       QueueCreator.any_instance.stubs(sqs: sqs)
 
       subscription.create
@@ -81,11 +85,18 @@ module Propono
 
     def test_create_saves_queue
       queue = Queue.new(Fog::AWS::SQS::Mock::QueueUrl)
+      failed_queue = Queue.new(Fog::AWS::SQS::Mock::QueueUrl)
+      corrupt_queue = Queue.new(Fog::AWS::SQS::Mock::QueueUrl)
 
-      QueueCreator.expects(:find_or_create).returns(queue)
-      subscription = QueueSubscription.new("Some Topic")
+      QueueCreator.expects(:find_or_create).with('MyApp-SomeTopic-suf').returns(queue)
+      QueueCreator.expects(:find_or_create).with('MyApp-SomeTopic-suf-failed').returns(failed_queue)
+      QueueCreator.expects(:find_or_create).with('MyApp-SomeTopic-suf-corrupt').returns(corrupt_queue)
+      subscription = QueueSubscription.new("SomeTopic")
       subscription.create
+      
       assert_equal queue, subscription.queue
+      assert_equal failed_queue, subscription.failed_queue
+      assert_equal corrupt_queue, subscription.corrupt_queue
     end
 
     def test_create_raises_with_nil_topic
