@@ -129,22 +129,25 @@ module Propono
       @sqs.expects(:delete_message).with(queue_url, @receipt_handle1)
       @sqs.expects(:delete_message).with(queue_url, @receipt_handle2)
     
-      @listener = QueueListener.new(@topic_id) { raise StandardError.new("Test Error") }
+      exception = StandardError.new("Test Error") 
+      @listener = QueueListener.new(@topic_id) { raise exception }
       @listener.stubs(queue_url: queue_url)
       @listener.stubs(sqs: @sqs)
       @listener.send(:read_messages)
     end
     
     def test_messages_are_moved_to_failed_queue_if_there_is_an_exception
-      @listener = QueueListener.new(@topic_id) { raise StandardError.new("Test Error") }
-      @listener.expects(:move_to_failed_queue).with(SqsMessage.new(@sqs_message1))
-      @listener.expects(:move_to_failed_queue).with(SqsMessage.new(@sqs_message2))
+      exception = StandardError.new("Test Error")
+      @listener = QueueListener.new(@topic_id) { raise exception }
+      @listener.expects(:move_to_failed_queue).with(SqsMessage.new(@sqs_message1), exception)
+      @listener.expects(:move_to_failed_queue).with(SqsMessage.new(@sqs_message2), exception)
       @listener.stubs(sqs: @sqs)
       @listener.send(:read_messages)
     end
     
     def test_failed_on_moving_to_failed_queue_does_not_delete
-      @listener = QueueListener.new(@topic_id) { raise StandardError.new("Test Error") }
+      exception = StandardError.new("Test Error") 
+      @listener = QueueListener.new(@topic_id) { raise exception }
       @listener.stubs(:move_to_failed_queue).with(SqsMessage.new(@sqs_message1)).raises(StandardError.new("failed to move"))
       @listener.stubs(:move_to_failed_queue).with(SqsMessage.new(@sqs_message2)).raises(StandardError.new("failed to move"))
       @listener.expects(:delete_message).with(@sqs_message1).never
@@ -167,7 +170,7 @@ module Propono
     def test_move_to_failed_queue
       QueueSubscription.expects(:create).with(@topic_id, queue_name_suffix: "-failed")
       Propono.expects(:publish).with("#{@topic_id}-failed", @message1, id: @message1_id)
-      @listener.send(:move_to_failed_queue, SqsMessage.new(@sqs_message1))
+      @listener.send(:move_to_failed_queue, SqsMessage.new(@sqs_message1), StandardError.new)
     end
     
     def test_move_to_corrupt_queue

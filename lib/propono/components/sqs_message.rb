@@ -13,6 +13,20 @@ module Propono
       @receipt_handle = raw_message["receipt_handle"]
     end
 
+    def for_failed_queue(exception)
+      context = @context.dup
+      context[:last_exception_message] = exception.message
+      context[:last_exception_stack_trace] = exception.stack_trace
+      context[:num_failures] ||= 0
+      context[:num_failures] += 1
+      {"Message" => 
+        {
+          "id" => context.id, 
+          "message" => {message: @message, context: context}
+        }
+      }.to_json
+    end
+
     def ==(other)
       other.is_a?(SqsMessage) && other.receipt_handle == @receipt_handle
     end
