@@ -13,15 +13,15 @@ module Propono
       @receipt_handle = raw_message["receipt_handle"]
     end
 
-    def for_failed_queue(exception)
+    def to_json_with_exception(exception)
       context = @context.dup
       context[:last_exception_message] = exception.message
-      context[:last_exception_stack_trace] = exception.stack_trace
+      context[:last_exception_stack_trace] = exception.backtrace
       context[:num_failures] ||= 0
       context[:num_failures] += 1
       {"Message" => 
         {
-          "id" => context.id, 
+          "id" => context[:id],
           "message" => {message: @message, context: context}
         }
       }.to_json

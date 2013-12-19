@@ -133,6 +133,8 @@ module Propono
       @listener = QueueListener.new(@topic_id) { raise exception }
       @listener.stubs(queue_url: queue_url)
       @listener.stubs(sqs: @sqs)
+      @listener.stubs(:move_to_failed_queue).with(SqsMessage.new(@sqs_message1), exception)
+      @listener.stubs(:move_to_failed_queue).with(SqsMessage.new(@sqs_message2), exception)
       @listener.send(:read_messages)
     end
     
@@ -148,8 +150,8 @@ module Propono
     def test_failed_on_moving_to_failed_queue_does_not_delete
       exception = StandardError.new("Test Error") 
       @listener = QueueListener.new(@topic_id) { raise exception }
-      @listener.stubs(:move_to_failed_queue).with(SqsMessage.new(@sqs_message1)).raises(StandardError.new("failed to move"))
-      @listener.stubs(:move_to_failed_queue).with(SqsMessage.new(@sqs_message2)).raises(StandardError.new("failed to move"))
+      @listener.stubs(:move_to_failed_queue).with(SqsMessage.new(@sqs_message1), exception).raises(StandardError.new("failed to move"))
+      @listener.stubs(:move_to_failed_queue).with(SqsMessage.new(@sqs_message2), exception).raises(StandardError.new("failed to move"))
       @listener.expects(:delete_message).with(@sqs_message1).never
       @listener.expects(:delete_message).with(@sqs_message2).never
       @listener.stubs(sqs: @sqs)
@@ -168,14 +170,14 @@ module Propono
     end
 
     def test_move_to_failed_queue
-      QueueSubscription.expects(:create).with(@topic_id, queue_name_suffix: "-failed")
-      Propono.expects(:publish).with("#{@topic_id}-failed", @message1, id: @message1_id)
+      @sqs.expects(:send_message).with(regexp_matches(/https:\/\/queue.amazonaws.com\/[0-9]+\/MyApp-some-topic-failed/), anything)
+      #Propono.expects(:publish).with("#{@topic_id}-failed", @message1, id: @message1_id)
       @listener.send(:move_to_failed_queue, SqsMessage.new(@sqs_message1), StandardError.new)
     end
     
     def test_move_to_corrupt_queue
-      QueueSubscription.expects(:create).with(@topic_id, queue_name_suffix: "-corrupt")
-      Propono.expects(:publish).with("#{@topic_id}-corrupt", @sqs_message1)
+      @sqs.expects(:send_message).with(regexp_matches(/https:\/\/queue.amazonaws.com\/[0-9]+\/MyApp-some-topic-corrupt/), anything)
+      #Propono.expects(:publish).with("#{@topic_id}-", @sqs_message1)
       @listener.send(:move_to_corrupt_queue, @sqs_message1)
     end
   end

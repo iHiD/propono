@@ -75,7 +75,7 @@ module Propono
     end
 
     def move_to_failed_queue(sqs_message, exception)
-      sqs.send_message(failed_queue_url, for_failed_queue(exception))
+      sqs.send_message(failed_queue_url, sqs_message.to_json_with_exception(exception))
     end
 
     def delete_message(raw_sqs_message)
