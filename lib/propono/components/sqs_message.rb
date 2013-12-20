@@ -6,7 +6,7 @@ module Propono
     def initialize(raw_message)
       raw_body = raw_message["Body"]
       @raw_body_json = JSON.parse(raw_body)
-      body = JSON.parse(raw_body_json["Message"])
+      body = JSON.parse(@raw_body_json["Message"])
 
       @raw_message    = raw_message
       @context        = body.symbolize_keys
@@ -26,7 +26,7 @@ module Propono
       context[:num_failures] += 1
       context[:last_context] = @context
       message['Message'] = context.to_json
-      message.to_json
+      JSON.pretty_generate(message)
     end
 
     def ==(other)

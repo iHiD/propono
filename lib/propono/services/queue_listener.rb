@@ -37,7 +37,7 @@ module Propono
       raise $!
     rescue
       Propono.config.logger.error "Unexpected error reading from queue #{queue_url}"
-      Propono.config.logger.error $!
+      Propono.config.logger.error $!, $!.backtrace
     end
 
     # The calls to delete_message are deliberately duplicated so
@@ -56,8 +56,10 @@ module Propono
     def parse(raw_sqs_message)
       SqsMessage.new(raw_sqs_message)
     rescue
+      Propono.config.logger.error "Error parsing message, moving to corrupt queue", $!, $!.backtrace
       move_to_corrupt_queue(raw_sqs_message)
       delete_message(raw_sqs_message)
+      nil
     end
 
     def handle(sqs_message)
