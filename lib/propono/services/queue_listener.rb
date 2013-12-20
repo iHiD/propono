@@ -78,7 +78,9 @@ module Propono
     end
 
     def move_to_failed_queue(sqs_message, exception)
-      sqs.send_message(failed_queue_url, sqs_message.to_json_with_exception(exception))
+      next_queue = (sqs_message.failure_count < 3) ? queue_url : failed_queue_url
+      Propono.config.logger.error "Error proessing message, moving to queue: #{next_queue}"
+      sqs.send_message(next_queue, sqs_message.to_json_with_exception(exception))
     end
 
     def delete_message(raw_sqs_message)
