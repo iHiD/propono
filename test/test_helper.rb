@@ -21,9 +21,9 @@ class Minitest::Test
       config.queue_region = "us-east-1"
       config.application_name = "MyApp"
 
-      config.logger.stubs(:debug)
-      config.logger.stubs(:info)
-      config.logger.stubs(:error)
+      #config.logger.stubs(:debug)
+      #config.logger.stubs(:info)
+      #config.logger.stubs(:error)
     end
   end
 end
