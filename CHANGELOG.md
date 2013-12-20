@@ -1,3 +1,6 @@
+# 1.0.0.rc3 / 2013-12-20
+* [FEATURE] Create failed and corrupt queues when subscribe.
+
 # 1.0.0.rc2 / 2013-12-15
 * [FEATURE] Make queue_suffix optional
 
