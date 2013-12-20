@@ -131,7 +131,7 @@ module Propono
       @sqs.expects(:delete_message).with(queue_url, @receipt_handle1)
       @sqs.expects(:delete_message).with(queue_url, @receipt_handle2)
 
-      exception = StandardError.new("Test Error") 
+      exception = StandardError.new("Test Error")
       @listener = QueueListener.new(@topic_id) { raise exception }
       @listener.stubs(queue_url: queue_url)
       @listener.stubs(sqs: @sqs)
@@ -148,9 +148,9 @@ module Propono
       @listener.stubs(sqs: @sqs)
       @listener.send(:read_messages)
     end
-    
+
     def test_failed_on_moving_to_failed_queue_does_not_delete
-      exception = StandardError.new("Test Error") 
+      exception = StandardError.new("Test Error")
       @listener = QueueListener.new(@topic_id) { raise exception }
       @listener.stubs(:requeue_message_on_failure).with(SqsMessage.new(@sqs_message1), exception).raises(StandardError.new("failed to move"))
       @listener.stubs(:requeue_message_on_failure).with(SqsMessage.new(@sqs_message2), exception).raises(StandardError.new("failed to move"))
