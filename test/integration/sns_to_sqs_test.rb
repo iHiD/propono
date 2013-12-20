@@ -1,25 +1,6 @@
 require File.expand_path('../integration_test', __FILE__)
 
 module Propono
-  class BrokenPublisher < Propono::Publisher
-
-    def initialize(topic_id, raw_text)
-      super(topic_id, "")
-      @raw_text = raw_text
-    end
-
-    def publish
-      topic = TopicCreator.find_or_create(topic_id)
-      Thread.new do
-        begin
-          sns.publish(topic.arn, @raw_text)
-        rescue => e
-          Propono.config.logger.error "Propono [#{id}]: Failed to send via sns : #{e}"
-        end
-      end
-    end
-  end
-  
   class SnsToSqsTest < IntegrationTest
     def test_the_message_gets_there
       topic = "test-topic"

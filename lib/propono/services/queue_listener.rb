@@ -12,7 +12,7 @@ module Propono
       @message_processor = message_processor
       @channel = options.fetch(:channel, :live)
     end
-    
+
     def listen
       send("listen_to_#{@channel}")
     end
@@ -70,7 +70,7 @@ module Propono
       Propono.config.logger.error "Unexpected error reading from queue #{queue_url}"
       Propono.config.logger.error $!, $!.backtrace
     end
-    
+
     # The calls to delete_message are deliberately duplicated so
     # as to ensure the message is only deleted if the preceeding line
     # has completed succesfully. We do *not* want to ensure that the
@@ -89,8 +89,8 @@ module Propono
       Propono.config.logger.info "Propono [#{sqs_message.context[:id]}]: Received from sqs."
       process_message(sqs_message)
       delete_message(raw_sqs_message)
-      rescue => e
-        Propono.config.logger.error("Failure while handling message: msg will remain on the queue. #{e.message} #{e.backtrace}")
+    rescue => e
+      Propono.config.logger.error("Failure while handling message: msg will remain on the queue. #{e.message} #{e.backtrace}")
     end
 
     def parse(raw_sqs_message)
@@ -145,6 +145,5 @@ module Propono
     def subscription
       @subscription ||= QueueSubscription.create(@topic_id)
     end
-
   end
 end
