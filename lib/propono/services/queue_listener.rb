@@ -86,7 +86,7 @@ module Propono
     
     def process_raw_message_and_block_on_error(raw_sqs_message)
       sqs_message = SqsMessage.new(raw_sqs_message)
-      Propono.config.logger.info "Propono [#{sqs_message.context[:id]}]: Received from sqs."
+      Propono.config.logger.info "Propono [#{sqs_message.context[:id]}]: Received from sqs." unless sqs_message.nil?
       process_message(sqs_message)
       delete_message(raw_sqs_message)
     rescue => e
