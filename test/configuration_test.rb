@@ -105,6 +105,16 @@ module Propono
         Propono.config.application_name
       end
     end
+
+    def test_default_max_retries
+      assert_equal 0, Propono.config.max_retries
+    end
+    
+    def test_max_retries
+      val = 5
+      Propono.config.max_retries = val
+      assert_equal 5, Propono.config.max_retries
+    end
   end
 end
 

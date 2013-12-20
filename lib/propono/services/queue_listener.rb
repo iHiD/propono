@@ -1,4 +1,5 @@
 module Propono
+
   class QueueListener
     include Sqs
 
@@ -36,7 +37,7 @@ module Propono
       raise $!
     rescue
       Propono.config.logger.error "Unexpected error reading from queue #{queue_url}"
-      Propono.config.logger.error $!
+      Propono.config.logger.error $!, $!.backtrace
     end
 
     # The calls to delete_message are deliberately duplicated so
@@ -44,21 +45,28 @@ module Propono
     # has completed succesfully. We do *not* want to ensure that the
     # message is deleted regardless of what happens in this method.
     def process_raw_message(raw_sqs_message)
-      begin
-        sqs_message = SqsMessage.new(raw_sqs_message)
+      sqs_message = parse(raw_sqs_message)
+      unless sqs_message.nil?
         Propono.config.logger.info "Propono [#{sqs_message.context[:id]}]: Received from sqs."
-
-        begin
-          process_message(sqs_message)
-          delete_message(raw_sqs_message)
-        rescue
-          move_to_failed_queue(sqs_message)
-          delete_message(raw_sqs_message)
-        end
-      rescue
-        move_to_corrupt_queue(raw_sqs_message)
+        handle(sqs_message)
         delete_message(raw_sqs_message)
       end
+    end
+
+    def parse(raw_sqs_message)
+      SqsMessage.new(raw_sqs_message)
+    rescue
+      Propono.config.logger.error "Error parsing message, moving to corrupt queue", $!, $!.backtrace
+      move_to_corrupt_queue(raw_sqs_message)
+      delete_message(raw_sqs_message)
+      nil
+    end
+
+    def handle(sqs_message)
+      process_message(sqs_message)
+    rescue => e
+      Propono.config.logger.error("Failed to handle message #{e.message} #{e.backtrace}")
+      requeue_message_on_failure(sqs_message, e)
     end
 
     def process_message(sqs_message)
@@ -66,13 +74,13 @@ module Propono
     end
 
     def move_to_corrupt_queue(raw_sqs_message)
-      QueueSubscription.create(@topic_id, queue_name_suffix: "-corrupt")
-      Propono.publish("#{@topic_id}-corrupt", raw_sqs_message)
+      sqs.send_message(corrupt_queue_url, raw_sqs_message["Body"])
     end
 
-    def move_to_failed_queue(sqs_message)
-      QueueSubscription.create(@topic_id, queue_name_suffix: "-failed")
-      Propono.publish("#{@topic_id}-failed", sqs_message.message, id: sqs_message.context[:id])
+    def requeue_message_on_failure(sqs_message, exception)
+      next_queue = (sqs_message.failure_count < Propono.config.max_retries) ? queue_url : failed_queue_url
+      Propono.config.logger.error "Error proessing message, moving to queue: #{next_queue}"
+      sqs.send_message(next_queue, sqs_message.to_json_with_exception(exception))
     end
 
     def delete_message(raw_sqs_message)
@@ -81,6 +89,14 @@ module Propono
 
     def queue_url
       @queue_url ||= subscription.queue.url
+    end
+
+    def failed_queue_url
+      @failed_queue_url ||= subscription.failed_queue.url
+    end
+
+    def corrupt_queue_url
+      @corrupt_queue_url ||= subscription.corrupt_queue.url
     end
 
     def subscription

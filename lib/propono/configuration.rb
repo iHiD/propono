@@ -10,7 +10,8 @@ module Propono
       :application_name,
       :udp_host, :udp_port,
       :tcp_host, :tcp_port,
-      :logger
+      :logger,
+      :max_retries
     ]
     attr_writer *SETTINGS
 
@@ -18,6 +19,7 @@ module Propono
       self.logger = Propono::Logger.new
       self.queue_suffix = ""
       self.use_iam_profile = false
+      self.max_retries = 0
     end
 
     SETTINGS.each do |setting|
