@@ -133,16 +133,16 @@ module Propono
       @listener = QueueListener.new(@topic_id) { raise exception }
       @listener.stubs(queue_url: queue_url)
       @listener.stubs(sqs: @sqs)
-      @listener.stubs(:move_to_failed_queue).with(SqsMessage.new(@sqs_message1), exception)
-      @listener.stubs(:move_to_failed_queue).with(SqsMessage.new(@sqs_message2), exception)
+      @listener.stubs(:requeue_message_on_failure).with(SqsMessage.new(@sqs_message1), exception)
+      @listener.stubs(:requeue_message_on_failure).with(SqsMessage.new(@sqs_message2), exception)
       @listener.send(:read_messages)
     end
     
     def test_messages_are_moved_to_failed_queue_if_there_is_an_exception
       exception = StandardError.new("Test Error")
       @listener = QueueListener.new(@topic_id) { raise exception }
-      @listener.expects(:move_to_failed_queue).with(SqsMessage.new(@sqs_message1), exception)
-      @listener.expects(:move_to_failed_queue).with(SqsMessage.new(@sqs_message2), exception)
+      @listener.expects(:requeue_message_on_failure).with(SqsMessage.new(@sqs_message1), exception)
+      @listener.expects(:requeue_message_on_failure).with(SqsMessage.new(@sqs_message2), exception)
       @listener.stubs(sqs: @sqs)
       @listener.send(:read_messages)
     end
@@ -150,8 +150,8 @@ module Propono
     def test_failed_on_moving_to_failed_queue_does_not_delete
       exception = StandardError.new("Test Error") 
       @listener = QueueListener.new(@topic_id) { raise exception }
-      @listener.stubs(:move_to_failed_queue).with(SqsMessage.new(@sqs_message1), exception).raises(StandardError.new("failed to move"))
-      @listener.stubs(:move_to_failed_queue).with(SqsMessage.new(@sqs_message2), exception).raises(StandardError.new("failed to move"))
+      @listener.stubs(:requeue_message_on_failure).with(SqsMessage.new(@sqs_message1), exception).raises(StandardError.new("failed to move"))
+      @listener.stubs(:requeue_message_on_failure).with(SqsMessage.new(@sqs_message2), exception).raises(StandardError.new("failed to move"))
       @listener.expects(:delete_message).with(@sqs_message1).never
       @listener.expects(:delete_message).with(@sqs_message2).never
       @listener.stubs(sqs: @sqs)
@@ -169,10 +169,10 @@ module Propono
       @listener.send(:read_messages)
     end
 
-    def test_move_to_failed_queue
+    def test_requeue_message_on_failure
       @sqs.expects(:send_message).with(regexp_matches(/https:\/\/queue.amazonaws.com\/[0-9]+\/MyApp-some-topic-failed/), anything)
       #Propono.expects(:publish).with("#{@topic_id}-failed", @message1, id: @message1_id)
-      @listener.send(:move_to_failed_queue, SqsMessage.new(@sqs_message1), StandardError.new)
+      @listener.send(:requeue_message_on_failure, SqsMessage.new(@sqs_message1), StandardError.new)
     end
     
     def test_move_to_corrupt_queue

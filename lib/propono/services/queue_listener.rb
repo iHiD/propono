@@ -66,7 +66,7 @@ module Propono
       process_message(sqs_message)
     rescue => e
       Propono.config.logger.error("Failed to handle message #{e.message} #{e.backtrace}")
-      move_to_failed_queue(sqs_message, e)
+      requeue_message_on_failure(sqs_message, e)
     end
 
     def process_message(sqs_message)
@@ -77,7 +77,10 @@ module Propono
       sqs.send_message(corrupt_queue_url, raw_sqs_message["Body"])
     end
 
-    def move_to_failed_queue(sqs_message, exception)
+    def requeue_message_on_failure(sqs_message, exception)
+      # We've tested retry logic, but have hardcoded as zero for now as it
+      # requires thought about consumers should handle it. Expect that we'll
+      # create a config param for this at some point [ccare & malcyl] 
       next_queue = (sqs_message.failure_count < 0) ? queue_url : failed_queue_url
       Propono.config.logger.error "Error proessing message, moving to queue: #{next_queue}"
       sqs.send_message(next_queue, sqs_message.to_json_with_exception(exception))
