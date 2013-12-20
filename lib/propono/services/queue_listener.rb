@@ -14,22 +14,9 @@ module Propono
     end
 
     def listen
-      send("listen_to_#{@channel}")
-    end
-
-    def listen_to_live
       raise ProponoError.new("topic_id is nil") unless @topic_id
       loop do
         unless read_messages
-          sleep 10
-        end
-      end
-    end
-    
-    def listen_to_failed
-      raise ProponoError.new("topic_id is nil") unless @topic_id
-      loop do
-        unless read_failed_messages
           sleep 10
         end
       end
@@ -38,29 +25,12 @@ module Propono
     private
 
     def read_messages
-      response = sqs.receive_message( queue_url, {'MaxNumberOfMessages' => 10} )
+      response = sqs.receive_message( channel_queue_url, {'MaxNumberOfMessages' => 10} )
       messages = response.body['Message']
       if messages.empty?
         false
       else
-        messages.each { |msg| process_raw_message(msg) }
-      end
-    rescue Excon::Errors::Forbidden
-      Propono.config.logger.error "Forbidden error caught and re-raised. #{queue_url}"
-      Propono.config.logger.error $!
-      raise $!
-    rescue
-      Propono.config.logger.error "Unexpected error reading from queue #{queue_url}"
-      Propono.config.logger.error $!, $!.backtrace
-    end
-    
-    def read_failed_messages
-      response = sqs.receive_message( failed_queue_url, {'MaxNumberOfMessages' => 10} )
-      messages = response.body['Message']
-      if messages.empty?
-        false
-      else
-        messages.each { |msg| process_raw_message_and_block_on_error(msg) }
+        messages.each { |msg| channel_processor.call(msg) }
       end
     rescue Excon::Errors::Forbidden
       Propono.config.logger.error "Forbidden error caught and re-raised. #{queue_url}"
@@ -83,12 +53,9 @@ module Propono
         delete_message(raw_sqs_message)
       end
     end
-    
+
     def process_raw_message_and_block_on_error(raw_sqs_message)
-      sqs_message = SqsMessage.new(raw_sqs_message)
-      Propono.config.logger.info "Propono [#{sqs_message.context[:id]}]: Received from sqs." unless sqs_message.nil?
-      process_message(sqs_message)
-      delete_message(raw_sqs_message)
+      process_raw_message(raw_sqs_message)
     rescue => e
       Propono.config.logger.error("Failure while handling message: msg will remain on the queue. #{e.message} #{e.backtrace}")
     end
@@ -124,7 +91,7 @@ module Propono
     end
 
     def delete_message(raw_sqs_message)
-      sqs.delete_message(queue_url, raw_sqs_message['ReceiptHandle'])
+      sqs.delete_message(channel_queue_url, raw_sqs_message['ReceiptHandle'])
     end
 
     def queue_url
@@ -141,6 +108,24 @@ module Propono
 
     def subscription
       @subscription ||= QueueSubscription.create(@topic_id)
+    end
+
+    def channel_queue_url
+      case @channel
+      when :live
+       queue_url
+      when :failed
+        failed_queue_url
+      end
+    end
+
+    def channel_processor
+      case @channel
+      when :live
+        Proc.new {|x|process_raw_message(x)}
+      when :failed
+        Proc.new {|x|process_raw_message_and_block_on_error(x)}
+      end
     end
   end
 end

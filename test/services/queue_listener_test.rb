@@ -131,7 +131,7 @@ module Propono
       @sqs.expects(:delete_message).with(queue_url, @receipt_handle1)
       @sqs.expects(:delete_message).with(queue_url, @receipt_handle2)
 
-      exception = StandardError.new("Test Error") 
+      exception = StandardError.new("Test Error")
       @listener = QueueListener.new(@topic_id) { raise exception }
       @listener.stubs(queue_url: queue_url)
       @listener.stubs(sqs: @sqs)
@@ -148,9 +148,9 @@ module Propono
       @listener.stubs(sqs: @sqs)
       @listener.send(:read_messages)
     end
-    
+
     def test_failed_on_moving_to_failed_queue_does_not_delete
-      exception = StandardError.new("Test Error") 
+      exception = StandardError.new("Test Error")
       @listener = QueueListener.new(@topic_id) { raise exception }
       @listener.stubs(:requeue_message_on_failure).with(SqsMessage.new(@sqs_message1), exception).raises(StandardError.new("failed to move"))
       @listener.stubs(:requeue_message_on_failure).with(SqsMessage.new(@sqs_message2), exception).raises(StandardError.new("failed to move"))
@@ -197,21 +197,33 @@ module Propono
       @listener.send(:move_to_corrupt_queue, @sqs_message1)
     end
 
+    def test_channel_queue_url_is_calculate_for_live
+      listener = QueueListener.new(@topic_id, channel: :live) {}
+      assert_equal listener.send(:queue_url), listener.send(:channel_queue_url)
+    end
+
+    def test_channel_queue_url_is_calculate_for_failed
+      listener = QueueListener.new(@topic_id, channel: :failed) {}
+      assert_equal listener.send(:failed_queue_url), listener.send(:channel_queue_url)
+    end
+
     def test_each_failed_message_is_deleted_when_read
-      queue_url = "test-queue-url"
-    
+      queue_url = @listener.send(:failed_queue_url)
+      @listener.instance_variable_set(:@channel, :failed)
+
       @sqs.expects(:delete_message).with(queue_url, @receipt_handle1)
       @sqs.expects(:delete_message).with(queue_url, @receipt_handle2)
-    
-      @listener.stubs(queue_url: queue_url)
-      @listener.send(:read_failed_messages)
+
+      @listener.send(:read_messages)
     end
-    
+
     def test_read_failed_message_from_sqs
+      @listener.instance_variable_set(:@channel, :failed)
       queue_url = @listener.send(:failed_queue_url)
       options = { 'MaxNumberOfMessages' => 10 }
       @sqs.expects(:receive_message).with(queue_url, options).returns(@sqs_response)
-      @listener.send(:read_failed_messages)
+
+      @listener.send(:read_messages)
     end
   end
 end
