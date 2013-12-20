@@ -103,8 +103,8 @@ module Propono
   #
   # @param [String] topic The topic to subscribe to.
   # @param &message_processor The block to yield for each message.
-  def self.listen_to_queue(topic, &message_processor)
-    QueueListener.listen(topic, &message_processor)
+  def self.listen_to_queue(topic, options = {}, &message_processor)
+    QueueListener.listen(topic, options, &message_processor)
   end
 
   # Listens for UDP messages and yields for each.

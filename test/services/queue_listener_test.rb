@@ -180,5 +180,23 @@ module Propono
       #Propono.expects(:publish).with("#{@topic_id}-", @sqs_message1)
       @listener.send(:move_to_corrupt_queue, @sqs_message1)
     end
+    
+    def test_each_failed_message_is_deleted_when_read
+      queue_url = "test-queue-url"
+    
+      @sqs.expects(:delete_message).with(queue_url, @receipt_handle1)
+      @sqs.expects(:delete_message).with(queue_url, @receipt_handle2)
+    
+      @listener.stubs(queue_url: queue_url)
+      @listener.send(:read_failed_messages)
+    end
+    
+    def test_read_failed_message_from_sqs
+      queue_url = @listener.send(:failed_queue_url)
+      options = { 'MaxNumberOfMessages' => 10 }
+      @sqs.expects(:receive_message).with(queue_url, options).returns(@sqs_response)
+      @listener.send(:read_failed_messages)
+    end
+
   end
 end

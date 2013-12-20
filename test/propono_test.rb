@@ -32,8 +32,14 @@ module Propono
 
     def test_listen_to_queue_calls_queue_listener
       topic = 'foobar'
-      QueueListener.expects(:listen).with(topic)
+      QueueListener.expects(:listen).with(topic, {})
       Propono.listen_to_queue(topic)
+    end
+
+    def test_listen_to_queue_with_channel_calls_queue_listener
+      topic = 'foobar'
+      QueueListener.expects(:listen).with(topic, { channel: :failed})
+      Propono.listen_to_queue(topic, channel: :failed)
     end
 
     def test_listen_to_udp_calls_udp_listener
