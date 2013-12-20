@@ -1,4 +1,5 @@
 module Propono
+  
   class QueueListener
     include Sqs
 
@@ -44,35 +45,37 @@ module Propono
     # has completed succesfully. We do *not* want to ensure that the
     # message is deleted regardless of what happens in this method.
     def process_raw_message(raw_sqs_message)
-      begin
-        sqs_message = SqsMessage.new(raw_sqs_message)
+      sqs_message = parse(raw_sqs_message)
+      unless sqs_message.nil?
         Propono.config.logger.info "Propono [#{sqs_message.context[:id]}]: Received from sqs."
-
-        begin
-          process_message(sqs_message)
-          delete_message(raw_sqs_message)
-        rescue
-          move_to_failed_queue(sqs_message)
-          delete_message(raw_sqs_message)
-        end
-      rescue
-        move_to_corrupt_queue(raw_sqs_message)
+        handle(sqs_message, raw_sqs_message)
         delete_message(raw_sqs_message)
       end
     end
+    
+    def parse(raw_sqs_message)
+      SqsMessage.new(raw_sqs_message)
+    rescue
+      move_to_corrupt_queue(raw_sqs_message)
+      delete_message(raw_sqs_message)
+    end
 
+    def handle(sqs_message, raw_sqs_message)
+      process_message(sqs_message)
+    rescue
+      move_to_failed_queue(raw_sqs_message)
+    end
+    
     def process_message(sqs_message)
       @message_processor.call(sqs_message.message, sqs_message.context)
     end
 
     def move_to_corrupt_queue(raw_sqs_message)
-      QueueSubscription.create(@topic_id, queue_name_suffix: "-corrupt")
-      Propono.publish("#{@topic_id}-corrupt", raw_sqs_message)
+      sqs.send_message(corrupt_queue_url, raw_sqs_message["Body"])
     end
 
     def move_to_failed_queue(sqs_message)
-      QueueSubscription.create(@topic_id, queue_name_suffix: "-failed")
-      Propono.publish("#{@topic_id}-failed", sqs_message.message, id: sqs_message.context[:id])
+      sqs.send_message(failed_queue_url, sqs_message["Body"])
     end
 
     def delete_message(raw_sqs_message)
@@ -83,8 +86,17 @@ module Propono
       @queue_url ||= subscription.queue.url
     end
 
+    def failed_queue_url
+      @failed_queue_url ||= subscription.failed_queue.url
+    end
+
+    def corrupt_queue_url
+      @corrupt_queue_url ||= subscription.corrupt_queue.url
+    end
+
     def subscription
       @subscription ||= QueueSubscription.create(@topic_id)
     end
+    
   end
 end
