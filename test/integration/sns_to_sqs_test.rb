@@ -13,7 +13,6 @@ module Propono
       thread = Thread.new do
         begin
           Propono.listen_to_queue(topic) do |message, context|
-            raise StandardError.new 'BOOM'
             flunks << "Wrong message" unless message == text
             flunks << "Wrong id" unless context[:id] =~ Regexp.new("[a-z0-9]{6}")
             message_received = true
