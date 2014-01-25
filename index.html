@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title>Propono by meducation</title>
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <h1>Propono</h1>
+        <h2>A pub/sub architecture as Ruby Gem</h2>
+        <a href="https://github.com/meducation/propono" class="button"><small>View project on</small>GitHub</a>
+      </div>
+    </header>
+
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          <h1>
+<a name="propono" class="anchor" href="#propono"><span class="octicon octicon-link"></span></a>Propono</h1>
+
+<p><a href="https://travis-ci.org/meducation/propono"><img src="https://travis-ci.org/meducation/propono.png" alt="Build Status"></a>
+<a href="https://gemnasium.com/meducation/propono"><img src="https://gemnasium.com/meducation/propono.png?travis" alt="Dependencies"></a>
+<a href="https://codeclimate.com/github/meducation/propono"><img src="https://codeclimate.com/github/meducation/propono.png" alt="Code Climate"></a></p>
+
+<p>Propono is a <a href="http://en.wikipedia.org/wiki/Publish-subscribe_pattern">pub/sub</a> gem built on top of Amazon Web Services (AWS). It uses Simple Notification Service (SNS) and Simple Queue Service (SQS) to seamlessly pass messages throughout your infrastructure.</p>
+
+<p>It's beautifully simple to use.</p>
+
+<div class="highlight highlight-ruby"><pre><span class="c1"># On Machine A</span>
+<span class="no">Propono</span><span class="o">.</span><span class="n">listen_to_queue</span><span class="p">(</span><span class="s1">'some-topic'</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">message</span><span class="o">|</span>
+  <span class="nb">puts</span> <span class="s2">"I just received: </span><span class="si">#{</span><span class="n">message</span><span class="si">}</span><span class="s2">"</span>
+<span class="k">end</span>
+
+<span class="c1"># On Machine B</span>
+<span class="no">Propono</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="s1">'some-topic'</span><span class="p">,</span> <span class="s2">"The Best Message Ever"</span><span class="p">)</span>
+
+<span class="c1"># Output on Machine A a second later.</span>
+<span class="c1"># - "I just recieved The Best Message Ever"</span>
+</pre></div>
+
+<h2>
+<a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h2>
+
+<p>Add this line to your application's Gemfile:</p>
+
+<pre><code>gem 'propono'
+</code></pre>
+
+<p>And then execute:</p>
+
+<pre><code>$ bundle install
+</code></pre>
+
+<h2>
+<a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h2>
+
+<p>The first thing to do is setup some configuration keys for Propono. It's best to do this in an initializer, or at the start of your application.</p>
+
+<div class="highlight highlight-ruby"><pre><span class="no">Propono</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">access_key</span>       <span class="o">=</span> <span class="s2">"access-key"</span>       <span class="c1"># From AWS</span>
+<span class="no">Propono</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">secret_key</span>       <span class="o">=</span> <span class="s2">"secret-key"</span>       <span class="c1"># From AWS</span>
+<span class="no">Propono</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">queue_region</span>     <span class="o">=</span> <span class="s2">"queue-region"</span>     <span class="c1"># From AWS</span>
+</pre></div>
+
+<p>You can then start publishing messages easily from anywhere in your codebase.</p>
+
+<div class="highlight highlight-ruby"><pre><span class="no">Propono</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="s1">'some-topic'</span><span class="p">,</span> <span class="s2">"Some string"</span><span class="p">)</span>
+<span class="no">Propono</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="s1">'some-topic'</span><span class="p">,</span> <span class="p">{</span><span class="ss">some</span><span class="p">:</span> <span class="o">[</span><span class="s1">'hash'</span><span class="p">,</span> <span class="s1">'or'</span><span class="p">,</span> <span class="s1">'array'</span><span class="o">]</span><span class="p">})</span>
+</pre></div>
+
+<p>Listening for messages is easy too. Just tell Propono what your application is called and start listening. You'll get a block yieleded for each message.</p>
+
+<div class="highlight highlight-ruby"><pre><span class="no">Propono</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">application_name</span> <span class="o">=</span> <span class="s2">"application-name"</span> <span class="c1"># Something unique to this app.</span>
+<span class="no">Propono</span><span class="o">.</span><span class="n">listen_to_queue</span><span class="p">(</span><span class="s1">'some-topic'</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">message</span><span class="o">|</span>
+  <span class="c1"># ... Do something interesting with the message</span>
+<span class="k">end</span>
+</pre></div>
+
+<p>In the background, Propono is automatically setting up a queue using SQS, a notification system using SNS, and glueing them all together for you. But you don't have to worry about any of that.</p>
+
+<h3>
+<a name="using-tcp-for-messages" class="anchor" href="#using-tcp-for-messages"><span class="octicon octicon-link"></span></a>Using TCP for messages</h3>
+
+<p>Publishing directly to SNS takes about 15x longer than publishing over a simple TCP connection. It is therefore some times favourable to publish to a seperate machine listening for TCP messages, which will then proxy them on.</p>
+
+<p>To send messages this way, you need to set up a little extra config:</p>
+
+<div class="highlight highlight-ruby"><pre><span class="no">Propono</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">tcp_host</span> <span class="o">=</span> <span class="s2">"some.host.running.a.propono.listener"</span>
+<span class="no">Propono</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">tcp_port</span> <span class="o">=</span> <span class="mi">12543</span>
+</pre></div>
+
+<p>You then simply pass the <code>:tcp</code> protocol into <code>publish</code></p>
+
+<div class="highlight highlight-ruby"><pre><span class="no">Propono</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="s1">'some-topic'</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="ss">protocol</span><span class="p">:</span> <span class="ss">:tcp</span><span class="p">)</span>
+</pre></div>
+
+<p>You'll now need another application running Propono to listen to the TCP feed. You can use the same machine or a different one, just make sure the port config is the same in both applications, and you're good to go.</p>
+
+<div class="highlight highlight-ruby"><pre><span class="no">Propono</span><span class="o">.</span><span class="n">listen_to_tcp</span> <span class="k">do</span> <span class="o">|</span><span class="n">topic</span><span class="p">,</span> <span class="n">message</span><span class="o">|</span>
+  <span class="no">Propono</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="n">topic</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span> <span class="c1"># Proxy the message to SNS</span>
+<span class="k">end</span>
+</pre></div>
+
+<p>This proxying of TCP to SQS is used so often that there's a simple shortcut. Just run this on the machine receiving the TCP packets.</p>
+
+<div class="highlight highlight-ruby"><pre><span class="no">Propono</span><span class="o">.</span><span class="n">proxy_tcp</span><span class="p">()</span>
+</pre></div>
+
+<h3>
+<a name="using-udp-for-messages" class="anchor" href="#using-udp-for-messages"><span class="octicon octicon-link"></span></a>Using UDP for messages</h3>
+
+<p>If you want almost-zero performance impact, and don't mind the occasional message getting lost, you can use UDP. We use this for things like our live dashboard where we don't mind losing a piece of activity here and there, but any perforamnce impact on our Meducation itself is bad news.</p>
+
+<p>Sending messages in this way is very similar to using TCP. First add some config:</p>
+
+<div class="highlight highlight-ruby"><pre><span class="no">Propono</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">udp_host</span> <span class="o">=</span> <span class="s2">"some.host.running.a.propono.listener"</span>
+<span class="no">Propono</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">udp_port</span> <span class="o">=</span> <span class="mi">12543</span>
+</pre></div>
+
+<p>You then simply pass the <code>:udp</code> protocol into <code>publish</code>:</p>
+
+<div class="highlight highlight-ruby"><pre><span class="no">Propono</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="s1">'some-topic'</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="ss">protocol</span><span class="p">:</span> <span class="ss">:udp</span><span class="p">)</span>
+</pre></div>
+
+<p>As per the <code>listen_to_tcp</code> method explained above, you now listen to udp or use the proxy method:</p>
+
+<div class="highlight highlight-ruby"><pre><span class="no">Propono</span><span class="o">.</span><span class="n">listen_to_udp</span> <span class="k">do</span> <span class="o">|</span><span class="n">topic</span><span class="p">,</span> <span class="n">message</span><span class="o">|</span>
+  <span class="no">Propono</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="n">topic</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span> <span class="c1"># Proxy the message to SNS</span>
+<span class="k">end</span>
+
+<span class="no">Propono</span><span class="o">.</span><span class="n">proxy_udp</span><span class="p">()</span>
+</pre></div>
+
+<h3>
+<a name="configuration" class="anchor" href="#configuration"><span class="octicon octicon-link"></span></a>Configuration</h3>
+
+<p>The following configuration settings are available:</p>
+
+<pre><code>Propono.config do |config|
+  config.access_key = "An AWS access key"
+  config.secret_key = "A AWS secret key"
+  config.queue_region = "An AWS queue region"
+  config.application_name = "A name unique in your network"
+  config.udp_host = "The host of a machine used for UDP proxying"
+  config.udp_port = "The port of a machine used for UDP proxying"
+  config.tcp_host = "The host of a machine used for TCP proxying"
+  config.tcp_port = "The port of a machine used for TCP proxying"
+  config.logger = "A logger such as Log4r or Rails.logger"
+end
+</code></pre>
+
+<p>The can all also be setting using the <code>Propono.config.access_key = "..."</code> syntax.</p>
+
+<h3>
+<a name="is-it-any-good" class="anchor" href="#is-it-any-good"><span class="octicon octicon-link"></span></a>Is it any good?</h3>
+
+<p><a href="http://news.ycombinator.com/item?id=3067434">Yes.</a></p>
+
+<h2>
+<a name="contributing" class="anchor" href="#contributing"><span class="octicon octicon-link"></span></a>Contributing</h2>
+
+<p>Firstly, thank you!! <img class="emoji" title=":heart:" alt=":heart:" src="https://github.global.ssl.fastly.net/images/icons/emoji/heart.png" height="20" width="20" align="absmiddle"><img class="emoji" title=":sparkling_heart:" alt=":sparkling_heart:" src="https://github.global.ssl.fastly.net/images/icons/emoji/sparkling_heart.png" height="20" width="20" align="absmiddle"><img class="emoji" title=":heart:" alt=":heart:" src="https://github.global.ssl.fastly.net/images/icons/emoji/heart.png" height="20" width="20" align="absmiddle"></p>
+
+<p>We'd love to have you involved. Please read our <a href="https://github.com/meducation/propono/tree/master/CONTRIBUTING.md">contributing guide</a> for information on how to get stuck in.</p>
+
+<h3>
+<a name="contributors" class="anchor" href="#contributors"><span class="octicon octicon-link"></span></a>Contributors</h3>
+
+<p>This project is managed by the <a href="http://company.meducation.net/about#team">Meducation team</a>. </p>
+
+<p>These individuals have come up with the ideas and written the code that made this possible:</p>
+
+<ul>
+<li><a href="http://github.com/iHID">Jeremy Walker</a></li>
+<li><a href="http://github.com/malcyL">Malcom Landon</a></li>
+<li><a href="http://github.com/mmmmmrob">Rob Styles</a></li>
+</ul><h2>
+<a name="licence" class="anchor" href="#licence"><span class="octicon octicon-link"></span></a>Licence</h2>
+
+<p>Copyright (C) 2013 New Media Education Ltd</p>
+
+<p>This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.</p>
+
+<p>This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.</p>
+
+<p>A copy of the GNU Affero General Public License is available in <a href="https://github.com/meducation/propono/blob/master/LICENCE.md">Licence.md</a>
+along with this program.  If not, see <a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>.</p>
+        </section>
+
+        <aside id="sidebar">
+          <a href="https://github.com/meducation/propono/zipball/master" class="button">
+            <small>Download</small>
+            .zip file
+          </a>
+          <a href="https://github.com/meducation/propono/tarball/master" class="button">
+            <small>Download</small>
+            .tar.gz file
+          </a>
+
+          <p class="repo-owner"><a href="https://github.com/meducation/propono"></a> is maintained by <a href="https://github.com/meducation">meducation</a>.</p>
+
+          <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
+        </aside>
+      </div>
+    </div>
+
+  
+  </body>
+</html>
