@@ -91,7 +91,7 @@
 <p>In the background, Propono is automatically setting up a queue using SQS, a notification system using SNS, and glueing them all together for you. But you don't have to worry about any of that.</p>
 
 <h3>
-<a name="using-tcp-for-messages" class="anchor" href="#using-tcp-for-messages"><span class="octicon octicon-link"></span></a>Using TCP for messages</h3>
+<a name="using-tcp-for-messages" class="anchor" href="#using-tcp-for-messages"><span class="octicon octicon-link"></span></a> Using TCP for messages</h3>
 
 <p>Publishing directly to SNS takes about 15x longer than publishing over a simple TCP connection. It is therefore some times favourable to publish to a seperate machine listening for TCP messages, which will then proxy them on.</p>
 
@@ -119,7 +119,7 @@
 </pre></div>
 
 <h3>
-<a name="using-udp-for-messages" class="anchor" href="#using-udp-for-messages"><span class="octicon octicon-link"></span></a>Using UDP for messages</h3>
+<a name="using-udp-for-messages" class="anchor" href="#using-udp-for-messages"><span class="octicon octicon-link"></span></a> Using UDP for messages</h3>
 
 <p>If you want almost-zero performance impact, and don't mind the occasional message getting lost, you can use UDP. We use this for things like our live dashboard where we don't mind losing a piece of activity here and there, but any perforamnce impact on our Meducation itself is bad news.</p>
 
@@ -183,8 +183,9 @@ end
 <p>These individuals have come up with the ideas and written the code that made this possible:</p>
 
 <ul>
-<li><a href="http://github.com/iHID">Jeremy Walker</a></li>
-<li><a href="http://github.com/malcyL">Malcom Landon</a></li>
+<li><a href="http://github.com/iHiD">Jeremy Walker</a></li>
+<li><a href="http://github.com/malcyL">Malcolm Landon</a></li>
+<li><a href="http://github.com/ccare">Charles Care</a></li>
 <li><a href="http://github.com/mmmmmrob">Rob Styles</a></li>
 </ul><h2>
 <a name="licence" class="anchor" href="#licence"><span class="octicon octicon-link"></span></a>Licence</h2>
