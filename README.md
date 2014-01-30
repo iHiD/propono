@@ -58,6 +58,8 @@ end
 ```
 In the background, Propono is automatically setting up a queue using SQS, a notification system using SNS, and glueing them all together for you. But you don't have to worry about any of that.
 
+**Note for using in Rake tasks and similar:** Propono spawns new threads for messages sent via SNS. If your application ends before the final thread is executed, then the last message might not send. It's therefore advisable to do a `Thread.join` on the thread that is returned from the final call to `publish`.
+
 ### Using TCP for messages
 
 Publishing directly to SNS takes about 15x longer than publishing over a simple TCP connection. It is therefore some times favourable to publish to a seperate machine listening for TCP messages, which will then proxy them on.
