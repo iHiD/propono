@@ -48,7 +48,7 @@ Propono.publish('some-topic', "Some string")
 Propono.publish('some-topic', {some: ['hash', 'or', 'array']})
 ```
 
-Listening for messages is easy too. Just tell Propono what your application is called and start listening. You'll get a block yieleded for each message.
+Listening for messages is easy too. Just tell Propono what your application is called and start listening. You'll get a block yielded for each message.
 
 ```ruby
 Propono.config.application_name = "application-name" # Something unique to this app.
@@ -56,13 +56,13 @@ Propono.listen_to_queue('some-topic') do |message|
   # ... Do something interesting with the message
 end
 ```
-In the background, Propono is automatically setting up a queue using SQS, a notification system using SNS, and glueing them all together for you. But you don't have to worry about any of that.
+In the background, Propono is automatically setting up a queue using SQS, a notification system using SNS, and gluing them all together for you. But you don't have to worry about any of that.
 
 **Note for using in Rake tasks and similar:** Propono spawns new threads for messages sent via SNS. If your application ends before the final thread is executed, then the last message might not send. It's therefore advisable to do a `Thread.join` on the thread that is returned from the final call to `publish`.
 
 ### Using TCP for messages
 
-Publishing directly to SNS takes about 15x longer than publishing over a simple TCP connection. It is therefore some times favourable to publish to a seperate machine listening for TCP messages, which will then proxy them on.
+Publishing directly to SNS takes about 15x longer than publishing over a simple TCP connection. It is therefore sometimes favourable to publish to a separate machine listening for TCP messages, which will then proxy them on.
 
 To send messages this way, you need to set up a little extra config:
 
@@ -93,7 +93,7 @@ Propono.proxy_tcp()
 
 ### Using UDP for messages
 
-If you want almost-zero performance impact, and don't mind the occasional message getting lost, you can use UDP. We use this for things like our live dashboard where we don't mind losing a piece of activity here and there, but any perforamnce impact on our Meducation itself is bad news.
+If you want almost-zero performance impact, and don't mind the occasional message getting lost, you can use UDP. We use this for things like our live dashboard where we don't mind losing a piece of activity here and there, but any performance impact on our Meducation itself is bad news.
 
 Sending messages in this way is very similar to using TCP. First add some config:
 
@@ -108,7 +108,7 @@ You then simply pass the `:udp` protocol into `publish`:
 Propono.publish('some-topic', message, protocol: :udp)
 ```
 
-As per the `listen_to_tcp` method explained above, you now listen to udp or use the proxy method:
+As per the `listen_to_tcp` method explained above, you now listen to UDP or use the proxy method:
 
 ```ruby
 Propono.listen_to_udp do |topic, message|
@@ -136,7 +136,7 @@ Propono.config do |config|
 end
 ```
 
-The can all also be setting using the `Propono.config.access_key = "..."` syntax.
+These can all also be set using the `Propono.config.access_key = "..."` syntax.
 
 ### Is it any good?
 
