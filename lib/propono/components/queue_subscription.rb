@@ -4,7 +4,7 @@ module Propono
     include Sns
     include Sqs
 
-    attr_reader :topic_arn, :queue_name, :queue, :failed_queue, :corrupt_queue
+    attr_reader :topic_arn, :queue_name, :queue, :failed_queue, :corrupt_queue, :slow_queue
 
     def self.create(topic_id, options = {})
       new(topic_id, options).tap do |subscription|
@@ -15,6 +15,7 @@ module Propono
     def initialize(topic_id, options = {})
       @topic_id = topic_id
       @suffixed_topic_id = "#{topic_id}#{Propono.config.queue_suffix}"
+      @suffixed_slow_topic_id = "#{topic_id}#{Propono.config.queue_suffix}-slow"
       @queue_name = "#{Propono.config.application_name.gsub(" ", "_")}-#{@suffixed_topic_id}"
     end
 
@@ -26,6 +27,11 @@ module Propono
       @corrupt_queue = QueueCreator.find_or_create("#{queue_name}-corrupt")
       sns.subscribe(@topic.arn, @queue.arn, 'sqs')
       sqs.set_queue_attributes(@queue.url, "Policy", generate_policy)
+
+      @slow_queue = QueueCreator.find_or_create("#{queue_name}-slow")
+      @slow_topic = TopicCreator.find_or_create(@suffixed_slow_topic_id)
+      sns.subscribe(@slow_topic.arn, @slow_queue.arn, 'sqs')
+      sqs.set_queue_attributes(@slow_queue.url, "Policy", generate_slow_policy)
     end
 
     private
@@ -44,6 +50,26 @@ module Propono
       },
       "Action": "SQS:*",
       "Resource": "#{@queue.arn}"
+    }
+  ]
+}
+      EOS
+    end
+
+    def generate_slow_policy
+      <<-EOS
+{
+  "Version": "2008-10-17",
+  "Id": "#{@slow_queue.arn}/SQSDefaultPolicy",
+  "Statement": [
+    {
+      "Sid": "#{@slow_queue.arn}-Sid",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "*"
+      },
+      "Action": "SQS:*",
+      "Resource": "#{@slow_queue.arn}"
     }
   ]
 }

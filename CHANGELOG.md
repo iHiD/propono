@@ -1,3 +1,6 @@
+# 1.1.0 / 2014-02-18
+* [FEATURE] Added slow queue to allow processing of lower priority messages.
+
 # 1.0.0.rc3 / 2013-12-20
 * [FEATURE] Create failed and corrupt queues when subscribe.
 
