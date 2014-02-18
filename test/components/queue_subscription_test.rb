@@ -16,7 +16,10 @@ module Propono
     def test_create_topic
       topic_id = 'foobar'
       topic = Topic.new(topic_id)
+      slow_topic_id = 'foobar-slow'
+      slow_topic = Topic.new(slow_topic_id)
       TopicCreator.expects(:find_or_create).with("#{topic_id}#{@suffix}").returns(topic)
+      TopicCreator.expects(:find_or_create).with("#{topic_id}#{@suffix}-slow").returns(slow_topic)
       QueueSubscription.create(topic_id)
     end
 
@@ -32,6 +35,7 @@ module Propono
       sqs.expects(:create_queue).with(queue_name).returns(mock(body: {'QueueUrl' => Fog::AWS::SQS::Mock::QueueUrl}))
       sqs.expects(:create_queue).with(queue_name + '-failed').returns(mock(body: {'QueueUrl' => Fog::AWS::SQS::Mock::QueueUrl}))
       sqs.expects(:create_queue).with(queue_name + '-corrupt').returns(mock(body: {'QueueUrl' => Fog::AWS::SQS::Mock::QueueUrl}))
+      sqs.expects(:create_queue).with(queue_name + '-slow').returns(mock(body: {'QueueUrl' => Fog::AWS::SQS::Mock::QueueUrl}))
       QueueCreator.any_instance.stubs(sqs: sqs)
 
       subscription.create
@@ -62,7 +66,7 @@ module Propono
       QueueCreator.stubs(find_or_create: Queue.new(Fog::AWS::SQS::Mock::QueueUrl))
 
       sns = mock()
-      sns.expects(:subscribe).with(arn, Fog::AWS::SQS::Mock::QueueArn, 'sqs')
+      sns.expects(:subscribe).with(arn, Fog::AWS::SQS::Mock::QueueArn, 'sqs').twice
       subscription = QueueSubscription.new("Some topic")
       subscription.stubs(sns: sns)
       subscription.create
@@ -71,15 +75,18 @@ module Propono
     def test_create_calls_set_queue_attributes
       arn = "arn123"
       policy = "{foobar: 123}"
+      slow_policy = "{foobar: 456}"
 
       TopicCreator.stubs(find_or_create: Topic.new(arn))
       QueueCreator.stubs(find_or_create: Queue.new(Fog::AWS::SQS::Mock::QueueUrl))
 
       sqs = mock()
       sqs.expects(:set_queue_attributes).with(Fog::AWS::SQS::Mock::QueueUrl, "Policy", policy)
+      sqs.expects(:set_queue_attributes).with(Fog::AWS::SQS::Mock::QueueUrl, "Policy", slow_policy)
       subscription = QueueSubscription.new("Some topic")
       subscription.stubs(sqs: sqs)
       subscription.stubs(generate_policy: policy)
+      subscription.stubs(generate_slow_policy: slow_policy)
       subscription.create
     end
 
@@ -87,10 +94,12 @@ module Propono
       queue = Queue.new(Fog::AWS::SQS::Mock::QueueUrl)
       failed_queue = Queue.new(Fog::AWS::SQS::Mock::QueueUrl)
       corrupt_queue = Queue.new(Fog::AWS::SQS::Mock::QueueUrl)
+      slow_queue = Queue.new(Fog::AWS::SQS::Mock::QueueUrl)
 
       QueueCreator.expects(:find_or_create).with('MyApp-SomeTopic-suf').returns(queue)
       QueueCreator.expects(:find_or_create).with('MyApp-SomeTopic-suf-failed').returns(failed_queue)
       QueueCreator.expects(:find_or_create).with('MyApp-SomeTopic-suf-corrupt').returns(corrupt_queue)
+      QueueCreator.expects(:find_or_create).with('MyApp-SomeTopic-suf-slow').returns(slow_queue)
       subscription = QueueSubscription.new("SomeTopic")
       subscription.create
       
