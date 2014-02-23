@@ -41,7 +41,8 @@ module Propono
       raise $!
     rescue
       Propono.config.logger.error "Unexpected error reading from queue #{queue_url}"
-      Propono.config.logger.error $!, $!.backtrace
+      Propono.config.logger.error $!
+      Propono.config.logger.error $!.backtrace
     end
 
     # The calls to delete_message are deliberately duplicated so

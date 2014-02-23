@@ -1,3 +1,6 @@
+# 1.1.1 / 2014-02-22
+* [BUGFIX] Logger.error only takes (0..1) arguments.
+
 # 1.1.0 / 2014-02-18
 * [FEATURE] Added slow queue to allow processing of lower priority messages.
 
