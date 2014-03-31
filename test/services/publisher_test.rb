@@ -112,7 +112,8 @@ module Propono
 
       assert_raises(TopicCreatorError) do
         publisher = Publisher.new("topic", "message")
-        publisher.send(:publish_via_sns)
+        thread = publisher.send(:publish_via_sns)
+        thread.join
       end
     end
 
@@ -126,8 +127,10 @@ module Propono
       sns = mock()
       sns.stubs(:publish)
       publisher = Publisher.new(topic_id, "Foobar")
+      publisher.stubs(sns: sns)
 
-      publisher.send(:publish_via_sns)
+      thread = publisher.send(:publish_via_sns)
+      thread.join
     end
 
     def test_udp_uses_correct_message_host_and_port
