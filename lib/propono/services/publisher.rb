@@ -34,12 +34,19 @@ module Propono
     private
 
     def publish_via_sns
-      topic = TopicCreator.find_or_create(topic_id)
       Thread.new do
+        begin
+          topic = TopicCreator.find_or_create(topic_id)
+        rescue => e
+          Propono.config.logger.error "Propono [#{id}]: Failed to create topic #{topic_id}: #{e}"
+          raise
+        end
+
         begin
           sns.publish(topic.arn, body.to_json)
         rescue => e
-          Propono.config.logger.error "Propono [#{id}]: Failed to send via sns : #{e}"
+          Propono.config.logger.error "Propono [#{id}]: Failed to send via sns: #{e}"
+          raise
         end
       end
     end

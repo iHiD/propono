@@ -1,3 +1,6 @@
+# 1.1.2 / 2014-03-31
+* [BUGFIX] Move topic lookup into publishing thread.
+
 # 1.1.1 / 2014-02-22
 * [BUGFIX] Logger.error only takes (0..1) arguments.
 
