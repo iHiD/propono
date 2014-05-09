@@ -107,6 +107,22 @@ module Propono
     QueueListener.listen(topic, &message_processor)
   end
 
+  # Listens on a queue and yields for each message
+  #
+  # Calling this will enter a queue-listening loop that
+  # yields the message_processor for each messages.  The
+  # loop will end when all messages have been processed.
+  #
+  # This method will automatically create a subscription if
+  # one does not exist, so there is no need to call
+  # <tt>subscribe_by_queue</tt> in addition.
+  #
+  # @param [String] topic The topic to subscribe to.
+  # @param &message_processor The block to yield for each message.
+  def self.drain_queue(topic, &message_processor)
+    QueueListener.drain(topic, &message_processor)
+  end
+
   # Listens for UDP messages and yields for each.
   #
   # Calling this will enter a queue-listening loop that

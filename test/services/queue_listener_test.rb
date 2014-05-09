@@ -41,6 +41,19 @@ module Propono
       end
     end
 
+    def test_drain_should_continue_if_queue_empty
+      @listener.expects(:read_messages).returns(nil)
+      @listener.drain
+      assert true
+    end
+
+    def test_drain_raises_with_nil_topic
+      listener = QueueListener.new(nil) {}
+      assert_raises ProponoError do
+        listener.drain
+      end
+    end
+
     def test_read_messages_should_subscribe
       QueueSubscription.expects(create: mock(queue: mock(url: {})))
       @listener.send(:read_messages)

@@ -7,6 +7,10 @@ module Propono
       new(topic_id, &message_processor).listen
     end
 
+    def self.drain(topic_id, &message_processor)
+      new(topic_id, &message_processor).drain
+    end
+
     def initialize(topic_id, &message_processor)
       @topic_id = topic_id
       @message_processor = message_processor
@@ -18,6 +22,13 @@ module Propono
         unless read_messages
           sleep 10
         end
+      end
+    end
+
+    def drain
+      raise ProponoError.new("topic_id is nil") unless @topic_id
+      while read_messages
+        # continue as long as there are messages in the queue
       end
     end
 
