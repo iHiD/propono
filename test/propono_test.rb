@@ -36,6 +36,12 @@ module Propono
       Propono.listen_to_queue(topic)
     end
 
+    def test_drain_queue_calls_queue_listener
+      topic = 'foobar'
+      QueueListener.expects(:drain).with(topic)
+      Propono.drain_queue(topic)
+    end
+
     def test_listen_to_udp_calls_udp_listener
       UdpListener.expects(:listen).with()
       Propono.listen_to_udp()
