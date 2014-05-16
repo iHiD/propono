@@ -2,7 +2,7 @@ module Propono
   class SqsMessage
     include Sqs
 
-    attr_reader :context, :message, :raw_message, :receipt_handle, :failure_count
+    attr_reader :context, :message, :raw_message, :receipt_handle, :failure_count, :timestamp
     def initialize(raw_message)
       raw_body = raw_message["Body"]
       @raw_body_json = JSON.parse(raw_body)
@@ -13,6 +13,7 @@ module Propono
       @failure_count  = context[:num_failures] || 0
       @message        = context.delete(:message)
       @receipt_handle = raw_message["receipt_handle"]
+      @timestamp      = @raw_body_json["Timestamp"]
     end
 
     def to_json_with_exception(exception)
