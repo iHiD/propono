@@ -1,3 +1,6 @@
+# 1.2.0 / 2014-05-25
+* [BUGFIX] Restrict SQS policy to only allow SNS topic publishes.
+
 # 1.1.3 / 2014-05-14
 * [FEATURE] Added ability to drain queue. Also allow dot releases of Fog.
 

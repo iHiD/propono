@@ -30,7 +30,7 @@ module Propono
       TopicCreator.stubs(find_or_create: Topic.new("1123"))
 
       queue_name = subscription.send(:queue_name)
-      
+
       sqs = mock()
       sqs.expects(:create_queue).with(queue_name).returns(mock(body: {'QueueUrl' => Fog::AWS::SQS::Mock::QueueUrl}))
       sqs.expects(:create_queue).with(queue_name + '-failed').returns(mock(body: {'QueueUrl' => Fog::AWS::SQS::Mock::QueueUrl}))
@@ -75,18 +75,15 @@ module Propono
     def test_create_calls_set_queue_attributes
       arn = "arn123"
       policy = "{foobar: 123}"
-      slow_policy = "{foobar: 456}"
 
       TopicCreator.stubs(find_or_create: Topic.new(arn))
       QueueCreator.stubs(find_or_create: Queue.new(Fog::AWS::SQS::Mock::QueueUrl))
 
       sqs = mock()
-      sqs.expects(:set_queue_attributes).with(Fog::AWS::SQS::Mock::QueueUrl, "Policy", policy)
-      sqs.expects(:set_queue_attributes).with(Fog::AWS::SQS::Mock::QueueUrl, "Policy", slow_policy)
+      sqs.expects(:set_queue_attributes).with(Fog::AWS::SQS::Mock::QueueUrl, "Policy", policy).twice
       subscription = QueueSubscription.new("Some topic")
       subscription.stubs(sqs: sqs)
       subscription.stubs(generate_policy: policy)
-      subscription.stubs(generate_slow_policy: slow_policy)
       subscription.create
     end
 
@@ -102,7 +99,7 @@ module Propono
       QueueCreator.expects(:find_or_create).with('MyApp-SomeTopic-suf-slow').returns(slow_queue)
       subscription = QueueSubscription.new("SomeTopic")
       subscription.create
-      
+
       assert_equal queue, subscription.queue
       assert_equal failed_queue, subscription.failed_queue
       assert_equal corrupt_queue, subscription.corrupt_queue
@@ -116,7 +113,35 @@ module Propono
     end
 
     def test_generate_policy
-      skip "TODO - Implement this test."
+      queue_arn = "queue-arn"
+      topic_arn = "topic-arn"
+      queue = mock().tap {|m|m.stubs(arn: queue_arn)}
+      topic = mock().tap {|m|m.stubs(arn: topic_arn)}
+
+      policy = <<-EOS
+{
+  "Version": "2008-10-17",
+  "Id": "#{queue_arn}/SQSDefaultPolicy",
+  "Statement": [
+    {
+      "Sid": "#{queue_arn}-Sid",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "*"
+      },
+      "Action": "SQS:*",
+      "Resource": "#{queue_arn}",
+      "Condition": {
+        "StringEquals": {
+          "aws:SourceArn": "#{topic_arn}"
+        }
+      }
+    }
+  ]
+}
+EOS
+
+      assert_equal policy, QueueSubscription.new(nil).send(:generate_policy, queue, topic)
     end
   end
 end
