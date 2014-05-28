@@ -3,7 +3,7 @@ require File.expand_path('../integration_test', __FILE__)
 module Propono
   class UdpProxyTest < IntegrationTest
     def test_the_message_gets_there
-      topic = "test-topic"
+      topic = "propono-tests-udp-proxy-topic"
       text = "This is my message #{DateTime.now} #{rand()}"
       flunks = []
       message_received = false

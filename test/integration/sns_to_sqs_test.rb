@@ -3,7 +3,7 @@ require File.expand_path('../integration_test', __FILE__)
 module Propono
   class SnsToSqsTest < IntegrationTest
     def test_the_message_gets_there
-      topic = "test-topic"
+      topic = "propono-tests-sns-to-sqs-topic"
       text = "This is my message #{DateTime.now} #{rand()}"
       flunks = []
       message_received = false
@@ -38,18 +38,18 @@ module Propono
     ensure
       thread.terminate
     end
-    
+
 =begin
-    
+
 
     def test_failed_messge_is_transferred_to_failed_channel
       topic = "test-topic"
       text = "This is my message #{DateTime.now} #{rand()}"
       flunks = []
       message_received = false
-    
+
       Propono.subscribe_by_queue(topic)
-    
+
       thread = Thread.new do
         begin
           Propono.listen_to_queue(topic) do |message, context|
@@ -61,7 +61,7 @@ module Propono
           thread.terminate
         end
       end
-      
+
       failure_listener = Thread.new do
         begin
           Propono.listen_to_queue(topic, channel: :failed) do |message, context|
@@ -75,16 +75,16 @@ module Propono
           thread.terminate
         end
       end
-    
+
       Thread.new do
         sleep(1) while !message_received
         sleep(5) # Make sure all the message deletion clear up in the thread has happened
         thread.terminate
         failure_listener.terminate
       end
-    
+
       sleep(1) # Make sure the listener has started
-    
+
       Propono.publish(topic, text)
       flunks << "Test Timeout" unless wait_for_thread(thread)
       flunk(flunks.join("\n")) unless flunks.empty?
@@ -93,6 +93,6 @@ module Propono
     end
 
 =end
-    
+
   end
 end

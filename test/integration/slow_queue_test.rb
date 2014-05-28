@@ -3,8 +3,8 @@ require File.expand_path('../integration_test', __FILE__)
 module Propono
   class SlowQueueTest < IntegrationTest
     def test_slow_messages_are_received
-      topic = "slow-test-topic"
-      slow_topic = "slow-test-topic-slow"
+      topic = "propono-tests-slow-queue-topic"
+      slow_topic = "propono-tests-slow-queue-topic-slow"
       text = "This is my message #{DateTime.now} #{rand()}"
       slow_text = "This is my slow message #{DateTime.now} #{rand()}"
       flunks = []
@@ -42,6 +42,6 @@ module Propono
       flunk(flunks.join("\n")) unless flunks.empty?
     ensure
       # thread.terminate
-    end        
+    end
   end
 end

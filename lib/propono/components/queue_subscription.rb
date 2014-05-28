@@ -26,50 +26,35 @@ module Propono
       @failed_queue = QueueCreator.find_or_create("#{queue_name}-failed")
       @corrupt_queue = QueueCreator.find_or_create("#{queue_name}-corrupt")
       sns.subscribe(@topic.arn, @queue.arn, 'sqs')
-      sqs.set_queue_attributes(@queue.url, "Policy", generate_policy)
+      sqs.set_queue_attributes(@queue.url, "Policy", generate_policy(@queue, @topic))
 
       @slow_queue = QueueCreator.find_or_create("#{queue_name}-slow")
       @slow_topic = TopicCreator.find_or_create(@suffixed_slow_topic_id)
       sns.subscribe(@slow_topic.arn, @slow_queue.arn, 'sqs')
-      sqs.set_queue_attributes(@slow_queue.url, "Policy", generate_slow_policy)
+      sqs.set_queue_attributes(@slow_queue.url, "Policy", generate_policy(@slow_queue, @slow_topic))
     end
 
     private
 
-    def generate_policy
+    def generate_policy(queue, topic)
       <<-EOS
 {
   "Version": "2008-10-17",
-  "Id": "#{@queue.arn}/SQSDefaultPolicy",
+  "Id": "#{queue.arn}/SQSDefaultPolicy",
   "Statement": [
     {
-      "Sid": "#{@queue.arn}-Sid",
+      "Sid": "#{queue.arn}-Sid",
       "Effect": "Allow",
       "Principal": {
         "AWS": "*"
       },
       "Action": "SQS:*",
-      "Resource": "#{@queue.arn}"
-    }
-  ]
-}
-      EOS
-    end
-
-    def generate_slow_policy
-      <<-EOS
-{
-  "Version": "2008-10-17",
-  "Id": "#{@slow_queue.arn}/SQSDefaultPolicy",
-  "Statement": [
-    {
-      "Sid": "#{@slow_queue.arn}-Sid",
-      "Effect": "Allow",
-      "Principal": {
-        "AWS": "*"
-      },
-      "Action": "SQS:*",
-      "Resource": "#{@slow_queue.arn}"
+      "Resource": "#{queue.arn}",
+      "Condition": {
+        "StringEquals": {
+          "aws:SourceArn": "#{topic.arn}"
+        }
+      }
     }
   ]
 }

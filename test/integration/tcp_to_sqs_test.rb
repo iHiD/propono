@@ -1,9 +1,9 @@
 require File.expand_path('../integration_test', __FILE__)
 
 module Propono
-  class UdpToSqsTest < IntegrationTest
+  class TcpToSqsTest < IntegrationTest
     def test_the_message_gets_there
-      topic = "test-topic"
+      topic = "propono-tests-tcp-to-sqs-topic"
       message = "This is my message #{DateTime.now} #{rand()}"
       flunks = []
       message_received = false
