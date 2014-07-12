@@ -1,3 +1,6 @@
+# 1.3.0 / 2014-07-12
+* [FEATURE] Add {async: false} option to publisher
+
 # 1.2.0 / 2014-05-25
 * [BUGFIX] Restrict SQS policy to only allow SNS topic publishes.
 

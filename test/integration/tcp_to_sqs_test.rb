@@ -35,7 +35,7 @@ module Propono
 
       tcp_thread = Thread.new do
         Propono.listen_to_tcp do |tcp_topic, tcp_message|
-          Propono.publish(tcp_topic, tcp_message)
+          Propono.publish(tcp_topic, tcp_message, async: false)
           tcp_thread.terminate
         end
       end

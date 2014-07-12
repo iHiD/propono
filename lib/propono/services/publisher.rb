@@ -11,7 +11,7 @@ module Propono
       new(topic_id, message, options).publish
     end
 
-    attr_reader :topic_id, :message, :protocol, :id
+    attr_reader :topic_id, :message, :protocol, :id, :async
 
     def initialize(topic_id, message, options = {})
       raise PublisherError.new("Topic is nil") if topic_id.nil?
@@ -24,6 +24,7 @@ module Propono
       @protocol = options.fetch(:protocol, :sns).to_sym
       @id = SecureRandom.hex(3)
       @id = "#{options[:id]}-#{@id}" if options[:id]
+      @async = options.fetch(:async, true)
     end
 
     def publish
@@ -34,20 +35,26 @@ module Propono
     private
 
     def publish_via_sns
-      Thread.new do
-        begin
-          topic = TopicCreator.find_or_create(topic_id)
-        rescue => e
-          Propono.config.logger.error "Propono [#{id}]: Failed to create topic #{topic_id}: #{e}"
-          raise
-        end
+      async ? publish_via_sns_asyncronously : publish_via_sns_syncronously
+    end
 
-        begin
-          sns.publish(topic.arn, body.to_json)
-        rescue => e
-          Propono.config.logger.error "Propono [#{id}]: Failed to send via sns: #{e}"
-          raise
-        end
+    def publish_via_sns_asyncronously
+      Thread.new { publish_via_sns_syncronously }
+    end
+
+    def publish_via_sns_syncronously
+      begin
+        topic = TopicCreator.find_or_create(topic_id)
+      rescue => e
+        Propono.config.logger.error "Propono [#{id}]: Failed to create topic #{topic_id}: #{e}"
+        raise
+      end
+
+      begin
+        sns.publish(topic.arn, body.to_json)
+      rescue => e
+        Propono.config.logger.error "Propono [#{id}]: Failed to send via sns: #{e}"
+        raise
       end
     end
 
