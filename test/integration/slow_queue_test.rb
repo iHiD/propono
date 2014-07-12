@@ -36,8 +36,8 @@ module Propono
 
       sleep(1) # Make sure the listener has started
 
-      Propono.publish(slow_topic, slow_text)
-      Propono.publish(topic, text)
+      Propono.publish(slow_topic, slow_text, async: false)
+      Propono.publish(topic, text, async: false)
       flunks << "Test Timeout" unless wait_for_thread(thread)
       flunk(flunks.join("\n")) unless flunks.empty?
     ensure

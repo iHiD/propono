@@ -223,5 +223,17 @@ module Propono
       end
     end
 
+    def test_publish_can_be_called_syncronously
+      publisher = Publisher.new("topic_id", "message", async: false)
+      publisher.expects(:publish_via_sns_syncronously).once
+      publisher.expects(:publish_via_sns_asyncronously).never
+      publisher.send(:publish_via_sns)
+    end
+
+    def test_publish_is_normally_called_asyncronously
+      publisher = Publisher.new("topic_id", "message")
+      publisher.expects(:publish_via_sns_asyncronously)
+      publisher.send(:publish_via_sns)
+    end
   end
 end

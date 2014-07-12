@@ -25,7 +25,7 @@ module Propono
 
       @listener = QueueListener.new(@topic_id) {}
       @listener.stubs(sqs: @sqs)
-      
+
       Propono.config.max_retries = 0
     end
 
@@ -157,7 +157,7 @@ module Propono
       @listener.stubs(:requeue_message_on_failure).with(SqsMessage.new(@sqs_message2), exception)
       @listener.send(:read_messages_from_queue, queue_url, 10)
     end
-    
+
     def test_messages_are_retried_or_abandoned_on_failure
       queue_url = "test-queue-url"
 
@@ -198,7 +198,7 @@ module Propono
       @sqs.expects(:send_message).with(regexp_matches(/https:\/\/queue.amazonaws.com\/[0-9]+\/MyApp-some-topic-failed/), anything)
       @listener.send(:requeue_message_on_failure, SqsMessage.new(@sqs_message1), StandardError.new)
     end
-    
+
     def test_message_requeued_if_there_is_an_exception_but_failure_count_less_than_retry_count
       Propono.config.max_retries = 5
       message = SqsMessage.new(@sqs_message1)
@@ -206,7 +206,7 @@ module Propono
       @sqs.expects(:send_message).with(regexp_matches(/https:\/\/queue.amazonaws.com\/[0-9]+\/MyApp-some-topic$/), anything)
       @listener.send(:requeue_message_on_failure, message, StandardError.new)
     end
-    
+
     def test_message_requeued_if_there_is_an_exception_but_failure_count_exceeds_than_retry_count
       Propono.config.max_retries = 5
       message = SqsMessage.new(@sqs_message1)
