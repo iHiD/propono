@@ -80,7 +80,7 @@
 <span class="no">Propono</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="s1">'some-topic'</span><span class="p">,</span> <span class="p">{</span><span class="ss">some</span><span class="p">:</span> <span class="o">[</span><span class="s1">'hash'</span><span class="p">,</span> <span class="s1">'or'</span><span class="p">,</span> <span class="s1">'array'</span><span class="o">]</span><span class="p">})</span>
 </pre></div>
 
-<p>Listening for messages is easy too. Just tell Propono what your application is called and start listening. You'll get a block yieleded for each message.</p>
+<p>Listening for messages is easy too. Just tell Propono what your application is called and start listening. You'll get a block yielded for each message.</p>
 
 <div class="highlight highlight-ruby"><pre><span class="no">Propono</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">application_name</span> <span class="o">=</span> <span class="s2">"application-name"</span> <span class="c1"># Something unique to this app.</span>
 <span class="no">Propono</span><span class="o">.</span><span class="n">listen_to_queue</span><span class="p">(</span><span class="s1">'some-topic'</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">message</span><span class="o">|</span>
@@ -88,12 +88,17 @@
 <span class="k">end</span>
 </pre></div>
 
-<p>In the background, Propono is automatically setting up a queue using SQS, a notification system using SNS, and glueing them all together for you. But you don't have to worry about any of that.</p>
+<p>In the background, Propono is automatically setting up a queue using SQS, a notification system using SNS, and gluing them all together for you. But you don't have to worry about any of that.</p>
 
-<h3>
+<p><strong>Note for using in Rake tasks and similar:</strong> Propono spawns new threads for messages sent via SNS. If your application ends before the final thread is executed, then the last message might not send. There are two options to help you here:</p>
+
+<ul>
+<li>Pass the <code>{async: false}</code> option to Propono.publish. (This was introduced in 1.3.0)</li>
+<li>Do a <code>Thread#join</code> on each thread that is returned from calls to <code>publish</code>.</li>
+</ul><h3>
 <a name="using-tcp-for-messages" class="anchor" href="#using-tcp-for-messages"><span class="octicon octicon-link"></span></a> Using TCP for messages</h3>
 
-<p>Publishing directly to SNS takes about 15x longer than publishing over a simple TCP connection. It is therefore some times favourable to publish to a seperate machine listening for TCP messages, which will then proxy them on.</p>
+<p>Publishing directly to SNS takes about 15x longer than publishing over a simple TCP connection. It is therefore sometimes favourable to publish to a separate machine listening for TCP messages, which will then proxy them on.</p>
 
 <p>To send messages this way, you need to set up a little extra config:</p>
 
@@ -121,7 +126,7 @@
 <h3>
 <a name="using-udp-for-messages" class="anchor" href="#using-udp-for-messages"><span class="octicon octicon-link"></span></a> Using UDP for messages</h3>
 
-<p>If you want almost-zero performance impact, and don't mind the occasional message getting lost, you can use UDP. We use this for things like our live dashboard where we don't mind losing a piece of activity here and there, but any perforamnce impact on our Meducation itself is bad news.</p>
+<p>If you want almost-zero performance impact, and don't mind the occasional message getting lost, you can use UDP. We use this for things like our live dashboard where we don't mind losing a piece of activity here and there, but any performance impact on our Meducation itself is bad news.</p>
 
 <p>Sending messages in this way is very similar to using TCP. First add some config:</p>
 
@@ -134,7 +139,7 @@
 <div class="highlight highlight-ruby"><pre><span class="no">Propono</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="s1">'some-topic'</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="ss">protocol</span><span class="p">:</span> <span class="ss">:udp</span><span class="p">)</span>
 </pre></div>
 
-<p>As per the <code>listen_to_tcp</code> method explained above, you now listen to udp or use the proxy method:</p>
+<p>As per the <code>listen_to_tcp</code> method explained above, you now listen to UDP or use the proxy method:</p>
 
 <div class="highlight highlight-ruby"><pre><span class="no">Propono</span><span class="o">.</span><span class="n">listen_to_udp</span> <span class="k">do</span> <span class="o">|</span><span class="n">topic</span><span class="p">,</span> <span class="n">message</span><span class="o">|</span>
   <span class="no">Propono</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="n">topic</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span> <span class="c1"># Proxy the message to SNS</span>
@@ -161,7 +166,7 @@
 end
 </code></pre>
 
-<p>The can all also be setting using the <code>Propono.config.access_key = "..."</code> syntax.</p>
+<p>These can all also be set using the <code>Propono.config.access_key = "..."</code> syntax.</p>
 
 <h3>
 <a name="is-it-any-good" class="anchor" href="#is-it-any-good"><span class="octicon octicon-link"></span></a>Is it any good?</h3>
@@ -171,7 +176,7 @@ end
 <h2>
 <a name="contributing" class="anchor" href="#contributing"><span class="octicon octicon-link"></span></a>Contributing</h2>
 
-<p>Firstly, thank you!! <img class="emoji" title=":heart:" alt=":heart:" src="https://github.global.ssl.fastly.net/images/icons/emoji/heart.png" height="20" width="20" align="absmiddle"><img class="emoji" title=":sparkling_heart:" alt=":sparkling_heart:" src="https://github.global.ssl.fastly.net/images/icons/emoji/sparkling_heart.png" height="20" width="20" align="absmiddle"><img class="emoji" title=":heart:" alt=":heart:" src="https://github.global.ssl.fastly.net/images/icons/emoji/heart.png" height="20" width="20" align="absmiddle"></p>
+<p>Firstly, thank you!! <img class="emoji" title=":heart:" alt=":heart:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/2764-fe0f.png" height="20" width="20" align="absmiddle"><img class="emoji" title=":sparkling_heart:" alt=":sparkling_heart:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f496.png" height="20" width="20" align="absmiddle"><img class="emoji" title=":heart:" alt=":heart:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/2764-fe0f.png" height="20" width="20" align="absmiddle"></p>
 
 <p>We'd love to have you involved. Please read our <a href="https://github.com/meducation/propono/tree/master/CONTRIBUTING.md">contributing guide</a> for information on how to get stuck in.</p>
 
