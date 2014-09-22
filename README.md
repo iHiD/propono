@@ -39,6 +39,11 @@ The first thing to do is setup some configuration keys for Propono. It's best to
 Propono.config.access_key       = "access-key"       # From AWS
 Propono.config.secret_key       = "secret-key"       # From AWS
 Propono.config.queue_region     = "queue-region"     # From AWS
+
+# Or use the IAM profile of the machine
+Propono.config.use_iam_profile  = true
+Propono.config.queue_region     = "queue-region"     # From AWS
+
 ```
 
 You can then start publishing messages easily from anywhere in your codebase.
@@ -126,8 +131,12 @@ The following configuration settings are available:
 
 ```
 Propono.config do |config|
+  # Use AWS access and secret keys
   config.access_key = "An AWS access key"
   config.secret_key = "A AWS secret key"
+  # Or use AWS IAM profile of the machine
+  config.use_iam_profile = true
+  
   config.queue_region = "An AWS queue region"
   config.application_name = "A name unique in your network"
   config.udp_host = "The host of a machine used for UDP proxying"
