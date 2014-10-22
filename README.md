@@ -18,7 +18,7 @@ end
 Propono.publish('some-topic', "The Best Message Ever")
 
 # Output on Machine A a second later.
-# - "I just recieved The Best Message Ever"
+# - "I just received The Best Message Ever"
 ```
 
 ## Installation
