@@ -45,6 +45,7 @@ module Propono
   # * <tt>:queue_region</tt> - The AWS region
   # * <tt>:application_name</tt> - The name of the application Propono
   #   is included in.
+  # * <tt>:queue_suffix</tt> - Optional string to append to topic and queue names.
   # * <tt>:udp_host</tt> - If using UDP, the host to send to.
   # * <tt>:udp_port</tt> - If using UDP, the port to send to.
   # * <tt>:logger</tt> - A logger object that responds to puts.
