@@ -11,6 +11,7 @@ module Propono
       Propono.config.tcp_host = "localhost"
       Propono.config.tcp_port = 20009
 
+      Propono.drain_queue(topic)
       Propono.subscribe_by_queue(topic)
 
       sqs_thread = Thread.new do

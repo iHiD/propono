@@ -10,6 +10,7 @@ module Propono
 
       Propono.config.udp_port = 20001
 
+      Propono.drain_queue(topic)
       Propono.subscribe_by_queue(topic)
 
       sqs_thread = Thread.new do
