@@ -17,7 +17,7 @@ module Propono
       raise PublisherError.new("Topic is nil") if topic_id.nil?
       raise PublisherError.new("Message is nil") if message.nil?
 
-      options = options.symbolize_keys
+      options = Propono::Utils.symbolize_keys options
 
       @topic_id = topic_id
       @message = message

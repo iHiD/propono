@@ -22,7 +22,7 @@ module Propono
         }
       }
 
-      assert_equal expected, input.symbolize_keys
+      assert_equal expected, Propono::Utils.symbolize_keys(input)
     end
   end
 end

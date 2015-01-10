@@ -27,7 +27,7 @@ module Propono
     end
 
     def process_udp_data(udp_data)
-      json = JSON.parse(udp_data).symbolize_keys
+      json = Propono::Utils.symbolize_keys JSON.parse(udp_data)
 
       # Legacy syntax is covered in the else statement
       # This conditional and the else block will be removed in v1.
