@@ -34,7 +34,7 @@ module Propono
       if json[:id]
         @processor.call(json[:topic], json[:message], id: json[:id])
       else
-        Propono.config.logger.info("Sending and recieving messags without ids is deprecated")
+        Propono.config.logger.info("Sending and receiving messages without ids is deprecated")
         @processor.call(json[:topic], json[:message])
       end
     end
