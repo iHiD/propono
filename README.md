@@ -63,6 +63,14 @@ end
 ```
 In the background, Propono is automatically setting up a queue using SQS, a notification system using SNS, and gluing them all together for you. But you don't have to worry about any of that.
 
+**Does it matter what I set my `application_name` to?**
+For a simple publisher and subscriber deployment, no.
+However, the `application_name` has a direct impact on subscriber behaviour when more than one is in play.
+This is because a queue is established for each application_name/topic combination. In practice:
+* subscribers that share the same `application_name` will act as multiple workers on the same queue. Only one will get to process each message.
+* subscribers that have a different `application_name` will each get a copy of a message to process independently i.e. acts as a one-to-many broadcast.
+
+
 **Note for using in Rake tasks and similar:** Propono spawns new threads for messages sent via SNS. If your application ends before the final thread is executed, then the last message might not send. There are two options to help you here:
 * Pass the `{async: false}` option to Propono.publish. (This was introduced in 1.3.0)
 * Do a `Thread#join` on each thread that is returned from calls to `publish`.
