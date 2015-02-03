@@ -24,7 +24,7 @@ module Propono
       @protocol = options.fetch(:protocol, :sns).to_sym
       @id = SecureRandom.hex(3)
       @id = "#{options[:id]}-#{@id}" if options[:id]
-      @async = options.fetch(:async, true)
+      @async = options.fetch(:async, Thread.main != Thread.current)
     end
 
     def publish

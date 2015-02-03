@@ -1,3 +1,6 @@
+# 1.3.1 / 2014-07-12
+* [FEATURE] Changing default behaviour of 'async' mode for single threaded apps (like Rake tasks and command-line utilities)
+
 # 1.3.0 / 2014-07-12
 * [FEATURE] Add {async: false} option to publisher
 
