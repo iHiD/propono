@@ -5,8 +5,7 @@ require "propono/version"
 require 'propono/propono_error'
 require 'propono/logger'
 require 'propono/configuration'
-
-require "propono/helpers/hash"
+require "propono/utils"
 
 require 'propono/components/aws_config'
 require 'propono/components/sns'

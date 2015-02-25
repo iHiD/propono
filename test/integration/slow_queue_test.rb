@@ -11,6 +11,8 @@ module Propono
       message_received = false
       slow_message_received = false
 
+      Propono.drain_queue(slow_topic)
+      Propono.drain_queue(topic)
       Propono.subscribe_by_queue(topic)
 
       thread = Thread.new do

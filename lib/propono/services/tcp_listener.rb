@@ -29,14 +29,14 @@ module Propono
     end
 
     def process_tcp_data(tcp_data)
-      json = JSON.parse(tcp_data).symbolize_keys
+      json = Propono::Utils.symbolize_keys JSON.parse(tcp_data)
 
       # Legacy syntax is covered in the else statement
       # This conditional and the else block will be removed in v1.
       if json[:id]
         @processor.call(json[:topic], json[:message], id: json[:id])
       else
-        Propono.config.logger.info("Sending and recieving messags without ids is deprecated")
+        Propono.config.logger.info("Sending and receiving messages without ids is deprecated")
         @processor.call(json[:topic], json[:message])
       end
     end

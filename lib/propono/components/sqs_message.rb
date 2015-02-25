@@ -9,7 +9,7 @@ module Propono
       body = JSON.parse(@raw_body_json["Message"])
 
       @raw_message    = raw_message
-      @context        = body.symbolize_keys
+      @context        = Propono::Utils.symbolize_keys body
       @failure_count  = context[:num_failures] || 0
       @message        = context.delete(:message)
       @receipt_handle = raw_message["receipt_handle"]

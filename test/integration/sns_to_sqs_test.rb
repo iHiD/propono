@@ -8,6 +8,7 @@ module Propono
       flunks = []
       message_received = false
 
+      Propono.drain_queue(topic)
       Propono.subscribe_by_queue(topic)
 
       thread = Thread.new do
