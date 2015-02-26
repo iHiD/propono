@@ -39,7 +39,8 @@ module Propono
     def test_publish_logs
       publisher = Publisher.new("foo", "bar")
       publisher.instance_variable_set(:@id, 'abc')
-      Propono.config.logger.expects(:info).with() {|x| x =~ /^Propono \[abc\]: Publishing bar to foo via sns.*/}
+      publisher.stubs(:publish_via_sns)
+      Propono.config.logger.expects(:info).with {|x| x =~ /^Propono \[abc\]: Publishing bar to foo via sns.*/}
       publisher.send(:publish)
     end
 

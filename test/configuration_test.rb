@@ -4,6 +4,7 @@ module Propono
   class ConfigurationTest < Minitest::Test
 
     def setup
+      super
       Propono.instance_variable_set("@config", nil)
     end
 

@@ -7,6 +7,7 @@ module Propono
     end
 
     def setup
+      super
       Propono.config.access_key = "test-access-key"
       Propono.config.secret_key = "test-secret-key"
       Propono.config.queue_region = "test-queue-region"

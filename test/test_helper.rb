@@ -20,6 +20,7 @@ class Minitest::Test
       config.secret_key = "test-secret-key"
       config.queue_region = "us-east-1"
       config.application_name = "MyApp"
+      config.queue_suffix = ""
 
       config.logger.stubs(:debug)
       config.logger.stubs(:info)
