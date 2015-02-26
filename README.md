@@ -6,7 +6,7 @@
 
 Propono is a [pub/sub](http://en.wikipedia.org/wiki/Publish-subscribe_pattern) gem built on top of Amazon Web Services (AWS). It uses Simple Notification Service (SNS) and Simple Queue Service (SQS) to seamlessly pass messages throughout your infrastructure.
 
-It's beautifully simple to use.
+It's beautifully simple to use. [Watch an introduction](https://www.youtube.com/watch?v=ZM3-Gl5DVgM)
 
 ```ruby
 # On Machine A
