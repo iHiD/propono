@@ -1,3 +1,9 @@
+# 1.4.0 / 2014-07-12
+* [FEATURE] Move symbolize_keys to Propono namespace to avoid ActiveSupport conflict (:blue_heart: @tardate)
+* [BUGFIX] Drain integration tests drain queues before starting (:blue_heart: @tardate)
+* [BUGFIX] Fix typos in log messages (:blue_heart: @tardate)
+* [BUGFIX] Fix issue with tests failing when ran in a certain order
+
 # 1.3.0 / 2014-07-12
 * [FEATURE] Add {async: false} option to publisher
 
