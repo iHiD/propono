@@ -46,6 +46,15 @@ class Fog::AWS::SNS::Mock
 end
 
 class Fog::AWS::SQS::Mock
+  def list_queues(*args)
+    foo = Object.new
+    class << foo
+      def body
+        {"QueueUrls" => []}
+      end
+    end
+    foo
+  end
   def create_queue(*args)
   end
   def set_queue_attributes(*args)

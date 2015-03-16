@@ -1,3 +1,6 @@
+# 1.5.0 / 2015-03-16
+* [BUGFIX] Fix inability to use queue if the message visibility timeout has changed.
+
 # 1.4.0 / 2014-07-12
 * [FEATURE] Move symbolize_keys to Propono namespace to avoid ActiveSupport conflict (:blue_heart: @tardate)
 * [BUGFIX] Drain integration tests drain queues before starting (:blue_heart: @tardate)

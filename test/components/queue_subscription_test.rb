@@ -31,7 +31,7 @@ module Propono
 
       queue_name = subscription.send(:queue_name)
 
-      sqs = mock()
+      sqs = Fog::AWS::SQS::Mock.new
       sqs.expects(:create_queue).with(queue_name).returns(mock(body: {'QueueUrl' => Fog::AWS::SQS::Mock::QueueUrl}))
       sqs.expects(:create_queue).with(queue_name + '-failed').returns(mock(body: {'QueueUrl' => Fog::AWS::SQS::Mock::QueueUrl}))
       sqs.expects(:create_queue).with(queue_name + '-corrupt').returns(mock(body: {'QueueUrl' => Fog::AWS::SQS::Mock::QueueUrl}))

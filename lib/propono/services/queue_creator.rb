@@ -14,9 +14,15 @@ module Propono
     end
 
     def find_or_create
-      result = sqs.create_queue(@name)
-      body = result.body
-      url = body.fetch('QueueUrl') { raise QueueCreatorError.new("No QueueUrl returned from SQS") }
+      urls = sqs.list_queues("QueueNamePrefix" => @name).body["QueueUrls"]
+      url = urls.select{|x|x =~ /#{@name}$/}.first
+
+      unless url
+        result = sqs.create_queue(@name)
+        body = result.body
+        url = body.fetch('QueueUrl') { raise QueueCreatorError.new("No QueueUrl returned from SQS") }
+      end
+
       Queue.new(url)
     end
   end
