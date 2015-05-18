@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
   spec.description   = %q{Pub / Sub Library using Amazon Web Services}
   spec.summary       = %q{General purpose pub/sub library built on top of AWS SNS and SQS}
   spec.homepage      = ""
-  spec.license       = "AGPL3"
+  spec.license       = "MIT"
 
   spec.files         = `git ls-files`.split($/)
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
