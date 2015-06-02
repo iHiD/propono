@@ -29,7 +29,7 @@ class Minitest::Test
   end
 end
 
-require 'fog'
+require 'fog/aws'
 class Fog::AWS::SNS::Mock
   def create_topic(*args)
     foo = Object.new
