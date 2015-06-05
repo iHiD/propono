@@ -1,4 +1,4 @@
-require 'fog'
+require 'fog/aws'
 
 module Propono
   module Sqs
