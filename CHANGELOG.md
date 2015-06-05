@@ -1,3 +1,7 @@
+# 1.6.0 / 2015-06-05
+* [FEATURE] Require fog-aws gem instead of fog  (:blue_heart: @mhuggins)
+* [FEATURE] Change licence to MIT  (:blue_heart: @BiggerNoise)
+
 # 1.5.0 / 2015-03-16
 * [BUGFIX] Fix inability to use queue if the message visibility timeout has changed.
 
