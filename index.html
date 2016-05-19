@@ -5,9 +5,9 @@
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
 
     <!--[if lt IE 9]>
     <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -21,7 +21,7 @@
       <div class="inner">
         <h1>Propono</h1>
         <h2>A pub/sub architecture as Ruby Gem</h2>
-        <a href="https://github.com/meducation/propono" class="button"><small>View project on</small>GitHub</a>
+        <a href="https://github.com/meducation/propono" class="button"><small>View project on</small> GitHub</a>
       </div>
     </header>
 
@@ -29,7 +29,7 @@
       <div class="inner clearfix">
         <section id="main-content">
           <h1>
-<a name="propono" class="anchor" href="#propono"><span class="octicon octicon-link"></span></a>Propono</h1>
+<a id="propono" class="anchor" href="#propono" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Propono</h1>
 
 <p><a href="https://travis-ci.org/meducation/propono"><img src="https://travis-ci.org/meducation/propono.png" alt="Build Status"></a>
 <a href="https://gemnasium.com/meducation/propono"><img src="https://gemnasium.com/meducation/propono.png?travis" alt="Dependencies"></a>
@@ -39,20 +39,19 @@
 
 <p>It's beautifully simple to use.</p>
 
-<div class="highlight highlight-ruby"><pre><span class="c1"># On Machine A</span>
-<span class="no">Propono</span><span class="o">.</span><span class="n">listen_to_queue</span><span class="p">(</span><span class="s1">'some-topic'</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">message</span><span class="o">|</span>
-  <span class="nb">puts</span> <span class="s2">"I just received: </span><span class="si">#{</span><span class="n">message</span><span class="si">}</span><span class="s2">"</span>
-<span class="k">end</span>
+<div class="highlight highlight-source-ruby"><pre><span class="pl-c"># On Machine A</span>
+<span class="pl-c1">Propono</span>.listen_to_queue(<span class="pl-s"><span class="pl-pds">'</span>some-topic<span class="pl-pds">'</span></span>) <span class="pl-k">do </span>|<span class="pl-smi">message</span>|
+  puts <span class="pl-s"><span class="pl-pds">"</span>I just received: <span class="pl-pse">#{</span><span class="pl-s1">message</span><span class="pl-pse"><span class="pl-s1">}</span></span><span class="pl-pds">"</span></span>
+<span class="pl-k">end</span>
 
-<span class="c1"># On Machine B</span>
-<span class="no">Propono</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="s1">'some-topic'</span><span class="p">,</span> <span class="s2">"The Best Message Ever"</span><span class="p">)</span>
+<span class="pl-c"># On Machine B</span>
+<span class="pl-c1">Propono</span>.publish(<span class="pl-s"><span class="pl-pds">'</span>some-topic<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">"</span>The Best Message Ever<span class="pl-pds">"</span></span>)
 
-<span class="c1"># Output on Machine A a second later.</span>
-<span class="c1"># - "I just recieved The Best Message Ever"</span>
-</pre></div>
+<span class="pl-c"># Output on Machine A a second later.</span>
+<span class="pl-c"># - "I just recieved The Best Message Ever"</span></pre></div>
 
 <h2>
-<a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h2>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installation</h2>
 
 <p>Add this line to your application's Gemfile:</p>
 
@@ -65,28 +64,25 @@
 </code></pre>
 
 <h2>
-<a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h2>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage</h2>
 
 <p>The first thing to do is setup some configuration keys for Propono. It's best to do this in an initializer, or at the start of your application.</p>
 
-<div class="highlight highlight-ruby"><pre><span class="no">Propono</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">access_key</span>       <span class="o">=</span> <span class="s2">"access-key"</span>       <span class="c1"># From AWS</span>
-<span class="no">Propono</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">secret_key</span>       <span class="o">=</span> <span class="s2">"secret-key"</span>       <span class="c1"># From AWS</span>
-<span class="no">Propono</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">queue_region</span>     <span class="o">=</span> <span class="s2">"queue-region"</span>     <span class="c1"># From AWS</span>
-</pre></div>
+<div class="highlight highlight-source-ruby"><pre><span class="pl-c1">Propono</span>.config.access_key       <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>access-key<span class="pl-pds">"</span></span>       <span class="pl-c"># From AWS</span>
+<span class="pl-c1">Propono</span>.config.secret_key       <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>secret-key<span class="pl-pds">"</span></span>       <span class="pl-c"># From AWS</span>
+<span class="pl-c1">Propono</span>.config.queue_region     <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>queue-region<span class="pl-pds">"</span></span>     <span class="pl-c"># From AWS</span></pre></div>
 
 <p>You can then start publishing messages easily from anywhere in your codebase.</p>
 
-<div class="highlight highlight-ruby"><pre><span class="no">Propono</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="s1">'some-topic'</span><span class="p">,</span> <span class="s2">"Some string"</span><span class="p">)</span>
-<span class="no">Propono</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="s1">'some-topic'</span><span class="p">,</span> <span class="p">{</span><span class="ss">some</span><span class="p">:</span> <span class="o">[</span><span class="s1">'hash'</span><span class="p">,</span> <span class="s1">'or'</span><span class="p">,</span> <span class="s1">'array'</span><span class="o">]</span><span class="p">})</span>
-</pre></div>
+<div class="highlight highlight-source-ruby"><pre><span class="pl-c1">Propono</span>.publish(<span class="pl-s"><span class="pl-pds">'</span>some-topic<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">"</span>Some string<span class="pl-pds">"</span></span>)
+<span class="pl-c1">Propono</span>.publish(<span class="pl-s"><span class="pl-pds">'</span>some-topic<span class="pl-pds">'</span></span>, {<span class="pl-c1">some:</span> [<span class="pl-s"><span class="pl-pds">'</span>hash<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>or<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>array<span class="pl-pds">'</span></span>]})</pre></div>
 
 <p>Listening for messages is easy too. Just tell Propono what your application is called and start listening. You'll get a block yielded for each message.</p>
 
-<div class="highlight highlight-ruby"><pre><span class="no">Propono</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">application_name</span> <span class="o">=</span> <span class="s2">"application-name"</span> <span class="c1"># Something unique to this app.</span>
-<span class="no">Propono</span><span class="o">.</span><span class="n">listen_to_queue</span><span class="p">(</span><span class="s1">'some-topic'</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">message</span><span class="o">|</span>
-  <span class="c1"># ... Do something interesting with the message</span>
-<span class="k">end</span>
-</pre></div>
+<div class="highlight highlight-source-ruby"><pre><span class="pl-c1">Propono</span>.config.application_name <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>application-name<span class="pl-pds">"</span></span> <span class="pl-c"># Something unique to this app.</span>
+<span class="pl-c1">Propono</span>.listen_to_queue(<span class="pl-s"><span class="pl-pds">'</span>some-topic<span class="pl-pds">'</span></span>) <span class="pl-k">do </span>|<span class="pl-smi">message</span>|
+  <span class="pl-c"># ... Do something interesting with the message</span>
+<span class="pl-k">end</span></pre></div>
 
 <p>In the background, Propono is automatically setting up a queue using SQS, a notification system using SNS, and gluing them all together for you. But you don't have to worry about any of that.</p>
 
@@ -95,61 +91,56 @@
 <ul>
 <li>Pass the <code>{async: false}</code> option to Propono.publish. (This was introduced in 1.3.0)</li>
 <li>Do a <code>Thread#join</code> on each thread that is returned from calls to <code>publish</code>.</li>
-</ul><h3>
-<a name="using-tcp-for-messages" class="anchor" href="#using-tcp-for-messages"><span class="octicon octicon-link"></span></a> Using TCP for messages</h3>
+</ul>
+
+<h3>
+<a id="using-tcp-for-messages" class="anchor" href="#using-tcp-for-messages" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a> Using TCP for messages</h3>
 
 <p>Publishing directly to SNS takes about 15x longer than publishing over a simple TCP connection. It is therefore sometimes favourable to publish to a separate machine listening for TCP messages, which will then proxy them on.</p>
 
 <p>To send messages this way, you need to set up a little extra config:</p>
 
-<div class="highlight highlight-ruby"><pre><span class="no">Propono</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">tcp_host</span> <span class="o">=</span> <span class="s2">"some.host.running.a.propono.listener"</span>
-<span class="no">Propono</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">tcp_port</span> <span class="o">=</span> <span class="mi">12543</span>
-</pre></div>
+<div class="highlight highlight-source-ruby"><pre><span class="pl-c1">Propono</span>.config.tcp_host <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>some.host.running.a.propono.listener<span class="pl-pds">"</span></span>
+<span class="pl-c1">Propono</span>.config.tcp_port <span class="pl-k">=</span> <span class="pl-c1">12543</span></pre></div>
 
 <p>You then simply pass the <code>:tcp</code> protocol into <code>publish</code></p>
 
-<div class="highlight highlight-ruby"><pre><span class="no">Propono</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="s1">'some-topic'</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="ss">protocol</span><span class="p">:</span> <span class="ss">:tcp</span><span class="p">)</span>
-</pre></div>
+<div class="highlight highlight-source-ruby"><pre><span class="pl-c1">Propono</span>.publish(<span class="pl-s"><span class="pl-pds">'</span>some-topic<span class="pl-pds">'</span></span>, message, <span class="pl-c1">protocol:</span> <span class="pl-c1">:tcp</span>)</pre></div>
 
 <p>You'll now need another application running Propono to listen to the TCP feed. You can use the same machine or a different one, just make sure the port config is the same in both applications, and you're good to go.</p>
 
-<div class="highlight highlight-ruby"><pre><span class="no">Propono</span><span class="o">.</span><span class="n">listen_to_tcp</span> <span class="k">do</span> <span class="o">|</span><span class="n">topic</span><span class="p">,</span> <span class="n">message</span><span class="o">|</span>
-  <span class="no">Propono</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="n">topic</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span> <span class="c1"># Proxy the message to SNS</span>
-<span class="k">end</span>
-</pre></div>
+<div class="highlight highlight-source-ruby"><pre><span class="pl-c1">Propono</span>.listen_to_tcp <span class="pl-k">do </span>|<span class="pl-smi">topic</span>, <span class="pl-smi">message</span>|
+  <span class="pl-c1">Propono</span>.publish(topic, message) <span class="pl-c"># Proxy the message to SNS</span>
+<span class="pl-k">end</span></pre></div>
 
 <p>This proxying of TCP to SQS is used so often that there's a simple shortcut. Just run this on the machine receiving the TCP packets.</p>
 
-<div class="highlight highlight-ruby"><pre><span class="no">Propono</span><span class="o">.</span><span class="n">proxy_tcp</span><span class="p">()</span>
-</pre></div>
+<div class="highlight highlight-source-ruby"><pre><span class="pl-c1">Propono</span>.proxy_tcp()</pre></div>
 
 <h3>
-<a name="using-udp-for-messages" class="anchor" href="#using-udp-for-messages"><span class="octicon octicon-link"></span></a> Using UDP for messages</h3>
+<a id="using-udp-for-messages" class="anchor" href="#using-udp-for-messages" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a> Using UDP for messages</h3>
 
 <p>If you want almost-zero performance impact, and don't mind the occasional message getting lost, you can use UDP. We use this for things like our live dashboard where we don't mind losing a piece of activity here and there, but any performance impact on our Meducation itself is bad news.</p>
 
 <p>Sending messages in this way is very similar to using TCP. First add some config:</p>
 
-<div class="highlight highlight-ruby"><pre><span class="no">Propono</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">udp_host</span> <span class="o">=</span> <span class="s2">"some.host.running.a.propono.listener"</span>
-<span class="no">Propono</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">udp_port</span> <span class="o">=</span> <span class="mi">12543</span>
-</pre></div>
+<div class="highlight highlight-source-ruby"><pre><span class="pl-c1">Propono</span>.config.udp_host <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>some.host.running.a.propono.listener<span class="pl-pds">"</span></span>
+<span class="pl-c1">Propono</span>.config.udp_port <span class="pl-k">=</span> <span class="pl-c1">12543</span></pre></div>
 
 <p>You then simply pass the <code>:udp</code> protocol into <code>publish</code>:</p>
 
-<div class="highlight highlight-ruby"><pre><span class="no">Propono</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="s1">'some-topic'</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="ss">protocol</span><span class="p">:</span> <span class="ss">:udp</span><span class="p">)</span>
-</pre></div>
+<div class="highlight highlight-source-ruby"><pre><span class="pl-c1">Propono</span>.publish(<span class="pl-s"><span class="pl-pds">'</span>some-topic<span class="pl-pds">'</span></span>, message, <span class="pl-c1">protocol:</span> <span class="pl-c1">:udp</span>)</pre></div>
 
 <p>As per the <code>listen_to_tcp</code> method explained above, you now listen to UDP or use the proxy method:</p>
 
-<div class="highlight highlight-ruby"><pre><span class="no">Propono</span><span class="o">.</span><span class="n">listen_to_udp</span> <span class="k">do</span> <span class="o">|</span><span class="n">topic</span><span class="p">,</span> <span class="n">message</span><span class="o">|</span>
-  <span class="no">Propono</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="n">topic</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span> <span class="c1"># Proxy the message to SNS</span>
-<span class="k">end</span>
+<div class="highlight highlight-source-ruby"><pre><span class="pl-c1">Propono</span>.listen_to_udp <span class="pl-k">do </span>|<span class="pl-smi">topic</span>, <span class="pl-smi">message</span>|
+  <span class="pl-c1">Propono</span>.publish(topic, message) <span class="pl-c"># Proxy the message to SNS</span>
+<span class="pl-k">end</span>
 
-<span class="no">Propono</span><span class="o">.</span><span class="n">proxy_udp</span><span class="p">()</span>
-</pre></div>
+<span class="pl-c1">Propono</span>.proxy_udp()</pre></div>
 
 <h3>
-<a name="configuration" class="anchor" href="#configuration"><span class="octicon octicon-link"></span></a>Configuration</h3>
+<a id="configuration" class="anchor" href="#configuration" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Configuration</h3>
 
 <p>The following configuration settings are available:</p>
 
@@ -169,19 +160,19 @@ end
 <p>These can all also be set using the <code>Propono.config.access_key = "..."</code> syntax.</p>
 
 <h3>
-<a name="is-it-any-good" class="anchor" href="#is-it-any-good"><span class="octicon octicon-link"></span></a>Is it any good?</h3>
+<a id="is-it-any-good" class="anchor" href="#is-it-any-good" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Is it any good?</h3>
 
 <p><a href="http://news.ycombinator.com/item?id=3067434">Yes.</a></p>
 
 <h2>
-<a name="contributing" class="anchor" href="#contributing"><span class="octicon octicon-link"></span></a>Contributing</h2>
+<a id="contributing" class="anchor" href="#contributing" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Contributing</h2>
 
-<p>Firstly, thank you!! <img class="emoji" title=":heart:" alt=":heart:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/2764-fe0f.png" height="20" width="20" align="absmiddle"><img class="emoji" title=":sparkling_heart:" alt=":sparkling_heart:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f496.png" height="20" width="20" align="absmiddle"><img class="emoji" title=":heart:" alt=":heart:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/2764-fe0f.png" height="20" width="20" align="absmiddle"></p>
+<p>Firstly, thank you!! <g-emoji alias="heart" fallback-src="https://assets-cdn.github.com/images/icons/emoji/unicode/2764.png">❤️</g-emoji><g-emoji alias="sparkling_heart" fallback-src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f496.png">💖</g-emoji><g-emoji alias="heart" fallback-src="https://assets-cdn.github.com/images/icons/emoji/unicode/2764.png">❤️</g-emoji></p>
 
 <p>We'd love to have you involved. Please read our <a href="https://github.com/meducation/propono/tree/master/CONTRIBUTING.md">contributing guide</a> for information on how to get stuck in.</p>
 
 <h3>
-<a name="contributors" class="anchor" href="#contributors"><span class="octicon octicon-link"></span></a>Contributors</h3>
+<a id="contributors" class="anchor" href="#contributors" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Contributors</h3>
 
 <p>This project is managed by the <a href="http://company.meducation.net/about#team">Meducation team</a>. </p>
 
@@ -192,8 +183,10 @@ end
 <li><a href="http://github.com/malcyL">Malcolm Landon</a></li>
 <li><a href="http://github.com/ccare">Charles Care</a></li>
 <li><a href="http://github.com/mmmmmrob">Rob Styles</a></li>
-</ul><h2>
-<a name="licence" class="anchor" href="#licence"><span class="octicon octicon-link"></span></a>Licence</h2>
+</ul>
+
+<h2>
+<a id="licence" class="anchor" href="#licence" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Licence</h2>
 
 <p>Copyright (C) 2013 New Media Education Ltd</p>
 
