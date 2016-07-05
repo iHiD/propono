@@ -169,14 +169,14 @@ We'd love to have you involved. Please read our [contributing guide](https://git
 
 ### Contributors
 
-This project is managed by the [Meducation team](http://company.meducation.net/about#team). 
+This project is managed by the [Meducation team](https://company.meducation.net/team). 
 
 These individuals have come up with the ideas and written the code that made this possible:
 
-- [Jeremy Walker](http://github.com/iHiD)
-- [Malcolm Landon](http://github.com/malcyL)
-- [Charles Care](http://github.com/ccare)
-- [Rob Styles](http://github.com/mmmmmrob)
+- [Jeremy Walker](https://github.com/iHiD)
+- [Malcolm Landon](https://github.com/malcyL)
+- [Charles Care](https://github.com/ccare)
+- [Rob Styles](https://github.com/mmmmmrob)
 
 ## Licence
 
