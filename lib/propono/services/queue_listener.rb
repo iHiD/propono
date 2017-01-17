@@ -35,7 +35,7 @@ module Propono
     private
 
     def read_messages
-      read_messages_from_queue(main_queue_url, 10) || read_messages_from_queue(slow_queue_url, 1)
+      read_messages_from_queue(main_queue_url, Propono.config.num_messages_per_poll) || read_messages_from_queue(slow_queue_url, 1)
     end
 
     def read_messages_from_queue(queue_url, num_messages)

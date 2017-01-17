@@ -83,6 +83,12 @@ module Propono
       assert_equal val, Propono.config.tcp_port
     end
 
+    def test_num_messages_per_poll
+      val = 3
+      Propono.config.num_messages_per_poll = val
+      assert_equal val, Propono.config.num_messages_per_poll
+    end
+
     def test_missing_access_key_throws_exception
       assert_raises(ProponoConfigurationError) do
         Propono.config.access_key
@@ -110,7 +116,7 @@ module Propono
     def test_default_max_retries
       assert_equal 0, Propono.config.max_retries
     end
-    
+
     def test_max_retries
       val = 5
       Propono.config.max_retries = val

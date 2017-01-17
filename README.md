@@ -144,7 +144,7 @@ Propono.config do |config|
   config.secret_key = "A AWS secret key"
   # Or use AWS IAM profile of the machine
   config.use_iam_profile = true
-  
+
   config.queue_region = "An AWS queue region"
   config.application_name = "A name unique in your network"
   config.udp_host = "The host of a machine used for UDP proxying"
@@ -152,6 +152,9 @@ Propono.config do |config|
   config.tcp_host = "The host of a machine used for TCP proxying"
   config.tcp_port = "The port of a machine used for TCP proxying"
   config.logger = "A logger such as Log4r or Rails.logger"
+
+  config.max_retries = "The number of retries if a message raises an exception before being placed on the failed queue"
+  config.num_messages_per_poll = "The number of messages retrieved per poll to SQS"
 end
 ```
 
@@ -169,7 +172,7 @@ We'd love to have you involved. Please read our [contributing guide](https://git
 
 ### Contributors
 
-This project is managed by the [Meducation team](https://company.meducation.net/team). 
+This project is managed by the [Jeremy Walker](http://ihid.co.uk).
 
 These individuals have come up with the ideas and written the code that made this possible:
 

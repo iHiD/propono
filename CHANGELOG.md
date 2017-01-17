@@ -1,3 +1,6 @@
+# 1.7.0 / 2017-01-17
+* [FEATURE] Added num_messages_per_poll config option to allow you to change how many messages you pull from AWS per poll cycle.
+
 # 1.6.0 / 2015-06-05
 * [FEATURE] Require fog-aws gem instead of fog  (:blue_heart: @mhuggins)
 * [FEATURE] Change licence to MIT  (:blue_heart: @BiggerNoise)

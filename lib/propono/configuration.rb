@@ -11,7 +11,7 @@ module Propono
       :udp_host, :udp_port,
       :tcp_host, :tcp_port,
       :logger,
-      :max_retries
+      :max_retries, :num_messages_per_poll
     ]
     attr_writer *SETTINGS
 
@@ -20,6 +20,7 @@ module Propono
       self.queue_suffix = ""
       self.use_iam_profile = false
       self.max_retries = 0
+      self.num_messages_per_poll = 10
     end
 
     SETTINGS.each do |setting|
