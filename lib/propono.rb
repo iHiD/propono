@@ -21,8 +21,6 @@ require "propono/services/queue_creator"
 require "propono/services/queue_listener"
 require "propono/services/subscriber"
 require "propono/services/topic_creator"
-require "propono/services/udp_listener"
-require "propono/services/tcp_listener"
 
 # Propono is a pub/sub gem built on top of Amazon Web Services (AWS).
 # It uses Simple Notification Service (SNS) and Simple Queue Service (SQS)
@@ -45,8 +43,6 @@ module Propono
   # * <tt>:application_name</tt> - The name of the application Propono
   #   is included in.
   # * <tt>:queue_suffix</tt> - Optional string to append to topic and queue names.
-  # * <tt>:udp_host</tt> - If using UDP, the host to send to.
-  # * <tt>:udp_port</tt> - If using UDP, the port to send to.
   # * <tt>:logger</tt> - A logger object that responds to puts.
   def self.config
     @config ||= Configuration.new
@@ -60,14 +56,10 @@ module Propono
   # Publishes a new message into the Propono pub/sub network.
   #
   # This requires a topic and a message. By default this pushes
-  # out AWS SNS. The method optionally takes a :protocol key in
-  # options, which can be set to :udp for non-guaranteed but very
-  # fast delivery.
+  # out AWS SNS.
   #
   # @param [String] topic The name of the topic to publish to.
   # @param [String] message The message to post.
-  # @param [Hash] options
-  #   * protocol: :udp
   def self.publish(topic, message, options = {})
     suffixed_topic = "#{topic}#{Propono.config.queue_suffix}"
     Publisher.publish(suffixed_topic, message, options)
@@ -121,47 +113,5 @@ module Propono
   # @param &message_processor The block to yield for each message.
   def self.drain_queue(topic, &message_processor)
     QueueListener.drain(topic, &message_processor)
-  end
-
-  # Listens for UDP messages and yields for each.
-  #
-  # Calling this will enter a queue-listening loop that
-  # yields the message_processor for each UDP message received.
-  #
-  # @param &message_processor The block to yield for each message.
-  #   Is called with <tt>|topic, message|</tt>.
-  def self.listen_to_udp(&message_processor)
-    UdpListener.listen(&message_processor)
-  end
-
-  # Listens for TCP messages and yields for each.
-  #
-  # Calling this will enter a queue-listening loop that
-  # yields the message_processor for each UDP message received.
-  #
-  # @param &message_processor The block to yield for each message.
-  #   Is called with <tt>|topic, message|</tt>.
-  def self.listen_to_tcp(&message_processor)
-    TcpListener.listen(&message_processor)
-  end
-
-  # Listens for UDP messages and passes them onto the queue.
-  #
-  # This method uses #listen_to_udp and #publish to proxy
-  # messages from UDP onto the queue.
-  def self.proxy_udp
-    Propono.listen_to_udp do |topic, message, options = {}|
-      Propono.publish(topic, message, options)
-    end
-  end
-
-  # Listens for TCP messages and passes them onto the queue.
-  #
-  # This method uses #listen_to_tcp and #publish to proxy
-  # messages from TCP onto the queue.
-  def self.proxy_tcp
-    Propono.listen_to_tcp do |topic, message, options = {}|
-      Propono.publish(topic, message, options)
-    end
   end
 end

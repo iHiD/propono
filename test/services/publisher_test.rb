@@ -50,12 +50,6 @@ module Propono
       publisher.publish
     end
 
-    def test_publish_proxies_to_udp
-      publisher = Publisher.new('topic', 'message', protocol: :udp)
-      publisher.expects(:publish_via_udp)
-      publisher.publish
-    end
-
     def test_publish_via_sns_should_call_sns_on_correct_topic_and_message
       topic = "topic123"
       id = "f123"
@@ -134,82 +128,10 @@ module Propono
       thread.join
     end
 
-    def test_udp_uses_correct_message_host_and_port
-      host = "http://meducation.net"
-      port = 1234
-      Propono.config.udp_host = host
-      Propono.config.udp_port = port
-      topic_id = "my-fav-topic"
-
-      id = "foobar123"
-      message = "cat dog mouse"
-      payload = {id: id, message: message, topic: topic_id}.to_json
-      UDPSocket.any_instance.expects(:send).with(payload, 0, host, port)
-
-      publisher = Publisher.new(topic_id, message)
-      publisher.stubs(id: id)
-      publisher.send(:publish_via_udp)
-    end
-
-    def test_exception_from_udpsocket_caught_and_logged
-      host = "http://meducation.net"
-      port = 1234
-      Propono.config.udp_host = host
-      Propono.config.udp_port = port
-
-      publisher = Publisher.new("topic_id", "message")
-      publisher.stubs(id: '123asd')
-      Propono.config.logger.expects(:error).with() {|x| x =~ /^Propono \[123asd\]: Failed to send : getaddrinfo:.*/}
-      publisher.send(:publish_via_udp)
-    end
-
     def test_publish_should_raise_exception_if_topic_is_nil
       assert_raises(PublisherError, "Topic is nil") do
         Publisher.publish(nil, "foobar")
       end
-    end
-
-    def test_tcp_uses_correct_message
-      Propono.config.tcp_host = "http://meducation.net"
-      Propono.config.tcp_port = 1234
-      topic_id = "my-fav-topic"
-      id = "qweqw2312"
-      message = "foobar"
-      payload = {id: id, message: message, topic: topic_id}.to_json
-
-      socket = mock()
-      socket.expects(:write).with(payload)
-      socket.expects(:close)
-      TCPSocket.stubs(new: socket)
-
-      publisher = Publisher.new(topic_id, message)
-      publisher.stubs(id: id)
-      publisher.send(:publish_via_tcp)
-    end
-
-    def test_tcp_uses_correct_message_host_and_port
-      host = "http://meducation.net"
-      port = 1234
-      Propono.config.tcp_host = host
-      Propono.config.tcp_port = port
-      topic_id = "my-fav-topic"
-      message = "foobar"
-      TCPSocket.expects(:new).with(host, port)
-
-      publisher = Publisher.new(topic_id, message)
-      publisher.send(:publish_via_tcp)
-    end
-
-    def test_exception_from_tcpsocket_caught_and_logged
-      host = "http://meducation.net"
-      port = 1234
-      Propono.config.tcp_host = host
-      Propono.config.tcp_port = port
-
-      publisher = Publisher.new("topic_id", "message")
-      publisher.stubs(id: '123asd')
-      Propono.config.logger.expects(:error).with() {|x| x =~ /^Propono \[123asd\]: Failed to send : getaddrinfo:.*/}
-      publisher.send(:publish_via_tcp)
     end
 
     def test_publish_should_raise_exception_if_topic_is_nil

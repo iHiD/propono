@@ -12,7 +12,6 @@ module Propono
         config.secret_key = config_file['secret_key']
         config.queue_region = config_file['queue_region']
         config.application_name = config_file['application_name']
-        config.udp_host = "localhost"
       end
     end
 

@@ -58,23 +58,6 @@ module Propono
       end
     end
 
-    def publish_via_udp
-      payload = body.merge(topic: topic_id).to_json
-      UDPSocket.new.send(payload, 0, Propono.config.udp_host, Propono.config.udp_port)
-    rescue => e
-      Propono.config.logger.error "Propono [#{id}]: Failed to send : #{e}"
-    end
-
-    def publish_via_tcp
-      payload = body.merge(topic: topic_id).to_json
-
-      socket = TCPSocket.new(Propono.config.tcp_host, Propono.config.tcp_port)
-      socket.write payload
-      socket.close
-    rescue => e
-      Propono.config.logger.error "Propono [#{id}]: Failed to send : #{e}"
-    end
-
     def body
       {
         id: id,

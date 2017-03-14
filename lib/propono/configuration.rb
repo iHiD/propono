@@ -8,8 +8,6 @@ module Propono
     SETTINGS = [
       :use_iam_profile, :access_key, :secret_key, :queue_region, :queue_suffix,
       :application_name,
-      :udp_host, :udp_port,
-      :tcp_host, :tcp_port,
       :logger,
       :max_retries, :num_messages_per_poll
     ]

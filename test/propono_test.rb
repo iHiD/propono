@@ -41,43 +41,5 @@ module Propono
       QueueListener.expects(:drain).with(topic)
       Propono.drain_queue(topic)
     end
-
-    def test_listen_to_udp_calls_udp_listener
-      UdpListener.expects(:listen).with()
-      Propono.listen_to_udp()
-    end
-
-    def test_listen_to_tcp_calls_tcp_listener
-      TcpListener.expects(:listen).with()
-      Propono.listen_to_tcp()
-    end
-
-    def test_proxy_udp_calls_listen
-      UdpListener.expects(:listen).with()
-      Propono.proxy_udp()
-    end
-
-    def test_proxy_udp_calls_publish_in_the_block
-      topic = "foobar"
-      message = "message"
-      options = {id: "catdog"}
-      Propono.stubs(:listen_to_udp).yields(topic, message, options)
-      Publisher.expects(:publish).with(topic, message, options)
-      Propono.proxy_udp
-    end
-
-    def test_proxy_tcp_calls_listen
-      TcpListener.expects(:listen).with()
-      Propono.proxy_tcp()
-    end
-
-    def test_proxy_tcp_calls_publish_in_the_block
-      topic = "foobar"
-      message = "message"
-      options = {id: "catdog"}
-      Propono.stubs(:listen_to_tcp).yields(topic, message, options)
-      Publisher.expects(:publish).with(topic, message, options)
-      Propono.proxy_tcp
-    end
   end
 end
