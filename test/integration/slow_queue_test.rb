@@ -3,6 +3,7 @@ require File.expand_path('../integration_test', __FILE__)
 module Propono
   class SlowQueueTest < IntegrationTest
     def test_slow_messages_are_received
+      skip
       topic = "propono-tests-slow-queue-topic"
       slow_topic = "propono-tests-slow-queue-topic-slow"
       text = "This is my message #{DateTime.now} #{rand()}"

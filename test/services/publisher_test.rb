@@ -11,7 +11,7 @@ module Propono
     def test_self_publish_calls_new
       topic = "topic123"
       message = "message123"
-      Publisher.expects(:new).with(topic, message, {}).returns(mock(publish: nil))
+      Publisher.expects(:new).with(topic, message).returns(mock(publish: nil))
       Publisher.publish(topic, message)
     end
 
@@ -22,8 +22,10 @@ module Propono
 
     def test_initializer_concats_an_id
       id = "q1w2e3"
+      hex = "313abd"
+      SecureRandom.expects(:hex).with(3).returns(hex)
       publisher = Publisher.new('x','y', id: id)
-      assert publisher.id =~ Regexp.new("^#{id}-[a-z0-9]{6}$")
+      assert_equal "#{id}-#{hex}", publisher.id
     end
 
     def test_self_publish_calls_publish
@@ -31,26 +33,21 @@ module Propono
       Publisher.publish("topic", "message")
     end
 
-    def test_protocol_should_be_sns_by_default
-      publisher = Publisher.new('topic', 'message')
-      assert_equal :sns, publisher.protocol
-    end
-
     def test_publish_logs
       publisher = Publisher.new("foo", "bar")
       publisher.instance_variable_set(:@id, 'abc')
-      publisher.stubs(:publish_via_sns)
-      Propono.config.logger.expects(:info).with {|x| x =~ /^Propono \[abc\]: Publishing bar to foo via sns.*/}
+      publisher.stubs(:publish_syncronously)
+      Propono.config.logger.expects(:info).with {|x| x =~ /^Propono \[abc\]: Publishing bar to foo.*/}
       publisher.send(:publish)
     end
 
     def test_publish_proxies_to_sns
       publisher = Publisher.new('topic', 'message')
-      publisher.expects(:publish_via_sns)
+      publisher.expects(:publish_syncronously)
       publisher.publish
     end
 
-    def test_publish_via_sns_should_call_sns_on_correct_topic_and_message
+    def test_publish_should_call_sns_on_correct_topic_and_message
       topic = "topic123"
       id = "f123"
       message = "message123"
@@ -63,11 +60,10 @@ module Propono
       sns.expects(:publish).with(topic_arn, {id: id, message: message}.to_json)
       publisher = Publisher.new(topic, message)
       publisher.stubs(id: id, sns: sns)
-      thread = publisher.send(:publish_via_sns)
-      thread.join
+      thread = publisher.send(:publish_syncronously)
     end
 
-    def test_publish_via_sns_should_accept_a_hash_for_message
+    def test_publish_should_accept_a_hash_for_message
       topic = "topic123"
       id = "foobar123"
       message = {something: ['some', 123, true]}
@@ -81,11 +77,11 @@ module Propono
       sns.expects(:publish).with(topic_arn, body.to_json)
       publisher = Publisher.new(topic, message)
       publisher.stubs(id: id, sns: sns)
-      thread = publisher.send(:publish_via_sns)
-      thread.join
+      publisher.send(:publish_syncronously)
     end
 
-    def test_publish_via_sns_should_return_future_of_the_sns_response
+    def test_publish_async_should_return_future_of_the_sns_response
+      skip
       topic = "topic123"
       id = "foobar123"
       message = "message123"
@@ -97,22 +93,21 @@ module Propono
 
       sns = mock()
       sns.expects(:publish).with(topic_arn, body.to_json).returns(:response)
-      publisher = Publisher.new(topic, message)
+      publisher = Publisher.new(topic, message, async: true)
       publisher.stubs(id: id, sns: sns)
-      assert_same :response, publisher.send(:publish_via_sns).value
+      assert_same :response, publisher.send(:publish_syncronously).value
     end
 
-    def test_publish_via_sns_should_propogate_exception_on_topic_creation_error
+    def test_publish_should_propogate_exception_on_topic_creation_error
       TopicCreator.stubs(:find_or_create).raises(TopicCreatorError)
 
       assert_raises(TopicCreatorError) do
         publisher = Publisher.new("topic", "message")
-        thread = publisher.send(:publish_via_sns)
-        thread.join
+        publisher.send(:publish_syncronously)
       end
     end
 
-    def test_publish_via_sns_creates_a_topic
+    def test_publish_creates_a_topic
       topic_id = "Malcs_topic_id"
       topic_arn = "Malcs_topic_arn"
       topic = Topic.new(topic_arn)
@@ -124,8 +119,7 @@ module Propono
       publisher = Publisher.new(topic_id, "Foobar")
       publisher.stubs(sns: sns)
 
-      thread = publisher.send(:publish_via_sns)
-      thread.join
+      publisher.send(:publish_syncronously)
     end
 
     def test_publish_should_raise_exception_if_topic_is_nil
@@ -147,16 +141,16 @@ module Propono
     end
 
     def test_publish_can_be_called_syncronously
-      publisher = Publisher.new("topic_id", "message", async: false)
-      publisher.expects(:publish_via_sns_syncronously).once
-      publisher.expects(:publish_via_sns_asyncronously).never
-      publisher.send(:publish_via_sns)
+      publisher = Publisher.new("topic_id", "message", async: true)
+      publisher.expects(:publish_syncronously).never
+      publisher.expects(:publish_asyncronously).once
+      publisher.send(:publish)
     end
 
-    def test_publish_is_normally_called_asyncronously
+    def test_publish_is_normally_called_syncronously
       publisher = Publisher.new("topic_id", "message")
-      publisher.expects(:publish_via_sns_asyncronously)
-      publisher.send(:publish_via_sns)
+      publisher.expects(:publish_syncronously)
+      publisher.send(:publish)
     end
   end
 end

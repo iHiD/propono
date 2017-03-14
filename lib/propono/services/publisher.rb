@@ -7,42 +7,36 @@ module Propono
   class Publisher
     include Sns
 
-    def self.publish(topic_id, message, options = {})
-      new(topic_id, message, options).publish
+    def self.publish(*args)
+      new(*args).publish
     end
 
-    attr_reader :topic_id, :message, :protocol, :id, :async
+    attr_reader :topic_id, :message, :id, :async
 
-    def initialize(topic_id, message, options = {})
+    def initialize(topic_id, message, async: false, id: nil)
       raise PublisherError.new("Topic is nil") if topic_id.nil?
       raise PublisherError.new("Message is nil") if message.nil?
 
-      options = Propono::Utils.symbolize_keys options
-
       @topic_id = topic_id
       @message = message
-      @protocol = options.fetch(:protocol, :sns).to_sym
-      @id = SecureRandom.hex(3)
-      @id = "#{options[:id]}-#{@id}" if options[:id]
-      @async = options.fetch(:async, true)
+      @async = async
+
+      random_id = SecureRandom.hex(3)
+      @id = id ? "#{id}-#{random_id}" : random_id
     end
 
     def publish
-      Propono.config.logger.info "Propono [#{id}]: Publishing #{message} to #{topic_id} via #{protocol}"
-      send("publish_via_#{protocol}")
+      Propono.config.logger.info "Propono [#{id}]: Publishing #{message} to #{topic_id}"
+      async ? publish_asyncronously : publish_syncronously
     end
 
     private
 
-    def publish_via_sns
-      async ? publish_via_sns_asyncronously : publish_via_sns_syncronously
+    def publish_asyncronously
+      Thread.new { publish_syncronously }
     end
 
-    def publish_via_sns_asyncronously
-      Thread.new { publish_via_sns_syncronously }
-    end
-
-    def publish_via_sns_syncronously
+    def publish_syncronously
       begin
         topic = TopicCreator.find_or_create(topic_id)
       rescue => e

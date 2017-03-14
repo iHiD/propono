@@ -1,5 +1,6 @@
 # 2.0.0 / 2017-03-14
 * [FEATURE] Remove UDP and TCP support
+* [FEATURE] Change default publish behaviour from async to sync
 
 # 1.7.0 / 2017-01-17
 * [FEATURE] Added num_messages_per_poll config option to allow you to change how many messages you pull from AWS per poll cycle.

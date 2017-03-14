@@ -3,6 +3,7 @@ require File.expand_path('../integration_test', __FILE__)
 module Propono
   class SnsToSqsTest < IntegrationTest
     def test_the_message_gets_there
+      skip
       topic = "propono-tests-sns-to-sqs-topic"
       text = "This is my message #{DateTime.now} #{rand()}"
       flunks = []
@@ -37,7 +38,7 @@ module Propono
       flunks << "Test Timeout" unless wait_for_thread(thread)
       flunk(flunks.join("\n")) unless flunks.empty?
     ensure
-      thread.terminate
+      thread.terminate if thread
     end
 
 =begin

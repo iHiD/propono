@@ -3,9 +3,9 @@ module Propono
   def self.aws_options
     AwsConfig.new(Propono.config).aws_options
   end
-  
+
   class AwsConfig
-    
+
     def initialize(config)
       @config = config
     end
