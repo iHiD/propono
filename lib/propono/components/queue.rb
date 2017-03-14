@@ -1,16 +1,14 @@
 module Propono
   class Queue
 
-    include Sqs
-
-    attr_reader :url
-    def initialize(url)
+    attr_reader :url, :attributes
+    def initialize(url, attributes)
       @url = url
+      @attributes = attributes
     end
 
     def arn
-      attributes = sqs.get_queue_attributes(@url, 'QueueArn').body["Attributes"]
-      attributes["QueueArn"]
+      @arn ||= attributes["QueueArn"]
     end
   end
 end

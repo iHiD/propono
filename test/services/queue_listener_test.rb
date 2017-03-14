@@ -5,30 +5,43 @@ module Propono
 
     def setup
       super
-      @topic_id = "some-topic"
+      @topic_name = "some-topic"
 
       @receipt_handle1 = "test-receipt-handle1"
       @receipt_handle2 = "test-receipt-handle2"
       @message1 = {cat: "Foobar 123"}
       @message2 = "Barfoo 543"
       @message1_id = "abc123"
-      @message1_id = "987whf"
+      @message2_id = "987whf"
       @body1 = {id: @message1_id, message: @message1}
       @body2 = {id: @message2_id, message: @message2}
-      @sqs_message1 = { "ReceiptHandle" => @receipt_handle1, "Body" => {"Message" => @body1.to_json}.to_json}
-      @sqs_message2 = { "ReceiptHandle" => @receipt_handle2, "Body" => {"Message" => @body2.to_json}.to_json}
-      @messages = { "Message" => [ @sqs_message1, @sqs_message2 ] }
-      @sqs_response = mock().tap{|m|m.stubs(body: @messages)}
-      @sqs = mock()
-      @sqs.stubs(receive_message: @sqs_response)
-      @sqs.stubs(:delete_message)
 
-      @listener = QueueListener.new(@topic_id) {}
-      @listener.stubs(sqs: @sqs)
+      @sqs_message1 = mock
+      @sqs_message1.stubs(receipt_handle: @receipt_handle1, body: {"Message" => @body1.to_json}.to_json)
+      @sqs_message2 = mock
+      @sqs_message2.stubs(receipt_handle: @receipt_handle2, body: {"Message" => @body2.to_json}.to_json)
 
-      Propono.config.num_messages_per_poll = 14
+      @queue = mock.tap {|q| q.stubs(url: "foobar", arn: "qarn") }
+      @topic = mock.tap {|t| t.stubs(arn: "tarn") }
+      aws_client.stubs(
+        create_queue: @queue,
+        create_topic: @topic
+      )
+      aws_client.stubs(:subscribe_sqs_to_sns)
+      aws_client.stubs(:set_sqs_policy)
 
-      Propono.config.max_retries = 0
+      @messages = [@sqs_message1, @sqs_message2]
+      aws_client.stubs(read_from_sqs: @messages)
+      aws_client.stubs(:delete_from_sqs)
+
+      @listener = QueueListener.new(aws_client, propono_config, @topic_name) {}
+
+      @failed_queue = mock
+      @corrupt_queue = mock
+      @listener.stubs(corrupt_queue: @corrupt_queue, failed_queue: @failed_queue)
+
+      propono_config.num_messages_per_poll = 14
+      propono_config.max_retries = 0
     end
 
     def test_listen_should_loop
@@ -37,7 +50,7 @@ module Propono
     end
 
     def test_listen_raises_with_nil_topic
-      listener = QueueListener.new(nil) {}
+      listener = QueueListener.new(aws_client, propono_config, nil) {}
       assert_raises ProponoError do
         listener.listen
       end
@@ -50,75 +63,56 @@ module Propono
     end
 
     def test_drain_raises_with_nil_topic
-      listener = QueueListener.new(nil) {}
+      listener = QueueListener.new(aws_client, propono_config, nil) {}
       assert_raises ProponoError do
         listener.drain
       end
     end
 
     def test_read_messages_should_subscribe
-      QueueSubscription.expects(aws_client, create: mock(queue: mock(url: {})))
+      queue = mock
+      queue.stubs(:url)
+      QueueSubscription.expects(:create).with(aws_client, propono_config, @topic_name).returns(mock(queue: queue))
       @listener.send(:read_messages)
     end
 
     def test_read_message_from_sqs
       max_number_of_messages = 5
-      queue_url = @listener.send(:main_queue_url)
-      options = { 'MaxNumberOfMessages' => max_number_of_messages }
-      @sqs.expects(:receive_message).with(queue_url, options).returns(@sqs_response)
-      @listener.send(:read_messages_from_queue, queue_url, max_number_of_messages)
+      aws_client.expects(:read_from_sqs).with(@queue, max_number_of_messages)
+      @listener.send(:read_messages_from_queue, @queue, max_number_of_messages)
     end
 
     def test_log_message_from_sqs
-      queue_url = @listener.send(:main_queue_url)
-      Propono.config.logger.expects(:info).with() {|x| x == "Propono [#{@message1_id}]: Received from sqs."}
-      @listener.send(:read_messages_from_queue, queue_url, Propono.config.num_messages_per_poll)
+      propono_config.logger.expects(:info).with() {|x| x == "Propono [#{@message1_id}]: Received from sqs."}
+      @listener.send(:read_messages_from_queue, @queue, propono_config.num_messages_per_poll)
     end
 
     def test_read_messages_calls_process_message_for_each_msg
-
-      queue_url = @listener.send(:main_queue_url)
-      @listener.expects(:process_raw_message).with(@sqs_message1, queue_url)
-      @listener.expects(:process_raw_message).with(@sqs_message2, queue_url)
-      @listener.send(:read_messages_from_queue, queue_url, Propono.config.num_messages_per_poll)
+      @listener.expects(:process_raw_message).with(@sqs_message1, @queue)
+      @listener.expects(:process_raw_message).with(@sqs_message2, @queue)
+      @listener.send(:read_messages_from_queue, @queue, propono_config.num_messages_per_poll)
     end
 
     def test_read_messages_does_not_call_process_messages_if_there_are_none
-      queue_url = @listener.send(:main_queue_url)
-      @sqs_response.stubs(body: {"Message" => []})
+      aws_client.stubs(read_from_sqs: [])
       @listener.expects(:process_message).never
-      @listener.send(:read_messages_from_queue, queue_url, Propono.config.num_messages_per_poll)
+      @listener.send(:read_messages_from_queue, @queue, propono_config.num_messages_per_poll)
     end
 
     def test_exception_from_sqs_is_logged
-      queue_url = "http://example.com"
-      @listener.stubs(main_queue_url: queue_url)
-      @sqs.stubs(:receive_message).raises(StandardError)
-      Propono.config.logger.expects(:error).with("Unexpected error reading from queue http://example.com")
-      Propono.config.logger.expects(:error).with() {|x| x.is_a?(StandardError)}
-      @listener.send(:read_messages_from_queue, queue_url, Propono.config.num_messages_per_poll)
-    end
-
-    def test_forbidden_error_is_logged_and_re_raised
-      queue_url = "http://example.com"
-      @listener.stubs(queue_url: queue_url)
-      @sqs.stubs(:receive_message).raises(Excon::Errors::Forbidden.new(nil, nil, nil))
-      Propono.config.logger.expects(:error).with("Forbidden error caught and re-raised. http://example.com")
-      Propono.config.logger.expects(:error).with() {|x| x.is_a?(Excon::Errors::Forbidden)}
-      assert_raises Excon::Errors::Forbidden do
-        @listener.send(:read_messages_from_queue, queue_url, Propono.config.num_messages_per_poll)
-      end
+      aws_client.stubs(:read_from_sqs).raises(StandardError)
+      propono_config.logger.expects(:error).with("Unexpected error reading from queue #{@queue.url}")
+      @listener.send(:read_messages_from_queue, @queue, propono_config.num_messages_per_poll)
     end
 
     def test_exception_from_sqs_returns_false
-      @sqs.stubs(:receive_message).raises(StandardError)
+      aws_client.stubs(:read_from_sqs).raises(StandardError)
       refute @listener.send(:read_messages)
     end
 
     def test_each_message_processor_is_yielded
       messages_yielded = []
-      @listener = QueueListener.new(@topic_id) { |m, _| messages_yielded.push(m) }
-      @listener.stubs(sqs: @sqs)
+      @listener = QueueListener.new(aws_client, propono_config, @topic_name) { |m, _| messages_yielded.push(m) }
       @listener.send(:read_messages)
 
       assert_equal messages_yielded.size, 2
@@ -127,120 +121,107 @@ module Propono
     end
 
     def test_each_message_processor_context
-      contexts = []
-      @listener = QueueListener.new(@topic_id) { |_, context| contexts << context }
-      @listener.stubs(sqs: @sqs)
+      ids = []
+      @listener = QueueListener.new(aws_client, propono_config, @topic_name) { |_, context| ids << context[:id] }
       @listener.send(:read_messages)
 
-      assert_equal contexts.size, 2
-      assert contexts.include?({id: @message1_id})
-      assert contexts.include?({id: @message2_id})
+      assert_equal ids.size, 2
+      assert ids.include?(@message1_id)
+      assert ids.include?(@message2_id)
     end
 
     def test_each_message_is_deleted
-      queue_url = "test-queue-url"
+      queue = "test-queue-url"
 
-      @sqs.expects(:delete_message).with(queue_url, @receipt_handle1)
-      @sqs.expects(:delete_message).with(queue_url, @receipt_handle2)
+      aws_client.expects(:delete_from_sqs).with(queue, @receipt_handle1)
+      aws_client.expects(:delete_from_sqs).with(queue, @receipt_handle2)
 
-      @listener.stubs(queue_url: queue_url)
-      @listener.send(:read_messages_from_queue, queue_url, Propono.config.num_messages_per_poll)
+      @listener.stubs(queue: queue)
+      @listener.send(:read_messages_from_queue, queue, propono_config.num_messages_per_poll)
     end
 
     def test_messages_are_deleted_if_there_is_an_exception_processing
-      queue_url = "test-queue-url"
-
-      @sqs.expects(:delete_message).with(queue_url, @receipt_handle1)
-      @sqs.expects(:delete_message).with(queue_url, @receipt_handle2)
+      aws_client.expects(:delete_from_sqs).with(@queue, @receipt_handle1)
+      aws_client.expects(:delete_from_sqs).with(@queue, @receipt_handle2)
 
       exception = StandardError.new("Test Error")
-      @listener = QueueListener.new(@topic_id) { raise exception }
-      @listener.stubs(queue_url: queue_url)
-      @listener.stubs(sqs: @sqs)
+      @listener = QueueListener.new(aws_client, propono_config, @topic_name) { raise exception }
       @listener.stubs(:requeue_message_on_failure).with(SqsMessage.new(@sqs_message1), exception)
       @listener.stubs(:requeue_message_on_failure).with(SqsMessage.new(@sqs_message2), exception)
-      @listener.send(:read_messages_from_queue, queue_url, Propono.config.num_messages_per_poll)
+      @listener.send(:read_messages_from_queue, @queue, propono_config.num_messages_per_poll)
     end
 
     def test_messages_are_retried_or_abandoned_on_failure
-      queue_url = "test-queue-url"
-
       exception = StandardError.new("Test Error")
-      @listener = QueueListener.new(@topic_id) { raise exception }
+      @listener = QueueListener.new(aws_client, propono_config, @topic_name) { raise exception }
       @listener.expects(:requeue_message_on_failure).with(SqsMessage.new(@sqs_message1), exception)
       @listener.expects(:requeue_message_on_failure).with(SqsMessage.new(@sqs_message2), exception)
-      @listener.stubs(sqs: @sqs)
-      @listener.send(:read_messages_from_queue, queue_url, Propono.config.num_messages_per_poll)
+      @listener.send(:read_messages_from_queue, @queue, propono_config.num_messages_per_poll)
     end
 
     def test_failed_on_moving_to_failed_queue_does_not_delete
-      queue_url = "test-queue-url"
-
       exception = StandardError.new("Test Error")
-      @listener = QueueListener.new(@topic_id) { raise exception }
+      @listener = QueueListener.new(aws_client, propono_config, @topic_name) { raise exception }
       @listener.stubs(:requeue_message_on_failure).with(SqsMessage.new(@sqs_message1), exception).raises(StandardError.new("failed to move"))
       @listener.stubs(:requeue_message_on_failure).with(SqsMessage.new(@sqs_message2), exception).raises(StandardError.new("failed to move"))
       @listener.expects(:delete_message).with(@sqs_message1).never
       @listener.expects(:delete_message).with(@sqs_message2).never
-      @listener.stubs(sqs: @sqs)
-      @listener.send(:read_messages_from_queue, queue_url, Propono.config.num_messages_per_poll)
+      @listener.send(:read_messages_from_queue, @queue, propono_config.num_messages_per_poll)
     end
 
     def test_messages_are_moved_to_corrupt_queue_if_there_is_an_parsing_exception
-      queue_url = "test-queue-url"
-      sqs_message1 = "foobar"
-      sqs_message2 = "barfoo"
-      @messages["Message"][0] = sqs_message1
-      @messages["Message"][1] = sqs_message2
+      sqs_message1 = mock(body: "foobar", receipt_handle: "123")
+      sqs_message2 = mock(body: "barfoo", receipt_handle: "321")
+      @messages[0] = sqs_message1
+      @messages[1] = sqs_message2
 
       @listener.expects(:move_to_corrupt_queue).with(sqs_message1)
       @listener.expects(:move_to_corrupt_queue).with(sqs_message2)
-      @listener.send(:read_messages_from_queue, queue_url, Propono.config.num_messages_per_poll)
+      @listener.send(:read_messages_from_queue, @queue, propono_config.num_messages_per_poll)
     end
 
     def test_message_moved_to_failed_queue_if_there_is_an_exception_and_retry_count_is_zero
-      @sqs.expects(:send_message).with(regexp_matches(/https:\/\/queue.amazonaws.com\/[0-9]+\/MyApp-some-topic-failed/), anything)
+      aws_client.expects(:send_to_sqs).with(@failed_queue, anything)
       @listener.send(:requeue_message_on_failure, SqsMessage.new(@sqs_message1), StandardError.new)
     end
 
     def test_message_requeued_if_there_is_an_exception_but_failure_count_less_than_retry_count
-      Propono.config.max_retries = Propono.config.num_messages_per_poll
+      propono_config.max_retries = propono_config.num_messages_per_poll
       message = SqsMessage.new(@sqs_message1)
       message.stubs(failure_count: 4)
-      @sqs.expects(:send_message).with(regexp_matches(/https:\/\/queue.amazonaws.com\/[0-9]+\/MyApp-some-topic$/), anything)
+      aws_client.expects(:send_to_sqs).with(@queue, anything)
       @listener.send(:requeue_message_on_failure, message, StandardError.new)
     end
 
     def test_message_requeued_if_there_is_an_exception_but_failure_count_exceeds_than_retry_count
-      Propono.config.max_retries = Propono.config.num_messages_per_poll
+      propono_config.max_retries = propono_config.num_messages_per_poll
       message = SqsMessage.new(@sqs_message1)
-      message.stubs(failure_count: Propono.config.num_messages_per_poll)
-      @sqs.expects(:send_message).with(regexp_matches(/https:\/\/queue.amazonaws.com\/[0-9]+\/MyApp-some-topic-failed/), anything)
+      message.stubs(failure_count: propono_config.num_messages_per_poll)
+      aws_client.expects(:send_to_sqs).with(@failed_queue, anything)
       @listener.send(:requeue_message_on_failure, message, StandardError.new)
     end
 
     def test_move_to_corrupt_queue
-      skip
-      @sqs.expects(:send_message).with(regexp_matches(/https:\/\/queue.amazonaws.com\/[0-9]+\/MyApp-some-topic-corrupt/), anything)
+      aws_client.expects(:send_to_sqs).with(@corrupt_queue, @sqs_message1.body)
       @listener.send(:move_to_corrupt_queue, @sqs_message1)
     end
 
     def test_if_no_messages_read_from_normal_queue_read_from_slow_queue
-      main_queue_url = "http://normal.com"
-      @listener.stubs(main_queue_url: main_queue_url)
-      slow_queue_url = "http://slow.com"
-      @listener.stubs(slow_queue_url: slow_queue_url)
+      main_queue = mock
+      @listener.stubs(main_queue: main_queue)
+      slow_queue = mock
+      @listener.stubs(slow_queue: slow_queue)
 
-      @listener.expects(:read_messages_from_queue).with(main_queue_url, Propono.config.num_messages_per_poll).returns(false)
-      @listener.expects(:read_messages_from_queue).with(slow_queue_url, 1)
+      @listener.expects(:read_messages_from_queue).with(main_queue, propono_config.num_messages_per_poll).returns(false)
+      @listener.expects(:read_messages_from_queue).with(slow_queue, 1)
       @listener.send(:read_messages)
     end
 
     def test_if_read_messages_from_normal_do_not_read_from_slow_queue
-      main_queue_url = "http://normal.com"
-      @listener.stubs(main_queue_url: main_queue_url)
+      main_queue = mock
+      @listener.stubs(main_queue: main_queue)
 
-      @listener.expects(:read_messages_from_queue).with(main_queue_url, Propono.config.num_messages_per_poll).returns(true)
+      @listener.expects(:read_messages_from_queue).with(main_queue, propono_config.num_messages_per_poll).returns(true)
       @listener.send(:read_messages)
     end
   end

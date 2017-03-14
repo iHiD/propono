@@ -4,10 +4,11 @@ module Propono
   class IntegrationTest < Minitest::Test
     def setup
       super
-      Fog.unmock!
+      # TODO
+      #Fog.unmock!
 
       config_file = YAML.load_file( File.expand_path('../../config.yml', __FILE__))
-      Propono.config do |config|
+      @propono_client = Propono::Client.new do |config|
         config.access_key = config_file['access_key']
         config.secret_key = config_file['secret_key']
         config.queue_region = config_file['queue_region']

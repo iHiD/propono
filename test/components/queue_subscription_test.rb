@@ -5,16 +5,16 @@ module Propono
     def setup
       super
       @suffix = "-suf"
-      Propono.config.queue_suffix = @suffix
+      propono_config.queue_suffix = @suffix
     end
 
     def teardown
       super
-      Propono.config.queue_suffix = ""
+      propono_config.queue_suffix = ""
     end
 
     def test_create_calls_submethods
-      subscription = QueueSubscription.new(aws_client, "foobar")
+      subscription = QueueSubscription.new(aws_client, propono_config, "foobar")
       subscription.expects(:create_and_subscribe_main_queue)
       subscription.expects(:create_and_subscribe_slow_queue)
       subscription.expects(:create_misc_queues)
@@ -25,7 +25,7 @@ module Propono
       policy = "Some policy"
       topic_name = "SomeName"
 
-      subscription = QueueSubscription.new(aws_client, topic_name)
+      subscription = QueueSubscription.new(aws_client, propono_config, topic_name)
       subscription.stubs(:create_and_subscribe_slow_queue)
       subscription.stubs(:create_misc_queues)
       subscription.stubs(generate_policy: policy)
@@ -36,7 +36,7 @@ module Propono
       aws_client.expects(:create_topic).with("#{topic_name}#{@suffix}").returns(topic)
       aws_client.expects(:create_queue).with(queue_name).returns(queue)
       aws_client.expects(:subscribe_sqs_to_sns).with(queue, topic)
-      aws_client.expects(:set_sqs_queue_policy).with(queue, policy)
+      aws_client.expects(:set_sqs_policy).with(queue, policy)
 
       subscription.create
     end
@@ -45,7 +45,7 @@ module Propono
       policy = "Some policy"
       topic_name = "SomeName"
 
-      subscription = QueueSubscription.new(aws_client, topic_name)
+      subscription = QueueSubscription.new(aws_client, propono_config, topic_name)
       subscription.stubs(:create_and_subscribe_main_queue)
       subscription.stubs(:create_misc_queues)
       subscription.stubs(generate_policy: policy)
@@ -56,7 +56,7 @@ module Propono
       aws_client.expects(:create_topic).with("#{topic_name}#{@suffix}-slow").returns(topic)
       aws_client.expects(:create_queue).with("#{queue_name}-slow").returns(queue)
       aws_client.expects(:subscribe_sqs_to_sns).with(queue, topic)
-      aws_client.expects(:set_sqs_queue_policy).with(queue, policy)
+      aws_client.expects(:set_sqs_policy).with(queue, policy)
 
       subscription.create
     end
@@ -65,7 +65,7 @@ module Propono
       policy = "Some policy"
       topic_name = "SomeName"
 
-      subscription = QueueSubscription.new(aws_client, topic_name)
+      subscription = QueueSubscription.new(aws_client, propono_config, topic_name)
       subscription.stubs(:create_and_subscribe_main_queue)
       subscription.stubs(:create_and_subscribe_slow_queue)
       subscription.stubs(generate_policy: policy)
@@ -78,19 +78,19 @@ module Propono
     end
 
     def test_subscription_queue_name
-      Propono.config.application_name = "MyApp"
+      propono_config.application_name = "MyApp"
 
       topic_name = "Foobar"
-      subscription = QueueSubscription.new(aws_client, topic_name)
+      subscription = QueueSubscription.new(aws_client, propono_config, topic_name)
 
       assert_equal "MyApp-Foobar#{@suffix}", subscription.send(:queue_name)
     end
 
     def test_subscription_queue_name_with_spaces
-      Propono.config.application_name = "My App"
+      propono_config.application_name = "My App"
 
       topic_name = "Foobar"
-      subscription = QueueSubscription.new(aws_client, topic_name)
+      subscription = QueueSubscription.new(aws_client, propono_config, topic_name)
 
       assert_equal "My_App-Foobar#{@suffix}", subscription.send(:queue_name)
     end
@@ -106,7 +106,7 @@ module Propono
       QueueCreator.expects(:find_or_create).with('MyApp-SomeTopic-suf-failed').returns(failed_queue)
       QueueCreator.expects(:find_or_create).with('MyApp-SomeTopic-suf-corrupt').returns(corrupt_queue)
       QueueCreator.expects(:find_or_create).with('MyApp-SomeTopic-suf-slow').returns(slow_queue)
-      subscription = QueueSubscription.new(aws_client, "SomeTopic")
+      subscription = QueueSubscription.new(aws_client, propono_config, "SomeTopic")
       subscription.create
 
       assert_equal queue, subscription.queue
@@ -115,7 +115,7 @@ module Propono
     end
 
     def test_create_raises_with_nil_topic
-      subscription = QueueSubscription.new(aws_client, nil)
+      subscription = QueueSubscription.new(aws_client, propono_config, nil)
       assert_raises ProponoError do
         subscription.create
       end
@@ -125,7 +125,7 @@ module Propono
       queue_arn = "queue-arn"
       topic_arn = "topic-arn"
       queue = mock().tap {|m|m.stubs(arn: queue_arn)}
-      topic = mock().tap {|m|m.stubs(topic_arn: topic_arn)}
+      topic = mock().tap {|m|m.stubs(arn: topic_arn)}
 
       policy = <<-EOS
 {
@@ -150,7 +150,7 @@ module Propono
 }
 EOS
 
-      assert_equal policy, QueueSubscription.new(aws_client, nil).send(:generate_policy, queue, topic)
+      assert_equal policy, QueueSubscription.new(aws_client, propono_config, nil).send(:generate_policy, queue, topic)
     end
   end
 end

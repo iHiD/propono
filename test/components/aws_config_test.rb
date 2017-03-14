@@ -15,11 +15,11 @@ module Propono
     end
 
     def test_access_key
-      assert_equal "test-access-key", @aws_config.aws_options[:aws_access_key_id]
+      assert_equal "test-access-key", @aws_config.aws_options[:access_key_id]
     end
 
     def test_secret_key
-      assert_equal "test-secret-key", @aws_config.aws_options[:aws_secret_access_key]
+      assert_equal "test-secret-key", @aws_config.aws_options[:secret_access_key]
     end
 
     def test_region
@@ -37,12 +37,12 @@ module Propono
 
     def test_selecting_use_iam_profile_results_in_no_access_key
       @config.use_iam_profile = true
-      assert ! @aws_config.aws_options.has_key?(:aws_access_key_id)
+      assert ! @aws_config.aws_options.has_key?(:access_key_id)
     end
 
     def test_selecting_use_iam_profile_results_in_no_secret_key
       @config.use_iam_profile = true
-      assert ! @aws_config.aws_options.has_key?(:aws_secret_access_key)
+      assert ! @aws_config.aws_options.has_key?(:secret_access_key)
     end
 
     def test_region_when_using_iam_profile

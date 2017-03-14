@@ -15,5 +15,6 @@ spec/reports
 test/tmp
 test/version_tmp
 test/config.yml
+manual_test.rb
 tmp
 *.swp

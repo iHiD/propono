@@ -1,9 +1,4 @@
 module Propono
-
-  def self.aws_options
-    AwsConfig.new(Propono.config).aws_options
-  end
-
   class AwsConfig
 
     def initialize(config)
@@ -18,8 +13,8 @@ module Propono
         }
       else
         {
-          :aws_access_key_id => @config.access_key,
-          :aws_secret_access_key => @config.secret_key,
+          :access_key_id => @config.access_key,
+          :secret_access_key => @config.secret_key,
           :region => @config.queue_region
         }
       end

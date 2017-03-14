@@ -1,7 +1,7 @@
 module Propono
   class QueueSubscription
 
-    attr_reader :aws_client, :topic_arn, :queue_name, :queue, :failed_queue, :corrupt_queue, :slow_queue
+    attr_reader :aws_client, :propono_config, :topic_arn, :queue_name, :queue, :failed_queue, :corrupt_queue, :slow_queue
 
     def self.create(*args)
       new(*args).tap do |subscription|
@@ -9,12 +9,13 @@ module Propono
       end
     end
 
-    def initialize(aws_client, topic_name, options = {})
+    def initialize(aws_client, propono_config, topic_name)
       @aws_client = aws_client
+      @propono_config = propono_config
       @topic_name = topic_name
-      @suffixed_topic_name = "#{topic_name}#{Propono.config.queue_suffix}"
-      @suffixed_slow_topic_name = "#{topic_name}#{Propono.config.queue_suffix}-slow"
-      @queue_name = "#{Propono.config.application_name.gsub(" ", "_")}-#{@suffixed_topic_name}"
+      @suffixed_topic_name = "#{topic_name}#{propono_config.queue_suffix}"
+      @suffixed_slow_topic_name = "#{topic_name}#{propono_config.queue_suffix}-slow"
+      @queue_name = "#{propono_config.application_name.gsub(" ", "_")}-#{@suffixed_topic_name}"
     end
 
     def create
@@ -25,10 +26,10 @@ module Propono
     end
 
     def create_and_subscribe_main_queue
-      topic = aws_client.create_topic(@suffixed_topic_name)
       @queue = aws_client.create_queue(queue_name)
+      topic = aws_client.create_topic(@suffixed_topic_name)
       aws_client.subscribe_sqs_to_sns(@queue, topic)
-      aws_client.set_sqs_queue_policy(@queue, generate_policy(@queue, topic))
+      aws_client.set_sqs_policy(@queue, generate_policy(@queue, topic))
     end
 
     def create_misc_queues
@@ -40,7 +41,7 @@ module Propono
       @slow_queue = aws_client.create_queue("#{queue_name}-slow")
       slow_topic = aws_client.create_topic(@suffixed_slow_topic_name)
       aws_client.subscribe_sqs_to_sns(@slow_queue, slow_topic)
-      aws_client.set_sqs_queue_policy(@slow_queue, generate_policy(@slow_queue, slow_topic))
+      aws_client.set_sqs_policy(@slow_queue, generate_policy(@slow_queue, slow_topic))
     end
 
     private
@@ -61,7 +62,7 @@ module Propono
       "Resource": "#{queue.arn}",
       "Condition": {
         "StringEquals": {
-          "aws:SourceArn": "#{topic.topic_arn}"
+          "aws:SourceArn": "#{topic.arn}"
         }
       }
     }

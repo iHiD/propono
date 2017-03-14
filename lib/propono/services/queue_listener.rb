@@ -1,34 +1,31 @@
 module Propono
 
   class QueueListener
-    include Sqs
-
-    def self.listen(aws_client, topic_id, &message_processor)
-      new(aws_client, topic_id, &message_processor).listen
+    def self.listen(*args, &message_processor)
+      new(*args, &message_processor).listen
     end
 
-    def self.drain(aws_client, topic_id, &message_processor)
-      new(aws_client, topic_id, &message_processor).drain
+    def self.drain(*args, &message_processor)
+      new(*args, &message_processor).drain
     end
 
-    attr_reader :aws_client
-    def initialize(aws_client, topic_id, &message_processor)
+    attr_reader :aws_client, :propono_config, :topic_name, :message_processor
+    def initialize(aws_client, propono_config, topic_name, &message_processor)
       @aws_client = aws_client
-      @topic_id = topic_id
+      @propono_config = propono_config
+      @topic_name = topic_name
       @message_processor = message_processor
     end
 
     def listen
-      raise ProponoError.new("topic_id is nil") unless @topic_id
+      raise ProponoError.new("topic_name is nil") unless topic_name
       loop do
-        unless read_messages
-          sleep 10
-        end
+        read_messages
       end
     end
 
     def drain
-      raise ProponoError.new("topic_id is nil") unless @topic_id
+      raise ProponoError.new("topic_name is nil") unless topic_name
       while read_messages
         # continue as long as there are messages in the queue
       end
@@ -37,93 +34,91 @@ module Propono
     private
 
     def read_messages
-      read_messages_from_queue(main_queue_url, Propono.config.num_messages_per_poll) || read_messages_from_queue(slow_queue_url, 1)
+      read_messages_from_queue(main_queue, propono_config.num_messages_per_poll) ||
+      read_messages_from_queue(slow_queue, 1)
     end
 
-    def read_messages_from_queue(queue_url, num_messages)
-      response = sqs.receive_message(queue_url, {'MaxNumberOfMessages' => num_messages} )
-      messages = response.body['Message']
+    def read_messages_from_queue(queue, num_messages)
+      messages = aws_client.read_from_sqs(queue, num_messages)
       if messages.empty?
         false
       else
-        messages.each { |msg| process_raw_message(msg, queue_url) }
+        messages.each { |msg| process_raw_message(msg, queue) }
+        true
       end
-    rescue Excon::Errors::Forbidden
-      Propono.config.logger.error "Forbidden error caught and re-raised. #{queue_url}"
-      Propono.config.logger.error $!
-      raise $!
-    rescue
-      Propono.config.logger.error "Unexpected error reading from queue #{queue_url}"
-      Propono.config.logger.error $!
-      Propono.config.logger.error $!.backtrace
+    rescue => e #Aws::Errors => e
+      propono_config.logger.error "Unexpected error reading from queue #{queue.url}"
+      propono_config.logger.error e.class.name
+      propono_config.logger.error e.message
+      propono_config.logger.error e.backtrace
+      false
     end
 
     # The calls to delete_message are deliberately duplicated so
     # as to ensure the message is only deleted if the preceeding line
     # has completed succesfully. We do *not* want to ensure that the
     # message is deleted regardless of what happens in this method.
-    def process_raw_message(raw_sqs_message, queue_url)
-      sqs_message = parse(raw_sqs_message, queue_url)
-      unless sqs_message.nil?
-        Propono.config.logger.info "Propono [#{sqs_message.context[:id]}]: Received from sqs."
-        handle(sqs_message)
-        delete_message(raw_sqs_message, queue_url)
-      end
+    def process_raw_message(raw_sqs_message, queue)
+      sqs_message = parse(raw_sqs_message, queue)
+      return unless sqs_message
+
+      propono_config.logger.info "Propono [#{sqs_message.context[:id]}]: Received from sqs."
+      handle(sqs_message)
+      aws_client.delete_from_sqs(queue, sqs_message.receipt_handle)
     end
 
-    def parse(raw_sqs_message, queue_url)
+    def parse(raw_sqs_message, queue)
       SqsMessage.new(raw_sqs_message)
     rescue
-      Propono.config.logger.error "Error parsing message, moving to corrupt queue", $!, $!.backtrace
+      propono_config.logger.error "Error parsing message, moving to corrupt queue", $!, $!.backtrace
       move_to_corrupt_queue(raw_sqs_message)
-      delete_message(raw_sqs_message, queue_url)
+      aws_client.delete_from_sqs(queue, raw_sqs_message.receipt_handle)
       nil
     end
 
     def handle(sqs_message)
       process_message(sqs_message)
     rescue => e
-      Propono.config.logger.error("Failed to handle message #{e.message} #{e.backtrace}")
+      propono_config.logger.error("Failed to handle message #{e.message} #{e.backtrace}")
       requeue_message_on_failure(sqs_message, e)
     end
 
     def process_message(sqs_message)
-      @message_processor.call(sqs_message.message, sqs_message.context)
+      message_processor.call(sqs_message.message, sqs_message.context)
     end
 
     def move_to_corrupt_queue(raw_sqs_message)
-      sqs.send_message(corrupt_queue_url, raw_sqs_message["Body"])
+      aws_client.send_to_sqs(corrupt_queue, raw_sqs_message.body)
     end
 
     def requeue_message_on_failure(sqs_message, exception)
-      next_queue = (sqs_message.failure_count < Propono.config.max_retries) ? main_queue_url : failed_queue_url
-      Propono.config.logger.error "Error proessing message, moving to queue: #{next_queue}"
-      sqs.send_message(next_queue, sqs_message.to_json_with_exception(exception))
+      next_queue = (sqs_message.failure_count < propono_config.max_retries) ? main_queue : failed_queue
+      propono_config.logger.error "Error proessing message, moving to queue: #{next_queue}"
+      aws_client.send_to_sqs(next_queue, sqs_message.to_json_with_exception(exception))
     end
 
-    def delete_message(raw_sqs_message, queue_url)
-      sqs.delete_message(queue_url, raw_sqs_message['ReceiptHandle'])
+    def delete_message(raw_sqs_message, queue)
+      aws_client.delete_from_sqs(queue, raw_sqs_message.receipt_handle)
     end
 
-    def main_queue_url
-      @main_queue_url ||= subscription.queue.url
+    def main_queue
+      @main_queue ||= subscription.queue
     end
 
-    def failed_queue_url
-      @failed_queue_url ||= subscription.failed_queue.url
+    def failed_queue
+      @failed_queue ||= subscription.failed_queue
     end
 
-    def corrupt_queue_url
-      @corrupt_queue_url ||= subscription.corrupt_queue.url
+    def corrupt_queue
+      @corrupt_queue ||= subscription.corrupt_queue
     end
 
-    def slow_queue_url
-      @slow_queue_url ||= subscription.slow_queue.url
+    def slow_queue
+      @slow_queue ||= subscription.slow_queue
     end
 
     def subscription
-      @subscription ||= QueueSubscription.create(@topic_id)
+      QueueSubscription.create(aws_client, propono_config, topic_name)
     end
-
   end
 end

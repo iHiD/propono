@@ -1,18 +1,15 @@
 module Propono
   class SqsMessage
-    include Sqs
-
-    attr_reader :context, :message, :raw_message, :receipt_handle, :failure_count
+    attr_reader :context, :message, :receipt_handle, :failure_count
     def initialize(raw_message)
-      raw_body = raw_message["Body"]
+      raw_body = raw_message.body
       @raw_body_json = JSON.parse(raw_body)
       body = JSON.parse(@raw_body_json["Message"])
 
-      @raw_message    = raw_message
       @context        = Propono::Utils.symbolize_keys body
       @failure_count  = context[:num_failures] || 0
       @message        = context.delete(:message)
-      @receipt_handle = raw_message["receipt_handle"]
+      @receipt_handle = raw_message.receipt_handle
     end
 
     def to_json_with_exception(exception)

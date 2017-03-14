@@ -14,64 +14,31 @@ require "propono"
 
 class Minitest::Test
   def setup
-    Fog.mock!
-    Propono.config do |config|
-      config.access_key = "test-access-key"
-      config.secret_key = "test-secret-key"
-      config.queue_region = "us-east-1"
-      config.application_name = "MyApp"
-      config.queue_suffix = ""
+  end
 
-      config.logger.stubs(:debug)
-      config.logger.stubs(:info)
-      config.logger.stubs(:error)
-    end
+  def propono_config
+    return @propono_config if @propono_config
+
+    @propono_config = Propono::Configuration.new
+    @propono_config.access_key = "test-access-key"
+    @propono_config.secret_key = "test-secret-key"
+    @propono_config.queue_region = "us-east-1"
+    @propono_config.application_name = "MyApp"
+    @propono_config.queue_suffix = ""
+
+    @propono_config.logger.stubs(:debug)
+    @propono_config.logger.stubs(:info)
+    @propono_config.logger.stubs(:error)
+
+    @propono_config
   end
 
   def aws_client
     return @aws_client if @aws_client
 
-    @aws_client = Propono::AwsClient.new()
+    @aws_client = Propono::AwsClient.new(mock)
     @aws_client.stubs(:sns_client)
     @aws_client.stubs(:sqs_client)
     @aws_client
   end
 end
-
-require 'fog/aws'
-class Fog::AWS::SNS::Mock
-  def create_topic(*args)
-    foo = Object.new
-    class << foo
-      def body
-        {"TopicArn" => "FoobarFromTheMock"}
-      end
-    end
-    foo
-  end
-
-  def subscribe(topic_arn, arn_or_url, type)
-  end
-end
-
-class Fog::AWS::SQS::Mock
-  def list_queues(*args)
-    foo = Object.new
-    class << foo
-      def body
-        {"QueueUrls" => []}
-      end
-    end
-    foo
-  end
-  def create_queue(*args)
-  end
-  def set_queue_attributes(*args)
-  end
-end
-
-Fog::AWS::SQS::Mock::QueueUrl = 'https://meducation.net/foobar'
-Fog::AWS::SQS::Mock::QueueArn = 'FoobarArn'
-data = {'Attributes' => {"QueueArn" => Fog::AWS::SQS::Mock::QueueArn}}
-queues = Fog::AWS::SQS::Mock.data["us-east-1"]["test-access-key"][:queues]
-queues[Fog::AWS::SQS::Mock::QueueUrl] = data
