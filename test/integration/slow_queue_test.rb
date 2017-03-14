@@ -14,7 +14,7 @@ module Propono
 
       Propono.drain_queue(slow_topic)
       Propono.drain_queue(topic)
-      Propono.subscribe_by_queue(topic)
+      Propono.subscribe(topic)
 
       thread = Thread.new do
         begin

@@ -27,6 +27,15 @@ class Minitest::Test
       config.logger.stubs(:error)
     end
   end
+
+  def aws_client
+    return @aws_client if @aws_client
+
+    @aws_client = Propono::AwsClient.new()
+    @aws_client.stubs(:sns_client)
+    @aws_client.stubs(:sqs_client)
+    @aws_client
+  end
 end
 
 require 'fog/aws'

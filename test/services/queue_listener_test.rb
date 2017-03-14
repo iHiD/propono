@@ -57,7 +57,7 @@ module Propono
     end
 
     def test_read_messages_should_subscribe
-      QueueSubscription.expects(create: mock(queue: mock(url: {})))
+      QueueSubscription.expects(aws_client, create: mock(queue: mock(url: {})))
       @listener.send(:read_messages)
     end
 

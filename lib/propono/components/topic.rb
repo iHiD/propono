@@ -1,11 +1,12 @@
 module Propono
   class Topic
+    attr_reader :aws_topic
+    def initialize(aws_topic)
+      @aws_topic = aws_topic
+    end
 
-    include Sqs
-
-    attr_reader :arn
-    def initialize(arn)
-      @arn = arn
+    def arn
+      @arn ||= aws_topic.topic_arn
     end
   end
 end

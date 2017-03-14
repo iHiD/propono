@@ -7,5 +7,9 @@ module Propono
     def sns
       @sns ||= Fog::AWS::SNS.new(Propono.aws_options)
     end
+
+    def aws_sns
+      @aws_sns ||= Aws::SNS::Client.new(Propono.aws_options)
+    end
   end
 end

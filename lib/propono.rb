@@ -8,11 +8,12 @@ require 'propono/configuration'
 require "propono/utils"
 
 require 'propono/components/aws_config'
+require 'propono/components/aws_client'
+
 require 'propono/components/sns'
 require 'propono/components/sqs'
 require "propono/components/queue"
 require "propono/components/topic"
-require "propono/components/post_subscription"
 require "propono/components/queue_subscription"
 require "propono/components/sqs_message"
 
@@ -20,7 +21,6 @@ require "propono/services/publisher"
 require "propono/services/queue_creator"
 require "propono/services/queue_listener"
 require "propono/services/subscriber"
-require "propono/services/topic_creator"
 
 # Propono is a pub/sub gem built on top of Amazon Web Services (AWS).
 # It uses Simple Notification Service (SNS) and Simple Queue Service (SQS)
@@ -70,18 +70,8 @@ module Propono
   # This is implicitly called by {#listen_to_queue}.
   #
   # @param [String] topic The name of the topic to subscribe to.
-  def self.subscribe_by_queue(topic)
-    Subscriber.subscribe_by_queue(topic)
-  end
-
-  # Creates a new SNS-POST subscription on the specified topic.
-  #
-  # The POST currently needs confirming before the subscription
-  # can be published to.
-  #
-  # @param [String] topic The name of the topic to subscribe to.
-  def self.subscribe_by_post(topic, endpoint)
-    Subscriber.subscribe_by_post(topic, endpoint)
+  def self.subscribe(topic)
+    QueueSubscription.create(topic)
   end
 
   # Listens on a queue and yields for each message
@@ -91,7 +81,7 @@ module Propono
   #
   # This method will automatically create a subscription if
   # one does not exist, so there is no need to call
-  # <tt>subscribe_by_queue</tt> in addition.
+  # <tt>subscribe</tt> in addition.
   #
   # @param [String] topic The topic to subscribe to.
   # @param &message_processor The block to yield for each message.
@@ -107,7 +97,7 @@ module Propono
   #
   # This method will automatically create a subscription if
   # one does not exist, so there is no need to call
-  # <tt>subscribe_by_queue</tt> in addition.
+  # <tt>subscribe</tt> in addition.
   #
   # @param [String] topic The topic to subscribe to.
   # @param &message_processor The block to yield for each message.

@@ -3,15 +3,17 @@ module Propono
   class QueueListener
     include Sqs
 
-    def self.listen(topic_id, &message_processor)
-      new(topic_id, &message_processor).listen
+    def self.listen(aws_client, topic_id, &message_processor)
+      new(aws_client, topic_id, &message_processor).listen
     end
 
-    def self.drain(topic_id, &message_processor)
-      new(topic_id, &message_processor).drain
+    def self.drain(aws_client, topic_id, &message_processor)
+      new(aws_client, topic_id, &message_processor).drain
     end
 
-    def initialize(topic_id, &message_processor)
+    attr_reader :aws_client
+    def initialize(aws_client, topic_id, &message_processor)
+      @aws_client = aws_client
       @topic_id = topic_id
       @message_processor = message_processor
     end
