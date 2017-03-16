@@ -46,7 +46,7 @@ module Propono
     # @param [String] message The message to post.
     def publish(topic, message, options = {})
       suffixed_topic = "#{topic}#{config.queue_suffix}"
-      Publisher.publish(aws_client, config.logger, suffixed_topic, message, options)
+      Publisher.publish(aws_client, config, suffixed_topic, message, options)
     end
 
     # Creates a new SNS-SQS subscription on the specified topic.
