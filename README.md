@@ -75,7 +75,7 @@ This is because a queue is established for each application_name/topic combinati
 * Pass the `{async: false}` option to Propono.publish. (This was introduced in 1.3.0)
 * Do a `Thread#join` on each thread that is returned from calls to `publish`.
 
-### Using TCP for messages
+### Using TCP for messages
 
 Publishing directly to SNS takes about 15x longer than publishing over a simple TCP connection. It is therefore sometimes favourable to publish to a separate machine listening for TCP messages, which will then proxy them on.
 
@@ -106,7 +106,7 @@ This proxying of TCP to SQS is used so often that there's a simple shortcut. Jus
 Propono.proxy_tcp()
 ```
 
-### Using UDP for messages
+### Using UDP for messages
 
 If you want almost-zero performance impact, and don't mind the occasional message getting lost, you can use UDP. We use this for things like our live dashboard where we don't mind losing a piece of activity here and there, but any performance impact on our Meducation itself is bad news.
 
@@ -137,7 +137,7 @@ Propono.proxy_udp()
 
 The following configuration settings are available:
 
-```
+```ruby
 Propono.config do |config|
   # Use AWS access and secret keys
   config.access_key = "An AWS access key"
