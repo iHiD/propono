@@ -39,11 +39,13 @@ module Propono
       aws_client.expects(:set_sqs_policy).with(queue, policy)
 
       subscription.create
+      assert_equal queue, subscription.queue
     end
 
     def test_create_slow_queue
       policy = "Some policy"
       topic_name = "SomeName"
+      slow_queue = mock
 
       subscription = QueueSubscription.new(aws_client, propono_config, topic_name)
       subscription.stubs(:create_and_subscribe_main_queue)
@@ -52,18 +54,21 @@ module Propono
       queue_name = subscription.send(:queue_name)
 
       topic = mock
-      queue = mock
+      slow_queue = mock
       aws_client.expects(:create_topic).with("#{topic_name}#{@suffix}-slow").returns(topic)
-      aws_client.expects(:create_queue).with("#{queue_name}-slow").returns(queue)
-      aws_client.expects(:subscribe_sqs_to_sns).with(queue, topic)
-      aws_client.expects(:set_sqs_policy).with(queue, policy)
+      aws_client.expects(:create_queue).with("#{queue_name}-slow").returns(slow_queue)
+      aws_client.expects(:subscribe_sqs_to_sns).with(slow_queue, topic)
+      aws_client.expects(:set_sqs_policy).with(slow_queue, policy)
 
       subscription.create
+      assert_equal slow_queue, subscription.slow_queue
     end
 
     def test_create_misc_queues
       policy = "Some policy"
       topic_name = "SomeName"
+      failed_queue = mock
+      corrupt_queue = mock
 
       subscription = QueueSubscription.new(aws_client, propono_config, topic_name)
       subscription.stubs(:create_and_subscribe_main_queue)
@@ -71,10 +76,13 @@ module Propono
       subscription.stubs(generate_policy: policy)
       queue_name = subscription.send(:queue_name)
 
-      aws_client.expects(:create_queue).with("#{queue_name}-failed")
-      aws_client.expects(:create_queue).with("#{queue_name}-corrupt")
+      aws_client.expects(:create_queue).with("#{queue_name}-failed").returns(failed_queue)
+      aws_client.expects(:create_queue).with("#{queue_name}-corrupt").returns(corrupt_queue)
 
       subscription.create
+
+      assert_equal failed_queue, subscription.failed_queue
+      assert_equal corrupt_queue, subscription.corrupt_queue
     end
 
     def test_subscription_queue_name
@@ -93,25 +101,6 @@ module Propono
       subscription = QueueSubscription.new(aws_client, propono_config, topic_name)
 
       assert_equal "My_App-Foobar#{@suffix}", subscription.send(:queue_name)
-    end
-
-    def test_create_saves_queue
-      skip "Need to rebuild this if we acutally need all these things"
-      queue = mock
-      failed_queue = mock
-      corrupt_queue = mock
-      slow_queue = mock
-
-      QueueCreator.expects(:find_or_create).with('MyApp-SomeTopic-suf').returns(queue)
-      QueueCreator.expects(:find_or_create).with('MyApp-SomeTopic-suf-failed').returns(failed_queue)
-      QueueCreator.expects(:find_or_create).with('MyApp-SomeTopic-suf-corrupt').returns(corrupt_queue)
-      QueueCreator.expects(:find_or_create).with('MyApp-SomeTopic-suf-slow').returns(slow_queue)
-      subscription = QueueSubscription.new(aws_client, propono_config, "SomeTopic")
-      subscription.create
-
-      assert_equal queue, subscription.queue
-      assert_equal failed_queue, subscription.failed_queue
-      assert_equal corrupt_queue, subscription.corrupt_queue
     end
 
     def test_create_raises_with_nil_topic

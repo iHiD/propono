@@ -12,16 +12,6 @@ module Propono
       refute propono_config.nil?
     end
 
-    # TODO - Move this to propono::client
-    def test_block_syntax
-      skip
-      test_key = "foobar-123-access"
-      propono_config do |config|
-        config.access_key = test_key
-      end
-      assert_equal test_key, propono_config.access_key
-    end
-
     def test_use_iam_profile_defaults_false
       assert ! propono_config.use_iam_profile
     end

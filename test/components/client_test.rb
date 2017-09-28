@@ -4,32 +4,65 @@ module Propono
   class ClientTest < Minitest::Test
 
     def test_publish_calls_publisher_publish
-      skip
       topic, message = "Foo", "Bar"
-      Publisher.expects(:publish).with(topic, message, {})
-      Propono.publish(topic, message)
+      client = Propono::Client.new
+      Publisher.expects(:publish).with(
+        client.aws_client,
+        client.config,
+        topic,
+        message,
+        {}
+      )
+      client.publish(topic, message)
     end
 
     def test_publish_sets_suffix_publish
-      skip
-      Propono.config.queue_suffix = "-bar"
+      queue_suffix = "-bar"
       topic = "foo"
-      Publisher.expects(:publish).with("foo-bar", '', {})
-      Propono.publish(topic, "")
+      message = "asdasdasda"
+
+      client = Propono::Client.new
+      client.config.queue_suffix = queue_suffix
+      Publisher.expects(:publish).with(
+        client.aws_client,
+        client.config,
+        "#{topic}#{queue_suffix}",
+        message,
+        {}
+      )
+      client.publish(topic, message)
     end
 
-    def test_listen_to_queue_calls_queue_listener
-      skip
+    def test_listen_calls_queue_listener
       topic = 'foobar'
-      QueueListener.expects(:listen).with(topic)
-      Propono.listen_to_queue(topic)
+
+      client = Propono::Client.new
+      QueueListener.expects(:listen).with(
+        client.aws_client,
+        client.config,
+        topic
+      )
+      client.listen(topic)
     end
 
     def test_drain_queue_calls_queue_listener
-      skip
       topic = 'foobar'
-      QueueListener.expects(:drain).with(topic)
-      Propono.drain_queue(topic)
+
+      client = Propono::Client.new
+      QueueListener.expects(:drain).with(
+        client.aws_client,
+        client.config,
+        topic
+      )
+      client.drain_queue(topic)
+    end
+
+    def test_block_configuration_syntax
+      test_key = "foobar-123-access"
+      client = Propono::Client.new do |config|
+        config.access_key = test_key
+      end
+      assert_equal test_key, client.config.access_key
     end
   end
 end

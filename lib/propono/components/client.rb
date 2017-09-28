@@ -73,11 +73,6 @@ module Propono
       QueueListener.listen(aws_client, config, topic_name, &message_processor)
     end
 
-    # TODO: Deprecate this
-    def listen_to_queue
-      listen
-    end
-
     # Listens on a queue and yields for each message
     #
     # Calling this will enter a queue-listening loop that
@@ -91,7 +86,7 @@ module Propono
     # @param [String] topic The topic to subscribe to.
     # @param &message_processor The block to yield for each message.
     def drain_queue(topic, &message_processor)
-      QueueListener.drain(topic, &message_processor)
+      QueueListener.drain(aws_client, config, topic, &message_processor)
     end
   end
 end
