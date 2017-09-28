@@ -48,10 +48,11 @@ module Propono
       )
     end
 
-    def read_from_sqs(queue, num_messages)
+    def read_from_sqs(queue, num_messages, long_poll: true)
+      wait_time_seconds = long_poll ? 20 : 0
       sqs_client.receive_message(
         queue_url: queue.url,
-        wait_time_seconds: 20,
+        wait_time_seconds: wait_time_seconds,
         max_number_of_messages: num_messages
       ).messages
     end

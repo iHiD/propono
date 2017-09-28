@@ -36,9 +36,11 @@ module Propono
 
       @listener = QueueListener.new(aws_client, propono_config, @topic_name) {}
 
+      @slow_queue = mock
+      @slow_queue.stubs(url: "some_queue_url")
       @failed_queue = mock
       @corrupt_queue = mock
-      @listener.stubs(corrupt_queue: @corrupt_queue, failed_queue: @failed_queue)
+      @listener.stubs(slow_queue: @slow_queue, corrupt_queue: @corrupt_queue, failed_queue: @failed_queue)
 
       propono_config.num_messages_per_poll = 14
       propono_config.max_retries = 0
@@ -57,7 +59,8 @@ module Propono
     end
 
     def test_drain_should_continue_if_queue_empty
-      @listener.expects(:read_messages).returns(nil)
+      @listener.expects(:read_messages_from_queue).with(@slow_queue, 10, long_poll: false).returns(false)
+      @listener.expects(:read_messages_from_queue).with(@queue, 10, long_poll: false).returns(false)
       @listener.drain
       assert true
     end
@@ -78,7 +81,7 @@ module Propono
 
     def test_read_message_from_sqs
       max_number_of_messages = 5
-      aws_client.expects(:read_from_sqs).with(@queue, max_number_of_messages)
+      aws_client.expects(:read_from_sqs).with(@queue, max_number_of_messages, long_poll: true)
       @listener.send(:read_messages_from_queue, @queue, max_number_of_messages)
     end
 
@@ -118,6 +121,14 @@ module Propono
       assert_equal messages_yielded.size, 2
       assert messages_yielded.include?(@message1)
       assert messages_yielded.include?(@message2)
+    end
+
+    def test_ok_if_message_processor_is_nil
+      messages_yielded = []
+      @listener = QueueListener.new(aws_client, propono_config, @topic_name)
+
+      @listener.send(:process_message, "")
+      assert_equal messages_yielded.size, 0
     end
 
     def test_each_message_processor_context

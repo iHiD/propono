@@ -26,9 +26,8 @@ module Propono
 
     def drain
       raise ProponoError.new("topic_name is nil") unless topic_name
-      while read_messages
-        # continue as long as there are messages in the queue
-      end
+      true while read_messages_from_queue(main_queue, 10, long_poll: false)
+      true while read_messages_from_queue(slow_queue, 10, long_poll: false)
     end
 
     private
@@ -38,8 +37,8 @@ module Propono
       read_messages_from_queue(slow_queue, 1)
     end
 
-    def read_messages_from_queue(queue, num_messages)
-      messages = aws_client.read_from_sqs(queue, num_messages)
+    def read_messages_from_queue(queue, num_messages, long_poll: true)
+      messages = aws_client.read_from_sqs(queue, num_messages, long_poll: long_poll)
       if messages.empty?
         false
       else
@@ -84,6 +83,7 @@ module Propono
     end
 
     def process_message(sqs_message)
+      return false unless message_processor
       message_processor.call(sqs_message.message, sqs_message.context)
     end
 

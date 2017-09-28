@@ -3,21 +3,21 @@ require File.expand_path('../integration_test', __FILE__)
 module Propono
   class SnsToSqsTest < IntegrationTest
     def test_the_message_gets_there
-      skip
       topic = "propono-tests-sns-to-sqs-topic"
       text = "This is my message #{DateTime.now} #{rand()}"
       flunks = []
       message_received = false
 
-      Propono.drain_queue(topic)
-      Propono.subscribe(topic)
+      propono_client.drain_queue(topic)
+      propono_client.subscribe(topic)
 
       thread = Thread.new do
         begin
-          Propono.listen_to_queue(topic) do |message, context|
+          propono_client.listen(topic) do |message, context|
             flunks << "Wrong message" unless message == text
             flunks << "Wrong id" unless context[:id] =~ Regexp.new("[a-z0-9]{6}")
             message_received = true
+            thread.terminate
           end
         rescue => e
           flunks << e.message
@@ -34,7 +34,7 @@ module Propono
 
       sleep(1) # Make sure the listener has started
 
-      Propono.publish(topic, text)
+      propono_client.publish(topic, text)
       flunks << "Test Timeout" unless wait_for_thread(thread)
       flunk(flunks.join("\n")) unless flunks.empty?
     ensure
@@ -42,19 +42,18 @@ module Propono
     end
 
 =begin
-
-
     def test_failed_messge_is_transferred_to_failed_channel
-      topic = "test-topic"
+      topic = "propono-tests-sns-to-sqs-topic-failed"
       text = "This is my message #{DateTime.now} #{rand()}"
       flunks = []
       message_received = false
 
-      Propono.subscribe(topic)
+      propono_client.drain_queue(topic)
+      propono_client.subscribe(topic)
 
       thread = Thread.new do
         begin
-          Propono.listen_to_queue(topic) do |message, context|
+          propono_client.listen(topic) do |message, context|
             raise StandardError.new 'BOOM'
           end
         rescue => e
@@ -64,12 +63,13 @@ module Propono
         end
       end
 
-      failure_listener = Thread.new do
+      failure_thread = Thread.new do
         begin
-          Propono.listen_to_queue(topic, channel: :failed) do |message, context|
+          propono_client.listen(topic, channel: :failed) do |message, context|
             flunks << "Wrong message" unless message == text
             flunks << "Wrong id" unless context[:id] =~ Regexp.new("[a-z0-9]{6}")
             message_received = true
+            failure_thread.terminate
           end
         rescue => e
           flunks << e.message
@@ -80,21 +80,20 @@ module Propono
 
       Thread.new do
         sleep(1) while !message_received
+        p "Message received"
         sleep(5) # Make sure all the message deletion clear up in the thread has happened
         thread.terminate
-        failure_listener.terminate
+        failure_thread.terminate
       end
 
       sleep(1) # Make sure the listener has started
 
-      Propono.publish(topic, text)
+      propono_client.publish(topic, text)
       flunks << "Test Timeout" unless wait_for_thread(thread)
       flunk(flunks.join("\n")) unless flunks.empty?
     ensure
-      thread.terminate
+      thread.terminate if thread
     end
-
 =end
-
   end
 end

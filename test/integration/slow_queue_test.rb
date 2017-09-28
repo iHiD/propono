@@ -3,7 +3,6 @@ require File.expand_path('../integration_test', __FILE__)
 module Propono
   class SlowQueueTest < IntegrationTest
     def test_slow_messages_are_received
-      skip
       topic = "propono-tests-slow-queue-topic"
       slow_topic = "propono-tests-slow-queue-topic-slow"
       text = "This is my message #{DateTime.now} #{rand()}"
@@ -12,16 +11,18 @@ module Propono
       message_received = false
       slow_message_received = false
 
-      Propono.drain_queue(slow_topic)
-      Propono.drain_queue(topic)
-      Propono.subscribe(topic)
+      propono_client.drain_queue(topic)
+      propono_client.drain_queue(slow_topic)
+
+      propono_client.subscribe(topic)
 
       thread = Thread.new do
         begin
-          Propono.listen_to_queue(topic) do |message, context|
+          propono_client.listen(topic) do |message, context|
             flunks << "Wrong message" unless (message == text || message == slow_text)
             message_received = true if message == text
             slow_message_received = true if message == slow_text
+            thread.terminate if message_received && slow_message_received
           end
         rescue => e
           flunks << e.message
@@ -39,12 +40,13 @@ module Propono
 
       sleep(1) # Make sure the listener has started
 
-      Propono.publish(slow_topic, slow_text, async: false)
-      Propono.publish(topic, text, async: false)
-      flunks << "Test Timeout" unless wait_for_thread(thread)
+      propono_client.publish(slow_topic, slow_text)
+      propono_client.publish(topic, text)
+
+      flunks << "Test Timeout" unless wait_for_thread(thread, 60)
       flunk(flunks.join("\n")) unless flunks.empty?
     ensure
-      # thread.terminate
+      thread.terminate if thread
     end
   end
 end
