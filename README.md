@@ -10,16 +10,24 @@ It's beautifully simple to use. [Watch an introduction](https://www.youtube.com/
 
 ```ruby
 # On Machine A
-Propono.listen_to_queue('some-topic') do |message|
+Propono::Client.new.listen_to_queue('some-topic') do |message|
   puts "I just received: #{message}"
 end
 
 # On Machine B
-Propono.publish('some-topic', "The Best Message Ever")
+Propono::Client.new.publish('some-topic', "The Best Message Ever")
 
 # Output on Machine A a second later.
 # - "I just received The Best Message Ever"
 ```
+
+## Changes from v1 to v2
+
+Version 2 of Propono changed a few things: 
+- We moved from a global interface to a client interface. Rather than calling `publish` and equivalent on `Propono`, you should now initialize a `Propono::Client` and then call everything on that client. This fixes issues with thread safety and global config.
+- We have also removed the dependancy on Fog and instead switch to the `sns` and `sqs` mini-gems of `aws-sdk`.
+- UDP and TCP support have been removed, an subscribe_by_post has been removed.
+- We are now using long-polling. This makes Propono **significantly** faster (10-100x).
 
 ## Installation
 
@@ -36,28 +44,31 @@ And then execute:
 The first thing to do is setup some configuration keys for Propono. It's best to do this in an initializer, or at the start of your application.
 
 ```ruby
-Propono.config.access_key       = "access-key"       # From AWS
-Propono.config.secret_key       = "secret-key"       # From AWS
-Propono.config.queue_region     = "queue-region"     # From AWS
+client = Propono::Client.new
+client.config.access_key       = "access-key"       # From AWS
+client.config.secret_key       = "secret-key"       # From AWS
+client.config.queue_region     = "queue-region"     # From AWS
 
 # Or use the IAM profile of the machine
-Propono.config.use_iam_profile  = true
-Propono.config.queue_region     = "queue-region"     # From AWS
+client.config.use_iam_profile  = true
+client.config.queue_region     = "queue-region"     # From AWS
 
 ```
 
 You can then start publishing messages easily from anywhere in your codebase.
 
 ```ruby
-Propono.publish('some-topic', "Some string")
-Propono.publish('some-topic', {some: ['hash', 'or', 'array']})
+client = Propono::Client.new
+client.publish('some-topic', "Some string")
+client.publish('some-topic', {some: ['hash', 'or', 'array']})
 ```
 
 Listening for messages is easy too. Just tell Propono what your application is called and start listening. You'll get a block yielded for each message.
 
 ```ruby
-Propono.config.application_name = "application-name" # Something unique to this app.
-Propono.listen_to_queue('some-topic') do |message|
+client = Propono::Client.new
+client.config.application_name = "application-name" # Something unique to this app.
+client.listen_to_queue('some-topic') do |message|
   # ... Do something interesting with the message
 end
 ```
@@ -70,17 +81,12 @@ This is because a queue is established for each application_name/topic combinati
 * subscribers that share the same `application_name` will act as multiple workers on the same queue. Only one will get to process each message.
 * subscribers that have a different `application_name` will each get a copy of a message to process independently i.e. acts as a one-to-many broadcast.
 
-
-**Note for using in Rake tasks and similar:** Propono spawns new threads for messages sent via SNS. If your application ends before the final thread is executed, then the last message might not send. There are two options to help you here:
-* Pass the `{async: false}` option to Propono.publish. (This was introduced in 1.3.0)
-* Do a `Thread#join` on each thread that is returned from calls to `publish`.
-
 ### Configuration
 
 The following configuration settings are available:
 
 ```
-Propono.config do |config|
+Propono::Client.new do |config|
   # Use AWS access and secret keys
   config.access_key = "An AWS access key"
   config.secret_key = "A AWS secret key"
@@ -96,7 +102,7 @@ Propono.config do |config|
 end
 ```
 
-These can all also be set using the `Propono.config.access_key = "..."` syntax.
+These can all also be set using the `client.config.access_key = "..."` syntax.
 
 ### Is it any good?
 
@@ -121,7 +127,7 @@ These individuals have come up with the ideas and written the code that made thi
 
 ## Licence
 
-Copyright (C) 2015 New Media Education Ltd
+Copyright (C) 2017 Jeremy Walker
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the MIT License.
