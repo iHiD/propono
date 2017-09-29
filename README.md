@@ -1,8 +1,8 @@
 # Propono
 
-[![Build Status](https://travis-ci.org/meducation/propono.png)](https://travis-ci.org/meducation/propono)
-[![Dependencies](https://gemnasium.com/meducation/propono.png?travis)](https://gemnasium.com/meducation/propono)
-[![Code Climate](https://codeclimate.com/github/meducation/propono.png)](https://codeclimate.com/github/meducation/propono)
+[![Build Status](https://travis-ci.org/iHiD/propono.png)](https://travis-ci.org/iHiD/propono)
+[![Dependencies](https://gemnasium.com/iHiD/propono.png?travis)](https://gemnasium.com/iHiD/propono)
+[![Code Climate](https://codeclimate.com/github/iHiD/propono.png)](https://codeclimate.com/github/iHiD/propono)
 
 Propono is a [pub/sub](http://en.wikipedia.org/wiki/Publish-subscribe_pattern) gem built on top of Amazon Web Services (AWS). It uses Simple Notification Service (SNS) and Simple Queue Service (SQS) to seamlessly pass messages throughout your infrastructure.
 
@@ -112,7 +112,7 @@ These can all also be set using the `client.config.access_key = "..."` syntax.
 
 Firstly, thank you!! :heart::sparkling_heart::heart:
 
-We'd love to have you involved. Please read our [contributing guide](https://github.com/meducation/propono/tree/master/CONTRIBUTING.md) for information on how to get stuck in.
+We'd love to have you involved. Please read our [contributing guide](https://github.com/iHiD/propono/tree/master/CONTRIBUTING.md) for information on how to get stuck in.
 
 ### Contributors
 
@@ -137,5 +137,5 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 MIT License for more details.
 
-A copy of the MIT License is available in [Licence.md](https://github.com/meducation/propono/blob/master/LICENCE.md)
+A copy of the MIT License is available in [LICENCE.md](https://github.com/iHiD/propono/blob/master/LICENCE.md)
 along with this program.
