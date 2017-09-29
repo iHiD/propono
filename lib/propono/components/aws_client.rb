@@ -1,6 +1,7 @@
 #require 'aws/sns'
 #require 'aws/sqs'
-require 'aws-sdk'
+require 'aws-sdk-sns'
+require 'aws-sdk-sqs'
 
 module Propono
   class AwsClient
