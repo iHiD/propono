@@ -10,7 +10,7 @@ It's beautifully simple to use. [Watch an introduction](https://www.youtube.com/
 
 ```ruby
 # On Machine A
-Propono::Client.new.listen_to_queue('some-topic') do |message|
+Propono::Client.new.listen('some-topic') do |message|
   puts "I just received: #{message}"
 end
 
@@ -68,7 +68,7 @@ Listening for messages is easy too. Just tell Propono what your application is c
 ```ruby
 client = Propono::Client.new
 client.config.application_name = "application-name" # Something unique to this app.
-client.listen_to_queue('some-topic') do |message|
+client.listen('some-topic') do |message|
   # ... Do something interesting with the message
 end
 ```

@@ -51,7 +51,7 @@ module Propono
 
     # Creates a new SNS-SQS subscription on the specified topic.
     #
-    # This is implicitly called by {#listen_to_queue}.
+    # This is implicitly called by {#listen}.
     #
     # @param [String] topic The name of the topic to subscribe to.
     def subscribe(topic)
