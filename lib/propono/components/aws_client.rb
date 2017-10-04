@@ -1,5 +1,3 @@
-#require 'aws/sns'
-#require 'aws/sqs'
 require 'aws-sdk-sns'
 require 'aws-sdk-sqs'
 
@@ -19,7 +17,7 @@ module Propono
 
     def send_to_sqs(queue, message)
       sqs_client.send_message(
-        queue_url: queue,
+        queue_url: queue.url,
         message_body: message
       )
     end
