@@ -93,7 +93,7 @@ module Propono
 
     def requeue_message_on_failure(sqs_message, exception)
       next_queue = (sqs_message.failure_count < propono_config.max_retries) ? main_queue : failed_queue
-      propono_config.logger.error "Error proessing message, moving to queue: #{next_queue}"
+      propono_config.logger.error "Error processing message, moving to queue: #{next_queue}"
       aws_client.send_to_sqs(next_queue, sqs_message.to_json_with_exception(exception))
     end
 
