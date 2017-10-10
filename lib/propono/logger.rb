@@ -6,13 +6,13 @@ module Propono
 
     StdLevels.each do |level|
       define_method level do |*args|
-        $stdout.puts *args
+        $stdout.puts(*args)
       end
     end
 
     ErrorLevels.each do |level|
       define_method level do |*args|
-        $stderr.puts *args 
+        $stderr.puts(*args)
       end
     end
   end
