@@ -45,6 +45,10 @@ module Propono
       assert_equal application_name, propono_config.application_name
     end
 
+    def test_default_logger
+      assert propono_config.logger.is_a?(Propono::Logger)
+    end
+
     def test_logger
       propono_config.logger = :my_logger
       assert_equal :my_logger, propono_config.logger
