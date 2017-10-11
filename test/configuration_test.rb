@@ -98,6 +98,13 @@ module Propono
       end
     end
 
+    def test_missing_logger_throws_exception
+      propono_config.logger = nil
+      assert_raises(ProponoConfigurationError) do
+        propono_config.logger
+      end
+    end
+
     def test_default_max_retries
       assert_equal 0, propono_config.max_retries
     end
