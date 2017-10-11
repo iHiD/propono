@@ -54,6 +54,10 @@ module Propono
       assert_equal :my_logger, propono_config.logger
     end
 
+    def test_default_queue_suffix
+      assert_equal "", propono_config.queue_suffix
+    end
+
     def test_queue_suffix
       queue_suffix = "test-application-name"
       propono_config.queue_suffix = queue_suffix
