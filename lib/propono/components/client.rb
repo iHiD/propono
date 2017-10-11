@@ -33,7 +33,7 @@ module Propono
       @aws_client = AwsClient.new(AwsConfig.new(config))
     end
 
-    def configure(&block)
+    def configure
       yield config
     end
 

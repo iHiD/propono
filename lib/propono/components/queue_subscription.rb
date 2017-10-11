@@ -15,7 +15,7 @@ module Propono
       @topic_name = topic_name
       @suffixed_topic_name = "#{topic_name}#{propono_config.queue_suffix}"
       @suffixed_slow_topic_name = "#{topic_name}#{propono_config.queue_suffix}-slow"
-      @queue_name = "#{propono_config.application_name.gsub(" ", "_")}-#{@suffixed_topic_name}"
+      @queue_name = "#{propono_config.application_name.tr(" ", "_")}-#{@suffixed_topic_name}"
     end
 
     def create
