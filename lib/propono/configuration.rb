@@ -5,36 +5,41 @@ module Propono
 
   class Configuration
 
-    SETTINGS = [
-      :use_iam_profile, :access_key, :secret_key, :queue_region, :queue_suffix,
-      :application_name,
-      :logger,
-      :max_retries, :num_messages_per_poll
-    ]
-    attr_writer *SETTINGS
+    def self.add_setting(sym, required: true)
+      define_method(sym) do
+        required ? get_or_raise(sym) : @settings[sym]
+      end
 
-    def initialize
-      self.logger = Propono::Logger.new
-      self.queue_suffix = ""
-      self.use_iam_profile = false
-      self.max_retries = 0
-      self.num_messages_per_poll = 10
-    end
-
-    SETTINGS.each do |setting|
-      define_method setting do
-        get_or_raise(setting)
+      define_method("#{sym}=") do |new_value|
+        @settings[sym] = new_value
       end
     end
 
-    attr_reader :use_iam_profile, :queue_suffix
+    add_setting :access_key
+    add_setting :secret_key
+    add_setting :queue_region
+    add_setting :application_name
+    add_setting :logger
+    add_setting :max_retries
+    add_setting :num_messages_per_poll
+
+    add_setting :use_iam_profile, required: false
+    add_setting :queue_suffix,    required: false
+
+    def initialize
+      @settings = {
+        logger:                Propono::Logger.new,
+        queue_suffix:          "",
+        use_iam_profile:       false,
+        max_retries:           0,
+        num_messages_per_poll: 10
+      }
+    end
 
     private
 
     def get_or_raise(setting)
-      val = instance_variable_get("@#{setting.to_s}")
-      val.nil?? raise(ProponoConfigurationError.new("Configuration for #{setting} is not set")) : val
+      @settings[setting] || raise(ProponoConfigurationError.new("Configuration for #{setting} is not set"))
     end
   end
 end
-
