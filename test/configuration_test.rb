@@ -45,10 +45,27 @@ module Propono
       assert_equal application_name, propono_config.application_name
     end
 
+    def test_default_logger
+      assert propono_config.logger.is_a?(Propono::Logger)
+    end
+
+    def test_logger
+      propono_config.logger = :my_logger
+      assert_equal :my_logger, propono_config.logger
+    end
+
+    def test_default_queue_suffix
+      assert_equal "", propono_config.queue_suffix
+    end
+
     def test_queue_suffix
       queue_suffix = "test-application-name"
       propono_config.queue_suffix = queue_suffix
       assert_equal queue_suffix, propono_config.queue_suffix
+    end
+
+    def test_default_num_messages_per_poll
+      assert_equal 10, propono_config.num_messages_per_poll
     end
 
     def test_num_messages_per_poll
@@ -78,6 +95,27 @@ module Propono
     def test_missing_application_name_throws_exception
       assert_raises(ProponoConfigurationError) do
         propono_config.application_name
+      end
+    end
+
+    def test_missing_logger_throws_exception
+      propono_config.logger = nil
+      assert_raises(ProponoConfigurationError) do
+        propono_config.logger
+      end
+    end
+
+    def test_missing_max_retries_throws_exception
+      propono_config.max_retries = nil
+      assert_raises(ProponoConfigurationError) do
+        propono_config.max_retries
+      end
+    end
+
+    def test_missing_num_messages_per_poll_throws_exception
+      propono_config.num_messages_per_poll = nil
+      assert_raises(ProponoConfigurationError) do
+        propono_config.num_messages_per_poll
       end
     end
 

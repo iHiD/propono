@@ -115,12 +115,6 @@ module Propono
       end
     end
 
-    def test_publish_should_raise_exception_if_topic_is_nil
-      assert_raises(PublisherError, "Topic is nil") do
-        Publisher.publish(aws_client, propono_config, nil, "foobar")
-      end
-    end
-
     def test_publish_should_raise_exception_if_message_is_nil
       assert_raises(PublisherError, "Message is nil") do
         Publisher.publish(aws_client, propono_config, "foobar", nil)
