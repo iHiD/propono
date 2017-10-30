@@ -43,7 +43,7 @@ module Propono
     def set_sqs_policy(queue, policy)
       sqs_client.set_queue_attributes(
         queue_url: queue.url,
-        attributes: { "Policy": policy }
+        attributes: { Policy: policy }
       )
     end
 
