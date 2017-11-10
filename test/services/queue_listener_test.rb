@@ -81,7 +81,7 @@ module Propono
 
     def test_read_message_from_sqs
       max_number_of_messages = 5
-      aws_client.expects(:read_from_sqs).with(@queue, max_number_of_messages, long_poll: true)
+      aws_client.expects(:read_from_sqs).with(@queue, max_number_of_messages, long_poll: true, visibility_timeout: nil)
       @listener.send(:read_messages_from_queue, @queue, max_number_of_messages)
     end
 

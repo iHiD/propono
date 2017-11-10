@@ -40,10 +40,27 @@ module Propono
       QueueListener.expects(:listen).with(
         client.aws_client,
         client.config,
-        topic
+        topic,
+        {}
       )
       client.listen(topic)
     end
+
+    def test_listen_calls_queue_listener_with_options
+      topic = 'foobar'
+      options = {foo: 'bar'}
+
+      client = Propono::Client.new
+      QueueListener.expects(:listen).with(
+        client.aws_client,
+        client.config,
+        topic,
+        options
+      )
+      client.listen(topic, options)
+    end
+
+
 
     def test_drain_queue_calls_queue_listener
       topic = 'foobar'

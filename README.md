@@ -102,6 +102,18 @@ Propono::Client.new do |config|
 end
 ```
 
+### Options
+
+#### Visiblity Timeout
+
+For certain tasks (e.g. video processing), being able to hold messages for longer is important. To achieve this, the [visibility timeout of a message](http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-visibility-timeout.html) can be changed on the call to listen. e.g.
+
+```
+client.listen('long-running-tasks', visiblity_timeout: 3600) do |message|
+  puts "I just received: #{message}"
+end
+```
+
 These can all also be set using the `client.config.access_key = "..."` syntax.
 
 ### Is it any good?

@@ -1,3 +1,6 @@
+# 2.1.0 / 2017-03-14
+* [FEATURE] Added visibility_timeout to listen
+
 # 2.0.0 / 2017-03-14
 * [FEATURE] Remove UDP and TCP support
 * [FEATURE] Change default publish behaviour from async to sync

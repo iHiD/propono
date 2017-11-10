@@ -69,8 +69,8 @@ module Propono
     #
     # @param [String] topic The topic to subscribe to.
     # @param &message_processor The block to yield for each message.
-    def listen(topic_name, &message_processor)
-      QueueListener.listen(aws_client, config, topic_name, &message_processor)
+    def listen(topic_name, options = {}, &message_processor)
+      QueueListener.listen(aws_client, config, topic_name, options, &message_processor)
     end
 
     # Listens on a queue and yields for each message

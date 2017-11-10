@@ -47,12 +47,14 @@ module Propono
       )
     end
 
-    def read_from_sqs(queue, num_messages, long_poll: true)
+    def read_from_sqs(queue, num_messages, long_poll: true, visibility_timeout: nil)
       wait_time_seconds = long_poll ? 20 : 0
+      visibility_timeout ||= 30
       sqs_client.receive_message(
         queue_url: queue.url,
         wait_time_seconds: wait_time_seconds,
-        max_number_of_messages: num_messages
+        max_number_of_messages: num_messages,
+        visibility_timeout: visibility_timeout
       ).messages
     end
 

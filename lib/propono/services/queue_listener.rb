@@ -9,12 +9,13 @@ module Propono
       new(*args, &message_processor).drain
     end
 
-    attr_reader :aws_client, :propono_config, :topic_name, :message_processor
-    def initialize(aws_client, propono_config, topic_name, &message_processor)
+    attr_reader :aws_client, :propono_config, :topic_name, :visibility_timeout, :message_processor
+    def initialize(aws_client, propono_config, topic_name, options = {}, &message_processor)
       @aws_client = aws_client
       @propono_config = propono_config
       @topic_name = topic_name
       @message_processor = message_processor
+      @visibility_timeout = options[:visibility_timeout] || nil
     end
 
     def listen
@@ -38,7 +39,7 @@ module Propono
     end
 
     def read_messages_from_queue(queue, num_messages, long_poll: true)
-      messages = aws_client.read_from_sqs(queue, num_messages, long_poll: long_poll)
+      messages = aws_client.read_from_sqs(queue, num_messages, long_poll: long_poll, visibility_timeout: visibility_timeout)
       if messages.empty?
         false
       else
