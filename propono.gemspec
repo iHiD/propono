@@ -10,12 +10,12 @@ Gem::Specification.new do |spec|
   spec.email         = ["jez.walker@gmail.com", "c.p.care@gmail.com", "malcolm@landonsonline.me.uk"]
   spec.description   = %q{Pub / Sub Library using Amazon Web Services}
   spec.summary       = %q{General purpose pub/sub library built on top of AWS SNS and SQS}
-  spec.homepage      = ""
+  spec.homepage      = "https://github.com/iHiD/propono"
   spec.license       = "MIT"
 
-  spec.files         = `git ls-files`.split($/)
-  spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
-  spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
+  spec.files         = `git ls-files -z`.split("\x0").reject do |f|
+    f.match(%r{^(test|spec|features)/})
+  end
   spec.require_paths = ["lib"]
 
   spec.add_dependency "aws-sdk-sns"
