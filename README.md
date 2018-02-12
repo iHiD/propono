@@ -104,6 +104,10 @@ end
 
 ### Options
 
+#### Async
+
+By default messages are posted inline, blocking the main thread. The `async: true` option can be sent when posting a message, which will spawn a new thread for the message networking calls, and unblocking the main thread.
+
 #### Visiblity Timeout
 
 For certain tasks (e.g. video processing), being able to hold messages for longer is important. To achieve this, the [visibility timeout of a message](http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-visibility-timeout.html) can be changed on the call to listen. e.g.
