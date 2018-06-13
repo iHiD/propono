@@ -9,9 +9,9 @@ module Propono
       if @config.use_iam_profile
         options = {
           :region => @config.queue_region,
-          :retries => @config.iam_profile_credentials_retries || 0,
-          :http_open_timeout => @config.iam_profile_credentials_timeout || 1,
-          :http_read_timeout => @config.iam_profile_credentials_timeout || 1
+          :retries => @config.iam_profile_credentials_retries || 5,
+          :http_open_timeout => @config.iam_profile_credentials_timeout || 5,
+          :http_read_timeout => @config.iam_profile_credentials_timeout || 5
         }
 
         { :credentials => Aws::InstanceProfileCredentials.new(options) }

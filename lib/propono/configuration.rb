@@ -26,7 +26,6 @@ module Propono
     add_setting :use_iam_profile, required: false
     add_setting :iam_profile_credentials_retries, required: false
     add_setting :iam_profile_credentials_timeout, required: false
-    add_setting :iam_profile_credentials_timeout, required: false
 
     add_setting :queue_suffix,    required: false
 
