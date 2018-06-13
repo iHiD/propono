@@ -7,9 +7,14 @@ module Propono
 
     def aws_options
       if @config.use_iam_profile
-        {
-          :region => @config.queue_region
+        options = {
+          :region => @config.queue_region,
+          :retries => @config.iam_profile_credentials_retries || 0,
+          :http_open_timeout => @config.iam_profile_credentials_timeout || 1,
+          :http_read_timeout => @config.iam_profile_credentials_timeout || 1
         }
+
+        { :credentials => Aws::InstanceProfileCredentials.new(options) }
       else
         {
           :access_key_id => @config.access_key,
