@@ -22,6 +22,7 @@ module Propono
     add_setting :logger
     add_setting :max_retries
     add_setting :num_messages_per_poll
+    add_setting :listener_worker_count
 
     add_setting :use_iam_profile, required: false
     add_setting :queue_suffix,    required: false
@@ -32,7 +33,8 @@ module Propono
         queue_suffix:          "",
         use_iam_profile:       false,
         max_retries:           0,
-        num_messages_per_poll: 10
+        num_messages_per_poll: 10,
+        listener_worker_count: 1
       }
     end
 

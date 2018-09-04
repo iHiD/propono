@@ -20,9 +20,18 @@ module Propono
 
     def listen
       raise ProponoError.new("topic_name is nil") unless topic_name
-      loop do
-        read_messages
+
+      threads = []
+
+      propono_config.listener_worker_count.times do
+        threads << Thread.new do
+          loop do
+            read_messages
+          end
+        end
       end
+
+      threads.each(&:join)
     end
 
     def drain
