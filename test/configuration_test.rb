@@ -21,6 +21,24 @@ module Propono
       assert propono_config.use_iam_profile
     end
 
+    def test_sqs_endpoint_defaults_false
+      assert ! propono_config.sqs_endpoint
+    end
+
+    def test_sqs_endpoint
+      propono_config.sqs_endpoint = true
+      assert propono_config.sqs_endpoint
+    end
+
+    def test_sns_endpoint_defaults_false
+      assert ! propono_config.sns_endpoint
+    end
+
+    def test_sns_endpoint
+      propono_config.sns_endpoint = true
+      assert propono_config.sns_endpoint
+    end
+
     def test_access_key
       access_key = "test-access-key"
       propono_config.access_key = access_key

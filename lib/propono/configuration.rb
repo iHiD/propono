@@ -25,6 +25,8 @@ module Propono
 
     add_setting :use_iam_profile, required: false
     add_setting :queue_suffix,    required: false
+    add_setting :sqs_endpoint,    required: false
+    add_setting :sns_endpoint,    required: false
 
     def initialize
       @settings = {

@@ -99,6 +99,9 @@ Propono::Client.new do |config|
 
   config.max_retries = "The number of retries if a message raises an exception before being placed on the failed queue"
   config.num_messages_per_poll = "The number of messages retrieved per poll to SQS"
+
+  config.sns_endpoint = "The SNS endpoint to use. Useful for testing against non-AWS endpoints. Defined as scheme://host:port."
+  config.sns_endpoint = "The SQS endpoint to use. Useful for testing against non-AWS endpoints. Defined as scheme://host:port."
 end
 ```
 
