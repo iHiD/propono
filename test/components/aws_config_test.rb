@@ -30,24 +30,25 @@ module Propono
       assert ! @aws_config.aws_options.has_key?(:use_iam_profile)
     end
 
-    def test_using_iam_profile_results_in_aws_instance_profile_credentials_default
+    def test_use_iam_profile
       @config.use_iam_profile = true
-      aws_credentials = @aws_config.aws_options[:credentials]
-
-      assert_equal 5, aws_credentials.instance_variable_get("@retries")
-      assert_equal 5, aws_credentials.instance_variable_get("@http_open_timeout")
-      assert_equal 5, aws_credentials.instance_variable_get("@http_read_timeout")
+      assert_equal Aws::InstanceProfileCredentials, @aws_config.aws_options[:credentials].class
     end
 
-    def test_using_iam_profile_results_in_aws_instance_profile_credentials
+    def test_selecting_use_iam_profile_results_in_no_access_key
       @config.use_iam_profile = true
-      @config.iam_profile_credentials_retries = 3
-      @config.iam_profile_credentials_timeout = 4
-      aws_credentials = @aws_config.aws_options[:credentials]
-
-      assert_equal 3, aws_credentials.instance_variable_get("@retries")
-      assert_equal 4, aws_credentials.instance_variable_get("@http_open_timeout")
-      assert_equal 4, aws_credentials.instance_variable_get("@http_read_timeout")
+      assert ! @aws_config.aws_options.has_key?(:access_key_id)
     end
+
+    def test_selecting_use_iam_profile_results_in_no_secret_key
+      @config.use_iam_profile = true
+      assert ! @aws_config.aws_options.has_key?(:secret_access_key)
+    end
+
+    def test_region_when_using_iam_profile
+      @config.use_iam_profile = true
+      assert_equal "test-queue-region", @aws_config.aws_options[:region]
+    end
+
   end
 end
