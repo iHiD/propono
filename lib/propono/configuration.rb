@@ -32,7 +32,7 @@ module Propono
         queue_suffix:          "",
         use_iam_profile:       false,
         max_retries:           0,
-        num_messages_per_poll: 10
+        num_messages_per_poll: 1
       }
     end
 

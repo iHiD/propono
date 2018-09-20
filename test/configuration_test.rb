@@ -65,7 +65,7 @@ module Propono
     end
 
     def test_default_num_messages_per_poll
-      assert_equal 10, propono_config.num_messages_per_poll
+      assert_equal 1, propono_config.num_messages_per_poll
     end
 
     def test_num_messages_per_poll
