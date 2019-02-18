@@ -136,7 +136,7 @@ puts "listen loop terminated after 10 minutes of idleness"
 
 After 10 minutes of the listen loop not receiving any messages, it will exit, and any following code will be executed.
 
-Default is `nil`, with the listen loop never timing out through ideleness.
+Default is `nil`, with the listen loop never timing out through idleness.
 
 ### Is it any good?
 
