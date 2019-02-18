@@ -120,6 +120,24 @@ end
 
 These can all also be set using the `client.config.access_key = "..."` syntax.
 
+#### Idle Timeout
+
+In some situations, it is useful to exit the listen work loop after a set period if no messages have been received. An example would be to allow idle job processing servers to terminate themselves safely if they have not done any work for a set period of time.
+
+This can be achieved by passing `visibility_timeout` with a value in seconds to `listen`. e.g.
+
+```
+client.listen('tasks', idle_timeout: 60 * 10) do |message|
+  puts "I just received: #{message}"
+end
+
+puts "listen loop terminated after 10 minutes of idleness"
+```
+
+After 10 minutes of the listen loop not receiving any messages, it will exit, and any following code will be executed.
+
+Default is `nil`, with the listen loop never timing out through ideleness.
+
 ### Is it any good?
 
 [Yes.](http://news.ycombinator.com/item?id=3067434)

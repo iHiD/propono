@@ -9,18 +9,25 @@ module Propono
       new(*args, &message_processor).drain
     end
 
-    attr_reader :aws_client, :propono_config, :topic_name, :visibility_timeout, :message_processor
+    attr_reader :aws_client, :propono_config, :topic_name, :visibility_timeout, :message_processor, :idle_timeout
     def initialize(aws_client, propono_config, topic_name, options = {}, &message_processor)
       @aws_client = aws_client
       @propono_config = propono_config
       @topic_name = topic_name
       @message_processor = message_processor
       @visibility_timeout = options[:visibility_timeout] || nil
+      @idle_timeout = options[:idle_timeout] || nil
     end
 
     def listen
       raise ProponoError.new("topic_name is nil") unless topic_name
+
+      reset_idle_timeout!
+
       loop do
+        if idle_timeout_reached?
+          break
+        end
         read_messages
       end
     end
@@ -44,6 +51,7 @@ module Propono
         false
       else
         messages.each { |msg| process_raw_message(msg, queue) }
+        reset_idle_timeout!
         true
       end
     rescue => e #Aws::Errors => e
@@ -120,6 +128,19 @@ module Propono
 
     def subscription
       QueueSubscription.create(aws_client, propono_config, topic_name)
+    end
+
+    def idle_timeout_reached?
+      if idle_timeout.nil?
+        false
+      end
+
+      time_idle = Time.now.to_i - @last_message_read_at
+      time_idle >= idle_timeout
+    end
+
+    def reset_idle_timeout!
+      @last_message_read_at = Time.now.to_i
     end
   end
 end

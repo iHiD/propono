@@ -235,5 +235,24 @@ module Propono
       @listener.expects(:read_messages_from_queue).with(main_queue, propono_config.num_messages_per_poll).returns(true)
       @listener.send(:read_messages)
     end
+
+    def test_idle_timeout_is_nil_by_default
+      @listener = QueueListener.new(aws_client, propono_config, @topic_name) { |msg| p msg }
+      assert_equal nil, @listener.idle_timeout
+    end
+
+    def test_idle_timeout_exits_loop
+      timeout = 1
+
+      aws_client.stubs(read_from_sqs: [])
+      @listener = QueueListener.new(aws_client, propono_config, @topic_name, idle_timeout: timeout) { |msg| p msg }
+
+      @time = Time.now.to_i
+      @listener.listen
+      is_assigned_afterwards = true
+
+      assert is_assigned_afterwards
+      assert Time.now.to_i - @time >= timeout
+    end
   end
 end
