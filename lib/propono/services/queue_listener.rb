@@ -130,7 +130,7 @@ module Propono
 
     def idle_timeout_reached?
       if idle_timeout.nil?
-        false
+        return false
       end
 
       time_idle = Time.now.to_i - @last_message_read_at
