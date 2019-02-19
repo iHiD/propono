@@ -25,9 +25,7 @@ module Propono
       reset_idle_timeout!
 
       loop do
-        if idle_timeout_reached?
-          break
-        end
+        break if idle_timeout_reached?
         read_messages
       end
     end
