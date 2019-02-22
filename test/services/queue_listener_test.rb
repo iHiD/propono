@@ -244,7 +244,7 @@ module Propono
     def test_idle_timeout_exits_loop
       timeout = 1
 
-      aws_client.stubs(read_from_sqs: [])
+      aws_client.expects(read_from_sqs: []).once
       @listener = QueueListener.new(aws_client, propono_config, @topic_name, idle_timeout: timeout) { |msg| p msg }
 
       @time = Time.now.to_i
