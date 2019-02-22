@@ -237,21 +237,27 @@ module Propono
     end
 
     def test_idle_timeout_is_nil_by_default
-      @listener = QueueListener.new(aws_client, propono_config, @topic_name) { |msg| p msg }
       assert_equal nil, @listener.idle_timeout
+
+      @listener.expects(:last_message_read_at).never
+
+      thread = Thread.new { @listener.listen }
+      sleep 1
+
+    ensure
+      thread.terminate if thread
     end
 
     def test_idle_timeout_exits_loop
       timeout = 1
 
-      aws_client.expects(read_from_sqs: []).once
-      @listener = QueueListener.new(aws_client, propono_config, @topic_name, idle_timeout: timeout) { |msg| p msg }
+      @listener = QueueListener.new(aws_client, propono_config, @topic_name, idle_timeout: timeout) {}
+      @listener.stubs(:read_messages_from_queue).returns(false)
 
       @time = Time.now.to_i
       @listener.listen
-      is_assigned_afterwards = true
 
-      assert is_assigned_afterwards
+      assert true
       assert Time.now.to_i - @time >= timeout
     end
   end

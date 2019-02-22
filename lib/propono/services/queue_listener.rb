@@ -133,12 +133,16 @@ module Propono
         return false
       end
 
-      time_idle = Time.now.to_i - @last_message_read_at
+      time_idle = Time.now.to_i - last_message_read_at
       time_idle >= idle_timeout
     end
 
     def reset_idle_timeout!
       @last_message_read_at = Time.now.to_i
+    end
+
+    def last_message_read_at
+      @last_message_read_at
     end
   end
 end
