@@ -1,3 +1,6 @@
+# 2.2.0 / 2019-09-21
+* [FEATURE] Add setting to disable slow queue
+
 # 2.1.0 / 2017-03-14
 * [FEATURE] Added visibility_timeout to listen
 

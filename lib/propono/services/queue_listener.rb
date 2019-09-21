@@ -28,14 +28,14 @@ module Propono
     def drain
       raise ProponoError.new("topic_name is nil") unless topic_name
       true while read_messages_from_queue(main_queue, 10, long_poll: false)
-      true while read_messages_from_queue(slow_queue, 10, long_poll: false)
+      true while read_messages_from_queue(slow_queue, 10, long_poll: false) if propono_config.slow_queue_enabled
     end
 
     private
 
     def read_messages
       read_messages_from_queue(main_queue, propono_config.num_messages_per_poll) ||
-      read_messages_from_queue(slow_queue, 1)
+        (propono_config.slow_queue_enabled ?  read_messages_from_queue(slow_queue, 1) : nil)
     end
 
     def read_messages_from_queue(queue, num_messages, long_poll: true)

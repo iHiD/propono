@@ -58,8 +58,19 @@ module Propono
       end
     end
 
+    # Keep this test in sync with the one below, just with the config enabled
     def test_drain_should_continue_if_queue_empty
       @listener.expects(:read_messages_from_queue).with(@slow_queue, 10, long_poll: false).returns(false)
+      @listener.expects(:read_messages_from_queue).with(@queue, 10, long_poll: false).returns(false)
+      @listener.drain
+      assert true
+    end
+
+    # Keep this test in sync with the one above, just with the config disabled
+    def test_drain_ignores_slow_queue_if_disabled
+      propono_config.slow_queue_enabled = false
+
+      @listener.expects(:read_messages_from_queue).with(@slow_queue, 10, long_poll: false).never
       @listener.expects(:read_messages_from_queue).with(@queue, 10, long_poll: false).returns(false)
       @listener.drain
       assert true
@@ -217,6 +228,7 @@ module Propono
       @listener.send(:move_to_corrupt_queue, @sqs_message1)
     end
 
+    # Keep this test in sync with the one below, just with the config enabled
     def test_if_no_messages_read_from_normal_queue_read_from_slow_queue
       main_queue = mock
       @listener.stubs(main_queue: main_queue)
@@ -225,6 +237,20 @@ module Propono
 
       @listener.expects(:read_messages_from_queue).with(main_queue, propono_config.num_messages_per_poll).returns(false)
       @listener.expects(:read_messages_from_queue).with(slow_queue, 1)
+      @listener.send(:read_messages)
+    end
+
+    # Keep this test in sync with the one above, just with the config disabled
+    def ignore_slow_queue_if_disabled
+      propono_config.slow_queue_enabled = false
+
+      main_queue = mock
+      @listener.stubs(main_queue: main_queue)
+      slow_queue = mock
+      @listener.stubs(slow_queue: slow_queue)
+
+      @listener.expects(:read_messages_from_queue).with(main_queue, propono_config.num_messages_per_poll).returns(false)
+      @listener.expects(:read_messages_from_queue).with(slow_queue, 1).never
       @listener.send(:read_messages)
     end
 

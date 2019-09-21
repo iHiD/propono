@@ -23,7 +23,7 @@ Propono::Client.new.publish('some-topic', "The Best Message Ever")
 
 ## Changes from v1 to v2
 
-Version 2 of Propono changed a few things: 
+Version 2 of Propono changed a few things:
 - We moved from a global interface to a client interface. Rather than calling `publish` and equivalent on `Propono`, you should now initialize a `Propono::Client` and then call everything on that client. This fixes issues with thread safety and global config.
 - We have also removed the dependancy on Fog and instead switch to the `sns` and `sqs` mini-gems of `aws-sdk`.
 - UDP and TCP support have been removed, and `subscribe_by_post` has been removed.
@@ -99,6 +99,8 @@ Propono::Client.new do |config|
 
   config.max_retries = "The number of retries if a message raises an exception before being placed on the failed queue"
   config.num_messages_per_poll = "The number of messages retrieved per poll to SQS"
+
+  config.slow_queue_enabled = true
 end
 ```
 
@@ -117,6 +119,10 @@ client.listen('long-running-tasks', visiblity_timeout: 3600) do |message|
   puts "I just received: #{message}"
 end
 ```
+
+### Slow Queue
+
+The slow queue can be disabled by setting `slow_queue_enabled` to `false`. This will yield performance improvements if you do not make use of the "slow queue" functionality.
 
 These can all also be set using the `client.config.access_key = "..."` syntax.
 
