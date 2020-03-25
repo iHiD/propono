@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["jez.walker@gmail.com", "c.p.care@gmail.com", "malcolm@landonsonline.me.uk"]
   spec.description   = %q{Pub / Sub Library using Amazon Web Services}
   spec.summary       = %q{General purpose pub/sub library built on top of AWS SNS and SQS}
-  spec.homepage      = ""
+  spec.homepage      = "https://github.com/iHiD/propono/"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files`.split($/)
