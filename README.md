@@ -124,8 +124,6 @@ end
 
 The slow queue can be disabled by setting `slow_queue_enabled` to `false`. This will yield performance improvements if you do not make use of the "slow queue" functionality.
 
-These can all also be set using the `client.config.access_key = "..."` syntax.
-
 ### Is it any good?
 
 [Yes.](http://news.ycombinator.com/item?id=3067434)
