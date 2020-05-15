@@ -7,47 +7,27 @@ module Propono
       super
       @config = Propono::Configuration.new
 
-      @config.access_key = "test-access-key"
-      @config.secret_key = "test-secret-key"
-      @config.queue_region = "test-queue-region"
+      @config.aws_options = { a: 'any', b: 'aws-specific' }
+      @config.sqs_options = { a: 'sqs', c: 'sqs-specific' }
+      @config.sns_options = { a: 'sns', c: 'sns-specific' }
 
       @aws_config = Propono::AwsConfig.new(@config)
     end
 
-    def test_access_key
-      assert_equal "test-access-key", @aws_config.aws_options[:access_key_id]
+    def test_overwritten_keys_take_precendence
+      assert_equal 'sqs', @aws_config.sqs_options[:a]
+      assert_equal 'sns', @aws_config.sns_options[:a]
     end
 
-    def test_secret_key
-      assert_equal "test-secret-key", @aws_config.aws_options[:secret_access_key]
+    def test_common_keys_remain
+      assert_equal 'aws-specific', @aws_config.sqs_options[:b]
+      assert_equal 'aws-specific', @aws_config.sns_options[:b]
     end
 
-    def test_region
-      assert_equal "test-queue-region", @aws_config.aws_options[:region]
+    def test_specific_keys_remain
+      assert_equal 'sqs-specific', @aws_config.sqs_options[:c]
+      assert_equal 'sns-specific', @aws_config.sns_options[:c]
     end
 
-    def test_no_iam_profile_selected
-      assert ! @aws_config.aws_options.has_key?(:use_iam_profile)
-    end
-
-    def test_use_iam_profile
-      @config.use_iam_profile = true
-      assert @aws_config.aws_options[:use_iam_profile]
-    end
-
-    def test_selecting_use_iam_profile_results_in_no_access_key
-      @config.use_iam_profile = true
-      assert ! @aws_config.aws_options.has_key?(:access_key_id)
-    end
-
-    def test_selecting_use_iam_profile_results_in_no_secret_key
-      @config.use_iam_profile = true
-      assert ! @aws_config.aws_options.has_key?(:secret_access_key)
-    end
-
-    def test_region_when_using_iam_profile
-      @config.use_iam_profile = true
-      assert_equal "test-queue-region", @aws_config.aws_options[:region]
-    end
   end
 end

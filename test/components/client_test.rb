@@ -75,11 +75,11 @@ module Propono
     end
 
     def test_block_configuration_syntax
-      test_key = "foobar-123-access"
+      test_application_name = "my-application"
       client = Propono::Client.new do |config|
-        config.access_key = test_key
+        config.application_name = test_application_name
       end
-      assert_equal test_key, client.config.access_key
+      assert_equal test_application_name, client.config.application_name
     end
   end
 end

@@ -15,23 +15,23 @@ module Propono
       end
     end
 
-    add_setting :access_key
-    add_setting :secret_key
-    add_setting :queue_region
+    add_setting :aws_options
+    add_setting :sqs_options
+    add_setting :sns_options
     add_setting :application_name
     add_setting :logger
     add_setting :max_retries
     add_setting :num_messages_per_poll
     add_setting :slow_queue_enabled, required: false
-
-    add_setting :use_iam_profile, required: false
-    add_setting :queue_suffix,    required: false
+    add_setting :queue_suffix, required: false
 
     def initialize
       @settings = {
+        aws_options:           {},
+        sqs_options:           {},
+        sns_options:           {},
         logger:                Propono::Logger.new,
         queue_suffix:          "",
-        use_iam_profile:       false,
         max_retries:           0,
         num_messages_per_poll: 1,
         slow_queue_enabled:    true

@@ -1,4 +1,23 @@
-access_key: test-aws-access-key
-secret_key: test-aws-secret-key
-queue_region: test-aws-region
 application_name: tests-yourinitials
+
+# Whatever keys are in aws_options are passed directly to the AWS clients.
+
+# Option 1 - Do nothing.
+# AWS clients will either use the default profile in ~/.aws/credentials, or use an IAM Role if on EC2.
+
+# Option 2 - Use environment variables
+# You can set a non-default local profile with the AWS_PROFILE environment variable.
+# You can also set keys directly: https://docs.aws.amazon.com/sdk-for-ruby/v3/developer-guide/setup-config.html#aws-ruby-sdk-credentials-environment
+
+# Option 3 - Set values directly.
+aws_options: 
+  # Required
+  region: 'test-aws-region'
+
+  # Set keys:
+  # access_key_id: test-aws-access-key
+  # secret_access_key: test-aws-secret-key
+
+  # Or set a profile:
+  # profile: profile-name
+
