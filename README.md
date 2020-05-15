@@ -78,7 +78,7 @@ This is because a queue is established for each application_name/topic combinati
 ### AWS Configuration
 
 By default, Propono will create SQS and SNS clients with no options.
-In the absense of options, these clients will make use of the credentials on the current host.
+In the absence of options, these clients will make use of the credentials on the current host.
 See the [AWS SDK For Ruby Configuration documentation](https://docs.aws.amazon.com/sdk-for-ruby/v3/developer-guide/setup-config.html) for more details.
 
 To manually configure options for use with AWS, use `aws_options`, which sets options to be passed to both clients. For example:
