@@ -91,7 +91,7 @@ To manually configure options for use with AWS, use `aws_options`, which sets op
       }
     end
 
-In addition to this, there is also `sqs_options` and `sns_options`, used to configure each client independently.
+In addition to this, there are also `sqs_options` and `sns_options`, used to configure each client independently.
 See the [SQS Client](https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/SQS/Client.html#initialize-instance_method) and [SNS Client](https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/SNS/Client.html#initialize-instance_method) documentation for available options.
 These individual options are merged with `aws_options` with the per-client options taking precendence.
 
