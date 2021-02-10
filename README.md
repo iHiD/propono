@@ -1,6 +1,6 @@
 # Propono
 
-[![Build Status](https://travis-ci.org/iHiD/propono.png)](https://travis-ci.org/iHiD/propono)
+![Tests](https://github.com/iHiD/propono/workflows/Tests/badge.svg)
 [![Dependencies](https://gemnasium.com/iHiD/propono.png?travis)](https://gemnasium.com/iHiD/propono)
 [![Code Climate](https://codeclimate.com/github/iHiD/propono.png)](https://codeclimate.com/github/iHiD/propono)
 
