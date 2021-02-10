@@ -6,8 +6,8 @@ require 'propono/version'
 Gem::Specification.new do |spec|
   spec.name          = "propono"
   spec.version       = Propono::VERSION
-  spec.authors       = ["MalcyL", "iHiD"]
-  spec.email         = ["jez.walker@gmail.com", "c.p.care@gmail.com", "malcolm@landonsonline.me.uk"]
+  spec.authors       = ["iHiD", "dougal", "ccare", "MalcyL"]
+  spec.email         = ["jez.walker@gmail.com"]
   spec.description   = %q{Pub / Sub Library using Amazon Web Services}
   spec.summary       = %q{General purpose pub/sub library built on top of AWS SNS and SQS}
   spec.homepage      = "https://github.com/iHiD/propono/"
