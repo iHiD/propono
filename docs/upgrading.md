@@ -7,7 +7,7 @@ passed to the client gems. Instead of Propono attempting to guess which
 configuration options you might want, it now accepts hashes for AWS
 configuration which are passed directly to the appropriate clients.
 
-If you are upgrading from v1 to v2, and using the configuration as previously
+If you are upgrading from v2 to v3, and using the configuration as previously
 given in the README, you need to change from:
 
 ```ruby
