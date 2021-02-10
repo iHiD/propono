@@ -81,7 +81,7 @@ To manually configure options for use with AWS, use `aws_options`, which sets op
 
     client = Propono::Client.new do |config|
       config.aws_options = {
-        region:            'aws_region'
+        region:            'aws_region',
         access_key_id:     'your_access_key_id',
         secret_access_key: 'your_secret_access_key'        
       }
