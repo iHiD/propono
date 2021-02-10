@@ -1,4 +1,4 @@
-**v3 has been released with new AWS configuration options. Check out the [upgrading doc](https://github.com/iHiD/propono/blob/main/docs/upgrading.md) for more information. Thanks to @dougal for this work!**
+**Propono v3.0.0 has been released with new AWS configuration options. Check out the [upgrading doc](https://github.com/iHiD/propono/blob/main/docs/upgrading.md) for more information. Thanks to @dougal for this work!**
 
 # Propono
 
