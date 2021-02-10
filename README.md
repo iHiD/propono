@@ -21,13 +21,9 @@ Propono::Client.new.publish('some-topic', "The Best Message Ever")
 # - "I just received The Best Message Ever"
 ```
 
-## Changes from v1 to v2
+## Upgrading
 
-Version 2 of Propono changed a few things:
-- We moved from a global interface to a client interface. Rather than calling `publish` and equivalent on `Propono`, you should now initialize a `Propono::Client` and then call everything on that client. This fixes issues with thread safety and global config.
-- We have also removed the dependancy on Fog and instead switch to the `sns` and `sqs` mini-gems of `aws-sdk`.
-- UDP and TCP support have been removed, and `subscribe_by_post` has been removed.
-- We are now using long-polling. This makes Propono **significantly** faster (10-100x).
+Upgrading from v1 to v2, and v2 to v3 are covered in the [upgrade documentation](docs/upgrading.md).
 
 ## Installation
 
