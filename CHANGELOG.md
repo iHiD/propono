@@ -1,3 +1,6 @@
+# 3.0.0 / 2021-01-10
+* [FEATURE] Improve AWS configuration.
+
 # 2.2.0 / 2019-09-21
 * [FEATURE] Add setting to disable slow queue
 
