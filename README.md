@@ -23,7 +23,7 @@ Propono::Client.new.publish('some-topic', "The Best Message Ever")
 
 ## Upgrading
 
-Upgrading from v1 to v2, and v2 to v3 are covered in the [upgrade documentation](docs/upgrading.md).
+Upgrades from v1 to v2, and v2 to v3 are covered in the [upgrade documentation](docs/upgrading.md).
 
 ## Installation
 
