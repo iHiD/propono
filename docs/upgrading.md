@@ -12,9 +12,9 @@ given in the README, you need to change from:
 
 ```ruby
 client = Propono::Client.new
+client.config.queue_region = "aws_region"
 client.config.access_key   = "your_access_key_id"
 client.config.secret_key   = "your_secret_access_key"
-client.config.queue_region = "aws_region"
 ```
 
 To:
