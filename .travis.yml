@@ -1,7 +1,0 @@
-language: ruby
-cache: bundler
-rvm:
-  - 2.2.8
-  - 2.4.2
-script:
-  - bundle exec rake test:local
