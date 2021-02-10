@@ -1,7 +1,6 @@
 # Propono
 
 ![Tests](https://github.com/iHiD/propono/workflows/Tests/badge.svg)
-[![Dependencies](https://gemnasium.com/iHiD/propono.png?travis)](https://gemnasium.com/iHiD/propono)
 [![Code Climate](https://codeclimate.com/github/iHiD/propono.png)](https://codeclimate.com/github/iHiD/propono)
 
 Propono is a [pub/sub](http://en.wikipedia.org/wiki/Publish-subscribe_pattern) gem built on top of Amazon Web Services (AWS). It uses Simple Notification Service (SNS) and Simple Queue Service (SQS) to seamlessly pass messages throughout your infrastructure.
