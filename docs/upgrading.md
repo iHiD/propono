@@ -12,9 +12,9 @@ given in the README, you need to change from:
 
 ```ruby
 client = Propono::Client.new
-client.config.access_key       = "your_access_key_id"       # From AWS
-client.config.secret_key       = "your_secret_access_key"       # From AWS
-client.config.queue_region     = "aws_regiou"     # From AWS
+client.config.access_key   = "your_access_key_id"
+client.config.secret_key   = "your_secret_access_key"
+client.config.queue_region = "aws_region"
 ```
 
 To:
@@ -24,7 +24,7 @@ client = Propono::Client.new do |config|
   config.aws_options = {
     region:            'aws_region'
     access_key_id:     'your_access_key_id',
-    secret_access_key: 'your_secret_access_key'        
+    secret_access_key: 'your_secret_access_key'
   }
 end
 ```
@@ -46,4 +46,3 @@ Version 2 of Propono changed a few things:
   removed.
 - We are now using long-polling. This makes Propono **significantly** faster
   (10-100x).
-
