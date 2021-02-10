@@ -15,9 +15,6 @@ class Minitest::Test
 
   def propono_config
     @propono_config ||= Propono::Configuration.new.tap do |c|
-      c.access_key = "test-access-key"
-      c.secret_key = "test-secret-key"
-      c.queue_region = "us-east-1"
       c.application_name = "MyApp"
       c.queue_suffix = ""
 

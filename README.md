@@ -21,13 +21,9 @@ Propono::Client.new.publish('some-topic', "The Best Message Ever")
 # - "I just received The Best Message Ever"
 ```
 
-## Changes from v1 to v2
+## Upgrading
 
-Version 2 of Propono changed a few things:
-- We moved from a global interface to a client interface. Rather than calling `publish` and equivalent on `Propono`, you should now initialize a `Propono::Client` and then call everything on that client. This fixes issues with thread safety and global config.
-- We have also removed the dependancy on Fog and instead switch to the `sns` and `sqs` mini-gems of `aws-sdk`.
-- UDP and TCP support have been removed, and `subscribe_by_post` has been removed.
-- We are now using long-polling. This makes Propono **significantly** faster (10-100x).
+Upgrades from v1 to v2, and v2 to v3 are covered in the [upgrade documentation](docs/upgrading.md).
 
 ## Installation
 
@@ -41,18 +37,12 @@ And then execute:
 
 ## Usage
 
-The first thing to do is setup some configuration keys for Propono. It's best to do this in an initializer, or at the start of your application.
+The first thing to do is setup some configuration for Propono.
+It's best to do this in an initializer, or at the start of your application.
+If you need to setup AWS authentication, see the [AWS Configuration](#aws-configuration) section.
 
 ```ruby
 client = Propono::Client.new
-client.config.access_key       = "access-key"       # From AWS
-client.config.secret_key       = "secret-key"       # From AWS
-client.config.queue_region     = "queue-region"     # From AWS
-
-# Or use the IAM profile of the machine
-client.config.use_iam_profile  = true
-client.config.queue_region     = "queue-region"     # From AWS
-
 ```
 
 You can then start publishing messages easily from anywhere in your codebase.
@@ -81,19 +71,35 @@ This is because a queue is established for each application_name/topic combinati
 * subscribers that share the same `application_name` will act as multiple workers on the same queue. Only one will get to process each message.
 * subscribers that have a different `application_name` will each get a copy of a message to process independently i.e. acts as a one-to-many broadcast.
 
-### Configuration
+### AWS Configuration
 
-The following configuration settings are available:
+By default, Propono will create SQS and SNS clients with no options.
+In the absence of options, these clients will make use of the credentials on the current host.
+See the [AWS SDK For Ruby Configuration documentation](https://docs.aws.amazon.com/sdk-for-ruby/v3/developer-guide/setup-config.html) for more details.
+
+To manually configure options for use with AWS, use `aws_options`, which sets options to be passed to both clients. For example:
+
+    client = Propono::Client.new do |config|
+      config.aws_options = {
+        region:            'aws_region',
+        access_key_id:     'your_access_key_id',
+        secret_access_key: 'your_secret_access_key'        
+      }
+    end
+
+In addition to this, there are also `sqs_options` and `sns_options`, used to configure each client independently.
+See the [SQS Client](https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/SQS/Client.html#initialize-instance_method) and [SNS Client](https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/SNS/Client.html#initialize-instance_method) documentation for available options.
+These individual options are merged with `aws_options` with the per-client options taking precendence.
+
+### General Configuration
 
 ```
 Propono::Client.new do |config|
-  # Use AWS access and secret keys
-  config.access_key = "An AWS access key"
-  config.secret_key = "A AWS secret key"
-  # Or use AWS IAM profile of the machine
-  config.use_iam_profile = true
+  # AWS Configuration, see above.
+  config.aws_options = {...}
+  config.sqs_options = {...}
+  config.sns_options = {...}
 
-  config.queue_region = "An AWS queue region"
   config.application_name = "A name unique in your network"
   config.logger = "A logger such as Log4r or Rails.logger"
 

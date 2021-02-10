@@ -68,11 +68,11 @@ module Propono
     private
 
     def sns_client
-      @sns_client ||= Aws::SNS::Client.new(aws_config.aws_options)
+      @sns_client ||= Aws::SNS::Client.new(aws_config.sns_options)
     end
 
     def sqs_client
-      @sqs_client ||= Aws::SQS::Client.new(aws_config.aws_options)
+      @sqs_client ||= Aws::SQS::Client.new(aws_config.sqs_options)
     end
   end
 end

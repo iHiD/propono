@@ -1,23 +1,28 @@
 module Propono
   class Client
 
-    # Propono configuration settings.
+    # Propono configuration.
     #
     # Settings should be set in an initializer or using some
-    # other method that insures they are set before any
-    # Propono code is used. They can be set as followed:
+    # other method that ensures they are set before any
+    # Propono code is used.
     #
-    #   Propono.config.access_key = "my-access-key"
+    # They can be set in one of the following ways:
     #
-    # The following settings are allowed:
+    # 1. As options passed to <tt>new</tt> as a hash.
     #
-    # * <tt>:access_key</tt> - The AWS access key
-    # * <tt>:secret_key</tt> - The AWS secret key
-    # * <tt>:queue_region</tt> - The AWS region
-    # * <tt>:application_name</tt> - The name of the application Propono
-    #   is included in.
-    # * <tt>:queue_suffix</tt> - Optional string to append to topic and queue names.
-    # * <tt>:logger</tt> - A logger object that responds to puts.
+    #   Propono::Client.new(application_name: 'my-application')
+    #
+    # 2. As options passed to <tt>new</tt> using a block.
+    #
+    #   Propono::Client.new do |config"
+    #     config.application_name: 'my-application'
+    #   end
+    #   
+    # 3. By calling the <tt>Propono::Client#configure</tt>.
+    #   client.configure do |config|
+    #     config.access_key = "my-access-key"
+    #   end
 
     attr_reader :config, :aws_client
     def initialize(settings = {}, &block)

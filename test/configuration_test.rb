@@ -12,37 +12,40 @@ module Propono
       refute propono_config.nil?
     end
 
-    def test_use_iam_profile_defaults_false
-      assert ! propono_config.use_iam_profile
-    end
-
-    def test_use_iam_profile
-      propono_config.use_iam_profile = true
-      assert propono_config.use_iam_profile
-    end
-
-    def test_access_key
-      access_key = "test-access-key"
-      propono_config.access_key = access_key
-      assert_equal access_key, propono_config.access_key
-    end
-
-    def test_secret_key
-      secret_key = "test-secret-key"
-      propono_config.secret_key = secret_key
-      assert_equal secret_key, propono_config.secret_key
-    end
-
-    def test_queue_region
-      queue_region = "test-queue-region"
-      propono_config.queue_region = queue_region
-      assert_equal queue_region, propono_config.queue_region
-    end
-
     def test_application_name
       application_name = "test-application-name"
       propono_config.application_name = application_name
       assert_equal application_name, propono_config.application_name
+    end
+
+    def test_default_aws_options
+      assert_equal({}, propono_config.aws_options)
+    end
+
+    def test_aws_options
+      opts = { foo: 'bar' }
+      propono_config.aws_options = opts
+      assert_equal opts, propono_config.aws_options
+    end
+
+    def test_default_sqs_options
+      assert_equal({}, propono_config.sqs_options)
+    end
+
+    def test_sqs_options
+      opts = { foo: 'bar' }
+      propono_config.sqs_options = opts
+      assert_equal opts, propono_config.sqs_options
+    end
+
+    def test_default_sns_options
+      assert_equal({}, propono_config.sns_options)
+    end
+
+    def test_sns_options
+      opts = { foo: 'bar' }
+      propono_config.sns_options = opts
+      assert_equal opts, propono_config.sns_options
     end
 
     def test_default_logger
@@ -72,24 +75,6 @@ module Propono
       val = 3
       propono_config.num_messages_per_poll = val
       assert_equal val, propono_config.num_messages_per_poll
-    end
-
-    def test_missing_access_key_throws_exception
-      assert_raises(ProponoConfigurationError) do
-        propono_config.access_key
-      end
-    end
-
-    def test_missing_secret_key_throws_exception
-      assert_raises(ProponoConfigurationError) do
-        propono_config.secret_key
-      end
-    end
-
-    def test_missing_queue_region_throws_exception
-      assert_raises(ProponoConfigurationError) do
-        propono_config.queue_region
-      end
     end
 
     def test_missing_application_name_throws_exception
