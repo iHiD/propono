@@ -1,3 +1,5 @@
+**v3 has been released with new AWS configuration options. Check out the [upgrading doc](https://github.com/iHiD/propono/blob/main/docs/upgrading.md) for more information. Thanks to @dougal for this work!**
+
 # Propono
 
 ![Tests](https://github.com/iHiD/propono/workflows/Tests/badge.svg)
