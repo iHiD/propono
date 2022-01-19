@@ -5,8 +5,8 @@ module Propono
   end
 
   class Publisher
-    def self.publish(*args)
-      new(*args).publish
+    def self.publish(aws_client, propono_config, topic_name, message, options={})
+      new(aws_client, propono_config, topic_name, message, **options).publish
     end
 
     attr_reader :aws_client, :propono_config, :topic_name, :message, :id, :async

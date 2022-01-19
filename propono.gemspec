@@ -20,6 +20,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "aws-sdk-sns"
   spec.add_dependency "aws-sdk-sqs"
+  spec.add_dependency "nokogiri"
 
   spec.add_development_dependency "bundler", "~> 2.1"
   spec.add_development_dependency "rake"
