@@ -5,8 +5,14 @@ module Propono
   end
 
   class Publisher
-    def self.publish(*args)
-      new(*args).publish
+    if RUBY_VERSION < '3'
+      def self.publish(*args)
+        new(*args).publish
+      end
+    else
+      def self.publish(aws_client, propono_config, topic_name, message, options = {})
+        new(aws_client, propono_config, topic_name, message, **options).publish
+      end
     end
 
     attr_reader :aws_client, :propono_config, :topic_name, :message, :id, :async

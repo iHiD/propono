@@ -11,8 +11,8 @@ module Propono
     def test_self_publish_calls_new
       topic = "topic123"
       message = "message123"
-      Publisher.expects(:new).with(aws_client, topic, message).returns(mock(publish: nil))
-      Publisher.publish(aws_client, topic, message)
+      Publisher.expects(:new).with(aws_client, propono_config, topic, message).returns(mock(publish: nil))
+      Publisher.publish(aws_client, propono_config, topic, message)
     end
 
     def test_initializer_generates_an_id
